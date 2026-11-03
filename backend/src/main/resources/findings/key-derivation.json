@@ -130,7 +130,8 @@
       "severity": "medium",
       "cwe": "CWE-916",
       "languages": [
-        "config"
+        "config",
+        "powershell"
       ],
       "ignoreCase": true,
       "pattern": "(?:pbkdf2|argon2|scrypt|bcrypt|password|passwd|hash)[\\w.$\\[\\]-]{0,24}(?:iterations?|rounds|cost|work[_.]?factor)\\s*[:=]\\s*(?<iterations>\\d[\\d_]*)",

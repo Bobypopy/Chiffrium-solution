@@ -129,6 +129,41 @@ class CorpusFindingsTest {
         assertThat(detect(root)).extracting(f -> f.ruleId() + " " + f.file() + ":" + f.line()).isEmpty();
     }
 
+    /** Second corpus : Azure (Bicep, ARM), scripts, documentation Perl, Kotlin, Kubernetes, Salesforce. */
+    @Test
+    void referencesVariablesPathsAndDocumentationExamplesAreNotSecrets(@TempDir Path root) {
+        TestSupport.write(root, "avm/ptn/vm/main.bicep", """
+                module vm 'br/public:avm/res/compute/virtual-machine:0.1.0' = {
+                  params: {
+                    vmAdminPassword: vmAdminPassword
+                  }
+                }
+                """);
+        TestSupport.write(root, "avm/ptn/vm/main.json", """
+                {
+                  "adminPassword": "[parameters('adminPassword')]",
+                  "hasSshPassword": "[parameters('hasSshPassword')]"
+                }
+                """);
+        TestSupport.write(root, ".github/actions/validate/action.yml", """
+                GitHubSecrets       = $env:GITHUB_SECRETS
+                namespace_tokenize: $project_config.repo_name_tokenized
+                PasswordPath: HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon
+                """);
+        TestSupport.write(root, "https-nginx/Makefile", "SECRET = /tmp/secret.json\n");
+        TestSupport.write(root, "sysdig/daemonset.yaml",
+                "#          value: \"k8s_uri: https://myacct:mypass@localhost:4430\"\n");
+        TestSupport.write(root, "lib/Mojo/URL.pm",
+                "my $url = Mojo::URL->new('http://sri:foobar@example.com:3000/foo?foo=bar#23');\n");
+        TestSupport.write(root, "database/file/DatabaseKDBXXML.kt", """
+                object DatabaseKDBXXML {
+                    const val ElemProtPassword = "ProtectedPassword"
+                }
+                """);
+
+        assertThat(detect(root)).extracting(f -> f.ruleId() + " " + f.file() + ":" + f.line()).isEmpty();
+    }
+
     @Test
     void realUsesStayReportedAndTestDataIsLowered(@TempDir Path root) {
         TestSupport.write(root, "server/Client.java", """
@@ -197,7 +232,8 @@ class CorpusFindingsTest {
         assertThat(List.of("lib/Crypto/SelfTest/Cipher/test_CBC.py", "src/foo/test_bar.py",
                 "helper/serverconfig/config_test_helpers.go", "api/test-fixtures/keys/key.pem",
                 "vectors/cryptography_vectors/pkcs12/cert.p12", "test_vectors/wycheproof/ecdh.json",
-                "fuzz/client.c", "pkg/x/y_test.go", "src/test/java/A.java"))
+                "fuzz/client.c", "pkg/x/y_test.go", "src/test/java/A.java", "test.sql",
+                "molecule/mysql_hardening/converge.yml"))
                 .allSatisfy(path -> assertThat(testPath.matcher(path).find()).as(path).isTrue());
         assertThat(List.of("src/latest/app.py", "attest/verify.go", "lib/contest.rb", "src/main/java/Testing.java"))
                 .allSatisfy(path -> assertThat(testPath.matcher(path).find()).as(path).isFalse());

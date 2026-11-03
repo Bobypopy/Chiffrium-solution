@@ -234,7 +234,8 @@
       "severity": "medium",
       "cwe": "CWE-312",
       "languages": [
-        "config"
+        "config",
+        "powershell"
       ],
       "pattern": "\\bopenssl\\s+(?:req\\b(?=[^\\n|;&]*?\\s-newkey\\b)[^\\n|;&]*?\\s-(?:nodes|noenc)\\b|genrsa\\b(?![^\\n|;&]*?\\s-(?:aes\\w*|des3?|camellia\\w*|aria\\w*|idea|seed)\\b)|genpkey\\b(?![^\\n|;&]*?\\s-(?:aes\\w*|des3?|camellia\\w*|aria\\w*|cipher)\\b))|\\bssh-keygen\\b(?=[^\\n|;&]*?\\s-t\\s)[^\\n|;&]*?\\s-N\\s*(?:\"\"|'')",
       "title": "Clé privée exportée sans chiffrement",
@@ -247,7 +248,8 @@
       "severity": "high",
       "cwe": "CWE-798",
       "languages": [
-        "config"
+        "config",
+        "powershell"
       ],
       "pattern": "(?:\\bkeytool\\b[^\\n|;&]*?\\s-(?:storepass|keypass|srcstorepass|deststorepass|srckeypass|destkeypass)\\s+|\\bopenssl\\b[^\\n|;&]*?\\s-pass(?:in|out)?\\s+pass:|\\bssh-keygen\\b[^\\n|;&]*?\\s-N\\s+)['\"]?(?<secret>[^\\s'\"$%{}]{1,128})",
       "secretGroup": "secret",

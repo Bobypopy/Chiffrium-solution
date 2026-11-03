@@ -27,5 +27,6 @@
   "solidity.json",
   "apex.json",
   "haskell.json",
-  "r.json"
+  "r.json",
+  "powershell.json"
 ]

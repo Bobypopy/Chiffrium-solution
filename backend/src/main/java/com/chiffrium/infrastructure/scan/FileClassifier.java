@@ -57,9 +57,11 @@ public final class FileClassifier {
             Map.entry("toml", Language.CONFIG), Map.entry("env", Language.CONFIG), Map.entry("cfg", Language.CONFIG),
             Map.entry("xml", Language.CONFIG), Map.entry("plist", Language.CONFIG),Map.entry("security", Language.CONFIG), Map.entry("tf", Language.CONFIG),
             Map.entry("tfvars", Language.CONFIG), Map.entry("sh", Language.CONFIG), Map.entry("bash", Language.CONFIG),
-            Map.entry("ps1", Language.CONFIG), Map.entry("npmrc", Language.CONFIG), Map.entry("pypirc", Language.CONFIG),
+            Map.entry("ps1", Language.POWERSHELL), Map.entry("psm1", Language.POWERSHELL),
+            Map.entry("psd1", Language.POWERSHELL),
+            Map.entry("npmrc", Language.CONFIG), Map.entry("pypirc", Language.CONFIG),
             Map.entry("zsh", Language.CONFIG), Map.entry("bat", Language.CONFIG), Map.entry("cmd", Language.CONFIG),
-            Map.entry("psm1", Language.CONFIG), Map.entry("hcl", Language.CONFIG), Map.entry("bicep", Language.CONFIG),
+            Map.entry("hcl", Language.CONFIG), Map.entry("bicep", Language.CONFIG),
             Map.entry("tpl", Language.CONFIG), Map.entry("j2", Language.CONFIG), Map.entry("nix", Language.CONFIG),
             // CloudFormation, modèles ARM, configurations applicatives (les fichiers de verrouillage sont écartés).
             Map.entry("json", Language.CONFIG));

@@ -112,6 +112,19 @@
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
     },
     {
+      "id": "tls-powershell-trust-all",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "powershell"
+      ],
+      "pattern": "ServerCertificateValidationCallback\\s*=\\s*\\{\\s*(?:return\\s+)?\\$true\\s*;?\\s*\\}|\\bTrustAllCertsPolicy\\b|-SkipCertificateCheck\\b(?!\\s*:\\s*\\$false)",
+      "title": "Validation du certificat désactivée (PowerShell)",
+      "description": "Tous les certificats sont acceptés : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
       "id": "tls-csharp-accept-any",
       "category": "certificate-validation",
       "severity": "high",

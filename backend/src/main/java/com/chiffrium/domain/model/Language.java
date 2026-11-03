@@ -41,6 +41,7 @@ public enum Language {
     APEX("apex"),
     HASKELL("haskell"),
     R("r"),
+    POWERSHELL("powershell"),
     CONFIG("config"),
     UNKNOWN("unknown");
 

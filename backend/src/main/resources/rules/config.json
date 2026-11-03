@@ -105,20 +105,6 @@
       "key": "private-key"
     },
     {
-      "id": "config.powershell.self-signed-certificate",
-      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyAlgorithm\\s+['\\\"]?(?<name>[\\w-]+))(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
-      "map": { "ecdsa_nistp256": "ECDSA-P-256", "ecdsa_nistp384": "ECDSA-P-384", "ecdsa_nistp521": "ECDSA-P-521" },
-      "functions": ["keygen"],
-      "key": "private-key"
-    },
-    {
-      "id": "config.powershell.self-signed-certificate-default",
-      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
-      "algorithm": "RSA",
-      "functions": ["keygen"],
-      "key": "private-key"
-    },
-    {
       "id": "config.ansible.private-key",
       "pattern": "\\b(?:community\\.crypto\\.)?(?:openssl_privatekey(?:_pipe)?|openssh_keypair)\\s*:[ \\t]*\\r?\\n(?=(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+type\\s*:\\s*['\\\"]?(?<name>RSA|DSA|ECC|ECDSA|Ed25519|Ed448|X25519|X448|rsa|dsa|ecdsa|ed25519)\\b)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+size\\s*:\\s*(?<size>\\d{3,5}))?)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+curve\\s*:\\s*['\\\"]?(?<curve>[\\w-]+))?)",
       "map": { "ecc": "EC" },

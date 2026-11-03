@@ -188,6 +188,21 @@ export const REGLES = {
   'Math.random pour un secret': 'Math.random for a secret',
   'Math.random n\'est pas un générateur cryptographique.': 'Math.random is not a cryptographic generator.',
   'Générateur non cryptographique': 'Non-cryptographic generator',
+  // --- PowerShell
+  'Get-Random pour un secret': 'Get-Random for a secret',
+  'Get-Random et System.Random ne sont pas des générateurs cryptographiques.':
+    'Get-Random and System.Random are not cryptographic generators.',
+  'Mot de passe en clair dans un script': 'Plaintext password in a script',
+  'ConvertTo-SecureString -AsPlainText reçoit le mot de passe écrit dans le script : il est lisible par quiconque lit le dépôt.':
+    'ConvertTo-SecureString -AsPlainText receives the password written in the script: anyone who reads the repository can read it.',
+  'Demander le mot de passe (Read-Host -AsSecureString, Get-Credential) ou le lire dans un coffre (SecretManagement, Azure Key Vault).':
+    'Prompt for the password (Read-Host -AsSecureString, Get-Credential) or read it from a vault (SecretManagement, Azure Key Vault).',
+  'Validation du certificat désactivée (PowerShell)': 'Certificate validation disabled (PowerShell)',
+  "Tous les certificats sont acceptés : une attaque de l'homme du milieu devient triviale.":
+    'Every certificate is accepted: a man-in-the-middle attack becomes trivial.',
+  'Clé ou IV en dur': 'Hard-coded key or IV',
+  'Clé de chiffrement ou IV écrit dans le script (octets ou Base64) : quiconque lit le dépôt peut déchiffrer.':
+    'Encryption key or IV written in the script (bytes or Base64): anyone who reads the repository can decrypt.',
   'Générateur prévisible : aucun usage sensible n\'est visible sur la ligne, vérifier qu\'il ne produit ni secret, ni jeton, ni identifiant.':
     'Predictable generator: no sensitive use is visible on the line; check that it produces no secret, token or identifier.',
   'Module random pour un secret': 'random module for a secret',

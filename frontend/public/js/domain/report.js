@@ -82,12 +82,12 @@ const VENDOR_DIRS = ['node_modules', 'vendor', 'third_party', 'thirdparty', 'ext
   '.venv', 'venv', 'bower_components', 'packages', 'dist-packages', '.gradle', '.m2'];
 /** Dossiers de test : un algorithme faible y est souvent volontaire (vecteurs de test). */
 const TEST_DIRS = ['test', 'tests', 'testing', 'spec', 'specs', '__tests__', 'testdata', 'test-data', 'fixtures',
-  'selftest', 'test-fixtures', 'test_fixtures', 'test-vectors', 'test_vectors', 'fuzz', 'fuzzing'];
+  'selftest', 'test-fixtures', 'test_fixtures', 'test-vectors', 'test_vectors', 'fuzz', 'fuzzing', 'molecule'];
 /**
  * Fichiers de test, mêmes conventions que l'analyse (FooTest.java, x_test.go, a.spec.ts, test_x.py,
  * config_test_helpers.go) : leurs constats y sont déjà abaissés.
  */
-const TEST_FILE = /^test_.+\.py$|[._-](test|spec)s?\.[a-z0-9]+$|[._-]tests?[._-]|[a-z0-9]Tests?\.[A-Za-z]+$/;
+const TEST_FILE = /^test_.+\.py$|^tests?\.[a-z0-9]+$|[._-](test|spec)s?\.[a-z0-9]+$|[._-]tests?[._-]|[a-z0-9]Tests?\.[A-Za-z]+$/;
 
 export const ORIGINS = Object.freeze({
   project: { label: 'code du projet', hint: 'Fichier du dépôt analysé : à corriger chez vous.' },

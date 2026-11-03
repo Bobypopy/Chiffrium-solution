@@ -84,7 +84,9 @@ public final class AnalysisPipeline {
     static final String STEP_EXPORT_PREFIX = "export ";
 
     private static final String RAW_OUTPUT_DIR = "raw";
-    private static final Set<Language> NON_SBOM_LANGUAGES = EnumSet.of(Language.CONFIG, Language.UNKNOWN);
+    /** Sans type cdxgen : scripts PowerShell, configuration. */
+    private static final Set<Language> NON_SBOM_LANGUAGES = EnumSet.of(Language.POWERSHELL, Language.CONFIG,
+            Language.UNKNOWN);
 
     private final SourceFetcher sourceFetcher;
     private final ProjectScanner projectScanner;

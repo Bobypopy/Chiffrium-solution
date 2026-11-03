@@ -274,7 +274,8 @@ test('le graphe se parcourt au clavier : ordre, voisins et description parlée',
 test('le code de test est reconnu dans chaque écosystème, comme par l\'analyse', () => {
   for (const file of ['src/test/java/A.java', 'pkg/x/y_test.go', 'src/app.spec.ts', 'lib/Crypto/SelfTest/test_CBC.py',
     'src/foo/test_bar.py', 'helper/config_test_helpers.go', 'api/test-fixtures/key.pem',
-    'vectors/cryptography_vectors/x.pem', 'fuzz/client.c', 'src/main/java/CryptoTest.java']) {
+    'vectors/cryptography_vectors/x.pem', 'fuzz/client.c', 'src/main/java/CryptoTest.java', 'test.sql',
+    'molecule/mysql_hardening/converge.yml']) {
     assert.equal(originOf(file), 'test', file);
   }
   for (const file of ['src/latest/app.py', 'attest/verify.go', 'lib/contest.rb', 'src/main/java/Testing.java']) {

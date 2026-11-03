@@ -184,6 +184,32 @@
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {
+      "id": "random-powershell-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "powershell"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:\\bGet-Random\\b|\\[\\s*System\\s*\\.\\s*Random\\s*\\]\\s*::\\s*new\\b|\\bNew-Object\\s+(?:-TypeName\\s+)?System\\.Random\\b)",
+      "title": "Get-Random pour un secret",
+      "description": "Get-Random et System.Random ne sont pas des générateurs cryptographiques.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-powershell-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "powershell"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:\\bGet-Random\\b|\\[\\s*System\\s*\\.\\s*Random\\s*\\]\\s*::\\s*new\\b|\\bNew-Object\\s+(?:-TypeName\\s+)?System\\.Random\\b)",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
       "id": "random-fixed-seed",
       "category": "weak-random",
       "severity": "medium",

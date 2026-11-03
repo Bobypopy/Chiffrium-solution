@@ -52,7 +52,7 @@ public final class FindingRuleLoader {
                         String pattern, String fileName, Boolean ignoreCase, String title, String description,
                         String recommendation, String secretGroup, Double minEntropy, String numberGroup, Long below,
                         String listGroup, String listCheck, List<String> required, String exclude,
-                        Boolean includeComments, String traceGroup, String traceKind) {
+                        String excludeFileName, Boolean includeComments, String traceGroup, String traceKind) {
     }
 
     record CipherSuitesDocument(List<WeaknessDocument> weaknesses) {
@@ -120,6 +120,7 @@ public final class FindingRuleLoader {
                     doc.cwe(), languages, pattern, fileName, doc.title(), doc.description(), doc.recommendation(),
                     doc.secretGroup(), doc.minEntropy() == null ? 0 : doc.minEntropy(), doc.numberGroup(), doc.below(),
                     doc.listGroup(), listCheck, doc.required(), doc.exclude() == null ? null : regex(where, doc.exclude(), true),
+                    doc.excludeFileName() == null ? null : regex(where, doc.excludeFileName(), true),
                     Boolean.TRUE.equals(doc.includeComments()), doc.traceGroup(), traceKind);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Règle de constat invalide (" + where + ") : " + e.getMessage(), e);

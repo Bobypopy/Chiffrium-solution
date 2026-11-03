@@ -105,11 +105,12 @@ test('les motifs sont valides et ne se marchent pas dessus', () => {
   }
 });
 
-test('tout ce que le serveur affiche a sa traduction', (t) => {
+test('tout ce que le serveur affiche a sa traduction', (contexte) => {
   // L'image Docker du frontend lance ces tests avec le seul dossier frontend/ : les ressources du backend
   // n'y sont pas. Le test tourne en local et dans le job "Frontend (tests)", ou le depot est complet.
+  // (Le contexte ne s'appelle pas "t" : ce nom est celui de la fonction de traduction, utilisée plus bas.)
   if (!existsSync(new URL(`${RESSOURCES}/findings/`, import.meta.url))) {
-    t.skip('ressources du backend absentes de ce contexte de construction');
+    contexte.skip('ressources du backend absentes de ce contexte de construction');
     return;
   }
   setLocale('en', { remember: false });

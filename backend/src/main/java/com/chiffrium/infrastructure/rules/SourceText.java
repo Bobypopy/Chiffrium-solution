@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +19,14 @@ public final class SourceText {
     static final int MAX_AVERAGE_LINE_LENGTH = 500;
     private static final int BINARY_PROBE_BYTES = 8_192;
 
+    /** Bloc de commentaire de PowerShell, reconnu quand le langage déclare ce début de commentaire. */
+    private static final String BLOCK_OPEN = "<#";
+    private static final String BLOCK_CLOSE = "#>";
+
     private final String content;
     private final int[] lineStarts;
+    /** Calculé à la première demande (fichier PowerShell seulement). */
+    private BitSet blockLines;
 
     public SourceText(String content) {
         this.content = content;
@@ -109,6 +116,32 @@ public final class SourceText {
 
     public boolean isCommentLine(int lineNumber, List<String> commentPrefixes) {
         String trimmed = line(lineNumber).stripLeading();
-        return commentPrefixes.stream().anyMatch(trimmed::startsWith);
+        return commentPrefixes.stream().anyMatch(trimmed::startsWith)
+                || commentPrefixes.contains(BLOCK_OPEN) && blockLines().get(lineNumber);
+    }
+
+    /**
+     * Lignes des blocs {@code <# ... #>} ouverts en début de ligne, délimiteurs compris : l'aide intégrée de
+     * PowerShell, dont les exemples (ConvertTo-SecureString 'Password123!' -AsPlainText) ne sont pas du code.
+     */
+    private BitSet blockLines() {
+        if (blockLines == null) {
+            BitSet lines = new BitSet();
+            boolean open = false;
+            for (int n = 1; n <= lineCount(); n++) {
+                String text = line(n);
+                int from = 0;
+                if (!open && text.stripLeading().startsWith(BLOCK_OPEN)) {
+                    open = true;
+                    from = text.indexOf(BLOCK_OPEN) + BLOCK_OPEN.length();
+                }
+                if (open) {
+                    lines.set(n);
+                    open = text.indexOf(BLOCK_CLOSE, from) < 0;
+                }
+            }
+            blockLines = lines;
+        }
+        return blockLines;
     }
 }

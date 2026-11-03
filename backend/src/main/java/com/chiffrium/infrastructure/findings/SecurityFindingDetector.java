@@ -207,7 +207,8 @@ public final class SecurityFindingDetector implements CryptoDetector {
         List<SecurityFinding> result = new ArrayList<>();
         for (FindingRule rule : ruleSet.rules()) {
             if (rule.pattern() == null || !rule.appliesTo(language) || !categories.contains(rule.category())
-                    || rule.traceGroup() != null && (analysis == null || analysis.traces() == null)) {
+                    || rule.traceGroup() != null && (analysis == null || analysis.traces() == null)
+                    || rule.excludeFileName() != null && rule.excludeFileName().matcher(fileName(source.path())).find()) {
                 continue;
             }
             Matcher matcher = rule.pattern().matcher(text.content());

@@ -54,6 +54,15 @@
       "functions": ["keygen"]
     },
     { "id": "swift.security.keysize", "kind": "keysize", "pattern": "\\bkSecAttrKeySizeInBits[^:\\n]*:\\s*{SIZE}" },
+    { "id": "swift.cryptoswift.block-cipher", "pattern": "\\b(?<name>AES|Blowfish)\\s*\\(\\s*key\\s*:(?=[^\\n]*?\\bblockMode\\s*:\\s*(?<mode>CBC|GCM|CTR|ECB|CFB|OFB|PCBC|CCM|OCB)\\b)?", "functions": ["encrypt", "decrypt"] },
+    { "id": "swift.cryptoswift.stream-cipher", "pattern": "\\b(?<name>XChaCha20|ChaCha20|Rabbit)\\s*\\(\\s*key\\s*:", "functions": ["encrypt", "decrypt"] },
+    { "id": "swift.cryptoswift.digest", "pattern": "\\bDigest\\s*\\.\\s*(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\s*\\(", "functions": ["digest"] },
+    { "id": "swift.cryptoswift.digest-extension", "pattern": "\\.\\s*(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\s*\\(\\s*\\)", "functions": ["digest"] },
+    { "id": "swift.cryptoswift.sha3", "pattern": "\\bsha3\\s*\\(\\s*\\.\\s*(?<name>sha224|sha256|sha384|sha512|keccak224|keccak256|keccak384|keccak512)\\s*\\)", "map": {"sha224": "SHA3-224", "sha256": "SHA3-256", "sha384": "SHA3-384", "sha512": "SHA3-512", "keccak224": "Keccak-224", "keccak256": "Keccak-256", "keccak384": "Keccak-384", "keccak512": "Keccak-512"}, "functions": ["digest"] },
+    { "id": "swift.cryptoswift.hmac", "pattern": "\\bHMAC\\s*\\(\\s*key\\s*:[^\\n]*?\\bvariant\\s*:\\s*\\.\\s*(?:sha2\\s*\\(\\s*\\.\\s*)?(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\b", "template": "HMAC-{name}", "functions": ["tag"] },
+    { "id": "swift.cryptoswift.kdf", "pattern": "\\b(?:PKCS5\\s*\\.\\s*)?(?<name>PBKDF2|PBKDF1|Scrypt|HKDF)\\s*\\(\\s*(?:password|key)\\s*:", "functions": ["keyderive"] },
+    { "id": "swift.cryptoswift.mac", "pattern": "\\b(?<name>Poly1305|CBCMAC|CMAC)\\s*\\(\\s*key\\s*:", "map": {"cbcmac": "CBC-MAC"}, "functions": ["tag"] },
+    { "id": "swift.cryptoswift.rsa", "pattern": "\\bRSA\\s*\\(\\s*keySize\\s*:\\s*{SIZE}", "algorithm": "RSA", "functions": ["keygen"], "key": "private-key" },
     { "id": "swift.tls.version", "pattern": "\\btls_protocol_version_t\\s*\\.\\s*(?<name>TLSv10|TLSv11|TLSv12|TLSv13)\\b", "functions": ["other"] }
   ]
 }

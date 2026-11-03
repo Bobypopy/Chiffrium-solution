@@ -1,0 +1,130 @@
+{
+  "id": "powershell",
+  "languages": [
+    "powershell"
+  ],
+  "commentPrefixes": [
+    "#",
+    "<#"
+  ],
+  "functionPatterns": [
+    "(?im)^\\s*function\\s+(?<name>[\\w-]+)"
+  ],
+  "classPatterns": [
+    "(?im)^\\s*class\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "powershell.dotnet.factory",
+      "pattern": "\\[\\s*(?:System\\s*\\.\\s*)?Security\\s*\\.\\s*Cryptography\\s*\\.\\s*(?:HashAlgorithm|SymmetricAlgorithm|AsymmetricAlgorithm|KeyedHashAlgorithm|HMAC)\\s*\\]\\s*::\\s*Create\\s*\\(\\s*{ARG}",
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "powershell.dotnet.create",
+      "pattern": "\\[\\s*(?:(?:System\\s*\\.\\s*)?Security\\s*\\.\\s*Cryptography\\s*\\.\\s*)?(?<name>TripleDES|DES|AesGcm|AesCcm|Aes|RC2|Rijndael|HMACSHA256|HMACSHA384|HMACSHA512|HMACSHA1|HMACMD5|HMACRIPEMD160|MACTripleDES|RIPEMD160|SHA256|SHA384|SHA512|SHA1|MD5|RSA|DSA|ECDsa|ECDiffieHellman|Rfc2898DeriveBytes|PasswordDeriveBytes)(?:CryptoServiceProvider|Managed|Cng|OpenSsl)?\\b\\s*\\]\\s*::\\s*(?:Create|new)\\s*\\(\\s*{SIZE}?",
+      "map": {
+        "tripledes": "3DES",
+        "ecdiffiehellman": "ECDH",
+        "rfc2898derivebytes": "PBKDF2",
+        "passwordderivebytes": "PBKDF1",
+        "mactripledes": "CBC-MAC-3DES",
+        "aesgcm": "AES-GCM",
+        "aesccm": "AES-CCM"
+      },
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "powershell.dotnet.new-object",
+      "pattern": "\\bNew-Object\\s+(?:-TypeName\\s+)?[\"\\']?(?:System\\s*\\.\\s*)?Security\\s*\\.\\s*Cryptography\\s*\\.\\s*(?<name>TripleDES|DES|AesGcm|AesCcm|Aes|RC2|Rijndael|HMACSHA256|HMACSHA384|HMACSHA512|HMACSHA1|HMACMD5|HMACRIPEMD160|MACTripleDES|RIPEMD160|SHA256|SHA384|SHA512|SHA1|MD5|RSA|DSA|ECDsa|ECDiffieHellman|Rfc2898DeriveBytes|PasswordDeriveBytes)(?:CryptoServiceProvider|Managed|Cng|OpenSsl)?\\b",
+      "map": {
+        "tripledes": "3DES",
+        "ecdiffiehellman": "ECDH",
+        "rfc2898derivebytes": "PBKDF2",
+        "passwordderivebytes": "PBKDF1",
+        "mactripledes": "CBC-MAC-3DES",
+        "aesgcm": "AES-GCM",
+        "aesccm": "AES-CCM"
+      },
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "powershell.get-file-hash",
+      "pattern": "\\bGet-FileHash\\b(?=(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-Algorithm\\s+[\"\\']?(?<name>MD5|SHA1|SHA256|SHA384|SHA512|MACTripleDES|RIPEMD160)\\b)",
+      "map": {
+        "mactripledes": "CBC-MAC-3DES"
+      },
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "powershell.get-file-hash-default",
+      "pattern": "\\bGet-FileHash\\b",
+      "algorithm": "SHA-256",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "powershell.securestring-key",
+      "pattern": "\\bConvertFrom-SecureString\\b(?=(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-(?:Key|SecureKey)\\b)",
+      "algorithm": "AES",
+      "functions": [
+        "encrypt"
+      ],
+      "key": "secret-key"
+    },
+    {
+      "id": "powershell.security-protocol",
+      "pattern": "\\bSecurityProtocolType\\s*\\]?\\s*::\\s*(?<name>Ssl3|Tls13|Tls12|Tls11|Tls)\\b",
+      "map": {
+        "ssl3": "SSLv3",
+        "tls": "TLSv1",
+        "tls11": "TLSv1.1",
+        "tls12": "TLSv1.2",
+        "tls13": "TLSv1.3"
+      },
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "powershell.self-signed-certificate",
+      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyAlgorithm\\s+[\\'\"]?(?<name>[\\w-]+))(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
+      "map": {
+        "ecdsa_nistp256": "ECDSA-P-256",
+        "ecdsa_nistp384": "ECDSA-P-384",
+        "ecdsa_nistp521": "ECDSA-P-521"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "powershell.self-signed-certificate-default",
+      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "powershell.keysize",
+      "kind": "keysize",
+      "pattern": "\\.\\s*KeySize\\s*=\\s*{SIZE}\\b"
+    },
+    {
+      "id": "powershell.mode",
+      "kind": "mode",
+      "pattern": "\\.\\s*Mode\\s*=\\s*\\[\\s*(?:(?:System\\s*\\.\\s*)?Security\\s*\\.\\s*Cryptography\\s*\\.\\s*)?CipherMode\\s*\\]\\s*::\\s*(?<mode>ECB|CBC|CFB|OFB|CTS)\\b"
+    }
+  ]
+}

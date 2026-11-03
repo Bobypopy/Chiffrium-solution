@@ -73,6 +73,19 @@
       "recommendation": "N'autoriser que TLS 1.2 et TLS 1.3."
     },
     {
+      "id": "tls-powershell-old-protocol",
+      "category": "insecure-protocol-config",
+      "severity": "high",
+      "cwe": "CWE-757",
+      "languages": [
+        "powershell"
+      ],
+      "pattern": "\\bSecurityProtocolType\\s*\\]?\\s*::\\s*(?:Ssl3|Tls11|Tls)\\b|\\bSslProtocols\\s*\\]?\\s*::\\s*(?:Ssl2|Ssl3|Tls11|Tls)\\b",
+      "title": "Protocole SSL/TLS obsolète activé",
+      "description": "SSLv2/SSLv3/TLS 1.0/TLS 1.1 activé explicitement (POODLE, BEAST, retiré par la RFC 8996).",
+      "recommendation": "N'autoriser que TLS 1.2 et TLS 1.3."
+    },
+    {
       "id": "android-cleartext-traffic",
       "category": "insecure-protocol-config",
       "severity": "medium",
@@ -130,7 +143,8 @@
       "severity": "medium",
       "cwe": "CWE-327",
       "languages": [
-        "config"
+        "config",
+        "powershell"
       ],
       "pattern": "(?m)^\\s*CipherString\\s*=\\s*[^\\n]*@SECLEVEL=[01]\\b",
       "title": "Niveau de sécurité OpenSSL abaissé",

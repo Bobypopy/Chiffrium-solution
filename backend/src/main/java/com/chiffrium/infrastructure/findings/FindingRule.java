@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
  * @param listCheck       analyse de la liste
  * @param required        éléments obligatoires pour {@link ListCheck#REQUIRE_ALL}
  * @param exclude         motif d'exclusion sur la ligne
+ * @param excludeFileName fichiers où la règle n'a pas de sens (en Bicep, une valeur sans guillemets est toujours
+ *                        une référence), ou null
  * @param includeComments analyser aussi les lignes de commentaire (secrets)
  * @param traceGroup      argument d'un appel sensible (IV, sel, clé, itérations, graine, mot de passe) remonté
  *                        jusqu'à l'endroit où sa valeur est écrite, à travers paramètres, champs et classes
@@ -58,6 +60,7 @@ record FindingRule(
         ListCheck listCheck,
         List<String> required,
         Pattern exclude,
+        Pattern excludeFileName,
         boolean includeComments,
         String traceGroup,
         TraceKind traceKind) {
