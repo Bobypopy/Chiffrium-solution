@@ -1,0 +1,2 @@
+# Scripts exécutés par bash (CI Linux, conteneurs) : fins de ligne LF quel que soit le poste qui les modifie.
+*.sh text eol=lf
