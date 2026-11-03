@@ -73,6 +73,8 @@ test('les phrases construites avec des valeurs sont reconnues', () => {
     ['Clé privée générée, algorithme non déterminé (A.java)',
       'Private key generated, algorithm not determined (A.java)'],
     ['Clé non identifiée (legacy.key)', 'Unidentified key (legacy.key)'],
+    ['historique 3f2a9c1e', 'history 3f2a9c1e'],
+    ['historique Git, commit 3f2a9c1e', 'Git history, commit 3f2a9c1e'],
     ['Hôte Git non autorisé : gitlab.com (autorisés : [github.com]).',
       'Git host not allowed: gitlab.com (allowed: [github.com]).'],
   ];

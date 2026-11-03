@@ -70,6 +70,10 @@ export const PATTERNS_EN = [
     (type, fichier) => `${{ 'privée ': 'Private key', 'secrète ': 'Secret key' }[type] ?? 'Key'} generated, `
       + `algorithm not determined (${fichier})`],
   [/^Clé non identifiée \((.+)\)$/, 'Unidentified key ($1)'],
+  [/^historique ([0-9a-f]{7,40})$/, 'history $1'],
+  [/^historique Git, commit ([0-9a-f]{7,40})$/, 'Git history, commit $1'],
+  [/^Historique Git tronqué : les (\d+) commits les plus récents sont analysés\.$/,
+    'Git history truncated: the $1 most recent commits are analysed.'],
   [/^Clé (privée|secrète) (.+) générée \((.+)\)$/,
     (type, algorithme, fichier) => `${type === 'privée' ? 'Private' : 'Secret'} key ${algorithme} generated `
       + `(${fichier})`],

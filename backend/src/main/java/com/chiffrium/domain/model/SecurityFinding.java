@@ -20,6 +20,7 @@ import java.util.Comparator;
  * @param evidence       élément déclencheur caviardé (ex. "ghp_...(40)", "TLS_RSA_WITH_RC4_128_SHA")
  * @param language       langage du fichier
  * @param testCode       vrai si le fichier appartient au code de test (souvent de fausses valeurs)
+ * @param commit         commit où le secret a été vu, s'il ne figure plus que dans l'historique Git (null sinon)
  */
 public record SecurityFinding(
         String id,
@@ -36,7 +37,16 @@ public record SecurityFinding(
         String snippet,
         String evidence,
         Language language,
-        boolean testCode) {
+        boolean testCode,
+        String commit) {
+
+    /** Constat sur l'état actuel du code. */
+    public SecurityFinding(String id, String ruleId, FindingCategory category, Severity severity, String title,
+                           String description, String recommendation, String cwe, String file, Integer line,
+                           Integer column, String snippet, String evidence, Language language, boolean testCode) {
+        this(id, ruleId, category, severity, title, description, recommendation, cwe, file, line, column, snippet,
+                evidence, language, testCode, null);
+    }
 
     /** Plus grave d'abord, puis par emplacement : ordre stable des rapports. */
     public static final Comparator<SecurityFinding> BY_SEVERITY_THEN_LOCATION = Comparator

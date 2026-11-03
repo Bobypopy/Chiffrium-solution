@@ -149,6 +149,7 @@ function analysisForm(info, groups, onSubmit) {
   const vulns = h('input', { type: 'checkbox', checked: info?.vulnerabilityScanEnabled !== false,
     disabled: info?.vulnerabilityScanEnabled === false });
   const submodules = h('input', { type: 'checkbox', checked: true });
+  const history = h('input', { type: 'checkbox', checked: false });
   const submit = h('button', { class: 'button primary', type: 'submit' }, 'Lancer l\'analyse');
 
   return h('form', {
@@ -168,6 +169,7 @@ function analysisForm(info, groups, onSubmit) {
           runCdxgen: runCdxgen.checked,
           scanVulnerabilities: vulns.checked,
           recurseSubmodules: submodules.checked,
+          scanGitHistory: history.checked,
           cdxgenTimeoutSeconds: timeout.value ? Number(timeout.value) : null,
           groupId: group.value || null,
         });
@@ -199,6 +201,9 @@ function analysisForm(info, groups, onSubmit) {
     ' Exécuter cdxgen (SBOM + analyse de flux)'),
     h('label', { title: 'Clone aussi les dépôts référencés comme sous-modules.' }, submodules,
       ' Inclure les sous-modules Git'),
+    h('label', { title: 'Cherche les secrets et les clés supprimés du code mais restés dans les anciens commits. '
+      + 'Clone tout l\'historique : plus long sur les gros dépôts.' }, history,
+      ' Chercher aussi dans l\'historique Git (secrets et clés supprimés)'),
     h('label', { title: 'Interroge la base publique OSV avec les noms et versions des dépendances (aucun code envoyé).' },
       vulns, ' Rechercher les vulnérabilités des dépendances (OSV)')),
   submit);

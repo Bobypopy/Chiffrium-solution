@@ -61,7 +61,8 @@ public final class SarifReportExporter implements ReportExporter {
         for (SecurityFinding finding : report.findings()) {
             rules.computeIfAbsent(finding.ruleId(), id -> findingRule(finding));
             ObjectNode result = result(finding.ruleId(), finding.severity(),
-                    finding.title() + (finding.evidence() == null ? "" : " : " + finding.evidence()),
+                    finding.title() + (finding.evidence() == null ? "" : " : " + finding.evidence())
+                            + (finding.commit() == null ? "" : " (historique Git, commit " + finding.commit() + ")"),
                     finding.file(), finding.line(), finding.column());
             result.putObject("partialFingerprints").put(FINGERPRINT_KEY, finding.id());
             results.add(result);

@@ -3,6 +3,7 @@ package com.chiffrium;
 import com.chiffrium.api.ApiServer;
 import com.chiffrium.infrastructure.config.AppConfig;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -43,11 +45,12 @@ class ApiIntegrationTest {
     private static final String ADMIN_PASSWORD = "phrase de passe du test";
 
     @BeforeAll
-    static void start() {
+    static void start() throws IOException {
         Path projects = TestSupport.fixture("projects");
+        Path repositories = Files.createDirectories(dataDir.resolve("depots"));
         application = new Main.Application(AppConfig.from(Map.of(
                 "DATA_DIR", dataDir.toString(),
-                "ALLOWED_LOCAL_ROOTS", projects.toString(),
+                "ALLOWED_LOCAL_ROOTS", projects + "," + repositories,
                 "OSV_ENABLED", "false",
                 "CDXGEN_COMMAND", "cdxgen-absent-pour-les-tests")));
         server = new ApiServer(new ApiServer.Dependencies(application.analysisService, application.catalogService,
@@ -139,6 +142,48 @@ class ApiIntegrationTest {
 
         assertThat(send("DELETE", "/api/analyses/" + id, null).statusCode()).isEqualTo(204);
         assertThat(send("GET", "/api/analyses/" + id, null).statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void gitHistoryOptionReportsSecretsRemovedFromTheCode() throws Exception {
+        Path repo = Files.createDirectories(dataDir.resolve("depots/historique"));
+        try (Git git = Git.init().setDirectory(repo.toFile()).call()) {
+            TestSupport.write(repo, "app.properties", "db.password=Hx7kQ2mP9vLr\napi.secret=Zq8vR2pL9wXk\n");
+            git.add().addFilepattern(".").call();
+            git.commit().setMessage("v1").setAuthor("t", "t@example.org").setCommitter("t", "t@example.org")
+                    .setSign(false).call();
+            TestSupport.write(repo, "app.properties", "db.password=${DB_PASSWORD}\napi.secret=Zq8vR2pL9wXk\n");
+            git.add().addFilepattern(".").call();
+            git.commit().setMessage("v2").setAuthor("t", "t@example.org").setCommitter("t", "t@example.org")
+                    .setSign(false).call();
+        }
+        String target = repo.toString().replace("\\", "\\\\");
+
+        JsonNode withHistory = analyzedReport("{\"target\":\"" + target
+                + "\",\"runCdxgen\":false,\"scanVulnerabilities\":false,\"scanGitHistory\":true}");
+        List<JsonNode> secrets = new ArrayList<>();
+        withHistory.path("findings").forEach(f -> {
+            if ("secret-config-assignment".equals(f.path("ruleId").asText())) {
+                secrets.add(f);
+            }
+        });
+        // Le mot de passe retiré vient de l'historique ; le secret toujours présent n'est signalé qu'une fois.
+        assertThat(secrets).hasSize(2);
+        assertThat(secrets).filteredOn(f -> f.hasNonNull("commit")).singleElement()
+                .satisfies(f -> assertThat(f.path("evidence").asText()).startsWith("Hx7k"));
+
+        JsonNode withoutHistory = analyzedReport("{\"target\":\"" + target
+                + "\",\"runCdxgen\":false,\"scanVulnerabilities\":false}");
+        assertThat(withoutHistory.path("findings").toString()).doesNotContain("\"commit\"");
+    }
+
+    private JsonNode analyzedReport(String submission) throws Exception {
+        HttpResponse<String> submitted = send("POST", "/api/analyses", submission);
+        assertThat(submitted.statusCode()).as(submitted.body()).isEqualTo(202);
+        String id = json(submitted).get(0).path("id").asText();
+        JsonNode job = waitForCompletion(id);
+        assertThat(job.path("status").asText()).as(job.toString()).isEqualTo("succeeded");
+        return json(send("GET", "/api/analyses/" + id + "/report", null));
     }
 
     @Test

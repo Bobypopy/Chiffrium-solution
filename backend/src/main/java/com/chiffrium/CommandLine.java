@@ -32,8 +32,8 @@ final class CommandLine {
     static final int EXIT_POLICY_VIOLATION = 1;
     static final int EXIT_USAGE = 2;
     static final int EXIT_FAILURE = 3;
-    private static final String USAGE = "Usage : analyze <url|chemin> [--no-cdxgen] [--no-vulns] [--branch nom] "
-            + "[--fail-on disallowed|deprecated]";
+    private static final String USAGE = "Usage : analyze <url|chemin> [--no-cdxgen] [--no-vulns] [--history] "
+            + "[--branch nom] [--fail-on disallowed|deprecated]";
     private static final String MIGRATE_USAGE =
             "Usage : migrate-db --to <url jdbc> [--user utilisateur] [--password mot de passe] [--force]";
     static final String COMMAND_ANALYZE = "analyze";
@@ -64,12 +64,14 @@ final class CommandLine {
         String target = args[1];
         boolean runCdxgen = true;
         boolean scanVulnerabilities = true;
+        boolean scanGitHistory = false;
         String branch = null;
         PolicyStatus failOn = null;
         for (int i = 2; i < args.length; i++) {
             switch (args[i]) {
                 case "--no-cdxgen" -> runCdxgen = false;
                 case "--no-vulns" -> scanVulnerabilities = false;
+                case "--history" -> scanGitHistory = true;
                 case "--branch" -> branch = i + 1 < args.length ? args[++i] : null;
                 case "--fail-on" -> failOn = i + 1 < args.length
                         ? PolicyStatus.fromId(args[++i].toUpperCase(Locale.ROOT)) : null;
@@ -79,7 +81,8 @@ final class CommandLine {
                 }
             }
         }
-        AnalysisRequest request = new AnalysisRequest(target, branch, true, runCdxgen, scanVulnerabilities, null);
+        AnalysisRequest request = new AnalysisRequest(target, branch, true, runCdxgen, scanVulnerabilities, null,
+                scanGitHistory);
         AnalysisJob job = AnalysisJob.queued(UUID.randomUUID().toString(), request, CLI_ACTOR,
                 application.clock.instant()).started(application.clock.instant());
         application.audit.record(Actor.SYSTEM, "ANALYSIS_SUBMITTED", job.id(), target + " (ligne de commande)");

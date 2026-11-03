@@ -75,8 +75,10 @@ public final class GitSourceFetcher implements SourceFetcher {
             throw new AnalysisException("Nom de branche invalide : " + branch);
         }
         Path destination = workspace.resolve(SOURCE_DIR);
+        // L'analyse de l'historique a besoin de tous les commits : la profondeur configurée est alors ignorée.
+        int depth = request.scanGitHistory() ? 0 : cloneDepth;
         LOG.info("Clonage de {} (branche {}, profondeur {}, sous-modules {})", uri, branch == null ? "par défaut" : branch,
-                cloneDepth == 0 ? "complète" : cloneDepth, request.recurseSubmodules());
+                depth == 0 ? "complète" : depth, request.recurseSubmodules());
 
         CloneCommand clone = Git.cloneRepository()
                 .setURI(uri.toString())
@@ -85,8 +87,8 @@ public final class GitSourceFetcher implements SourceFetcher {
                 .setTimeout((int) timeout.toSeconds())
                 // Arrêt de l'analyse : le clonage s'interrompt dès que le thread est interrompu.
                 .setProgressMonitor(new InterruptibleMonitor());
-        if (cloneDepth > 0) {
-            clone.setDepth(cloneDepth);
+        if (depth > 0) {
+            clone.setDepth(depth);
         }
         if (branch != null) {
             clone.setBranch(REFS_HEADS + branch);

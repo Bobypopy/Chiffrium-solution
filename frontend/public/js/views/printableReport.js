@@ -134,7 +134,8 @@ function findingsSection(report) {
     table(['Gravité', 'Constat', 'Emplacement', 'Correction attendue'], rows.map((f) => h('tr', {},
       h('td', {}, label(SEVERITY_LABELS, f.severity)),
       h('td', {}, f.title, f.cwe ? h('div', { class: 'print-note' }, f.cwe) : null),
-      h('td', {}, h('code', {}, `${f.file}${f.line ? `:${f.line}` : ''}`)),
+      h('td', {}, h('code', {}, `${f.file}${f.line ? `:${f.line}` : ''}`),
+        f.commit ? h('div', { class: 'print-note' }, `historique Git, commit ${f.commit.slice(0, 8)}`) : null),
       h('td', {}, f.recommendation ?? '-')))),
     more(tous.length, rows.length, 'constats'));
 }

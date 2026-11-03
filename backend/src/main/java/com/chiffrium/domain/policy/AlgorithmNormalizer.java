@@ -9,6 +9,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -45,6 +46,13 @@ public final class AlgorithmNormalizer {
             Primitive.BLOCK_CIPHER, Primitive.AUTHENTICATED_ENCRYPTION);
 
     private static final String GENERIC_EC_ID = "ec";
+    /**
+     * Schémas désignés par un niveau plutôt que par une taille en bits (ML-DSA-44/65/87) : un nombre de deux ou
+     * trois chiffres collé au nom de l'algorithme est retenu même s'il n'est pas un multiple de 8.
+     */
+    private static final List<Primitive> PARAMETER_SET_PRIMITIVES = List.of(Primitive.SIGNATURE, Primitive.KEM);
+    private static final int MIN_PARAMETER_SET_DIGITS = 2;
+    private static final int MAX_PARAMETER_SET_DIGITS = 3;
 
     private final AlgorithmCatalog catalog;
     private final List<Alias<AlgorithmDefinition>> algorithmAliases;
@@ -83,7 +91,7 @@ public final class AlgorithmNormalizer {
         Integer keySize = text.findKeySize();
 
         if (algorithms.isEmpty() && !curves.isEmpty()) {
-            catalog.findAlgorithm(GENERIC_EC_ID).ifPresent(ec -> algorithms.add(new Hit<>(ec, 0)));
+            catalog.findAlgorithm(GENERIC_EC_ID).ifPresent(ec -> algorithms.add(new Hit<>(ec, 0, 0)));
         }
         if (algorithms.isEmpty()) {
             return new AlgorithmSpec(raw, null, raw.isEmpty() ? null : raw, List.of(), List.of(), Primitive.UNKNOWN,
@@ -104,6 +112,14 @@ public final class AlgorithmNormalizer {
         Primitive primitive = primary.primitive();
         if (isHashThenKeySignature(text, algorithms, primary)) {
             primitive = Primitive.SIGNATURE;
+        }
+        if (keySize == null && PARAMETER_SET_PRIMITIVES.contains(primitive)) {
+            keySize = algorithms.stream()
+                    .filter(hit -> hit.definition().id().equals(primary.id()))
+                    .map(hit -> text.parameterSetAfter(hit.end()))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
         }
         String mode = MODE_BEARING_PRIMITIVES.contains(primitive) ? first(modes) : null;
 
@@ -184,7 +200,8 @@ public final class AlgorithmNormalizer {
     private record Alias<T>(String value, boolean wholeTokenOnly, T definition) {
     }
 
-    private record Hit<T>(T definition, int position) {
+    /** @param end fin (exclue) de la zone reconnue dans le nom compacté */
+    private record Hit<T>(T definition, int position, int end) {
     }
 
     /**
@@ -266,7 +283,7 @@ public final class AlgorithmNormalizer {
                     for (int[] bound : tokenBounds) {
                         if (compact.substring(bound[0], bound[1]).equals(alias.value()) && isFree(bound[0], bound[1])) {
                             consume(bound[0], bound[1]);
-                            hits.add(new Hit<>(alias.definition(), bound[0]));
+                            hits.add(new Hit<>(alias.definition(), bound[0], bound[1]));
                         }
                     }
                     continue;
@@ -278,7 +295,7 @@ public final class AlgorithmNormalizer {
                     boolean shortAlias = alias.value().length() <= MAX_SHORT_ALIAS_LENGTH;
                     if (isFree(index, end) && (!shortAlias || isWordLike(index, end))) {
                         consume(index, end);
-                        hits.add(new Hit<>(alias.definition(), index));
+                        hits.add(new Hit<>(alias.definition(), index, end));
                     }
                     from = index + 1;
                 }
@@ -305,6 +322,17 @@ public final class AlgorithmNormalizer {
                 }
             }
             return null;
+        }
+
+        /** Niveau (deux ou trois chiffres libres) placé juste après la zone se terminant en {@code end}. */
+        Integer parameterSetAfter(int end) {
+            int stop = end;
+            while (stop < compact.length() && !consumed[stop] && Character.isDigit(compact.charAt(stop))) {
+                stop++;
+            }
+            int digits = stop - end;
+            return digits >= MIN_PARAMETER_SET_DIGITS && digits <= MAX_PARAMETER_SET_DIGITS
+                    ? Integer.valueOf(compact.substring(end, stop)) : null;
         }
 
         private static Integer parsePlausibleKeySize(String digits) {

@@ -487,7 +487,9 @@ function findingsTab(report, state, onShowInGraph, { reset, persist } = {}) {
         f.cwe ? ` - ${f.cwe}` : '')),
       h('td', {}, h('code', {}, f.file), f.line ? h('span', { class: 'line-number' }, ` L${f.line}`) : null,
         originTag(f.file, modules),
-        report.callGraph?.nodes?.length ? h('button', {
+        f.commit ? h('span', { class: 'tag', title: 'Supprimé du code actuel, mais toujours lisible dans l\'historique Git' },
+          `historique ${f.commit.slice(0, 8)}`) : null,
+        report.callGraph?.nodes?.length && !f.commit ? h('button', {
           class: 'button small ghost graph-link', type: 'button', title: 'Afficher cet emplacement dans le graphe',
           onclick: () => onShowInGraph(`loc:${f.file}:${f.line ?? 0}`),
         }, 'Graphe') : null,

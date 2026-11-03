@@ -58,6 +58,7 @@ import com.chiffrium.infrastructure.db.JdbcSettingsRepository;
 import com.chiffrium.infrastructure.db.JdbcUserRepository;
 import com.chiffrium.infrastructure.findings.FindingRuleLoader;
 import com.chiffrium.infrastructure.findings.SecurityFindingDetector;
+import com.chiffrium.infrastructure.git.GitHistoryScanner;
 import com.chiffrium.infrastructure.git.GitSourceFetcher;
 import com.chiffrium.infrastructure.intelligence.EnrichingVulnerabilityScanner;
 import com.chiffrium.infrastructure.json.JsonMapper;
@@ -255,6 +256,7 @@ public final class Main {
                             config.npmTimeout(), () -> settings.current().analysis().generateNpmLockfile())),
                     sbomGenerator,
                     detectors,
+                    new GitHistoryScanner(findingDetector, config.maxScannedFileBytes()),
                     new SliceCallEdgeExtractor(mapper),
                     new CycloneDxLibraryReader(mapper, LicensePolicyLoader.loadBuiltIn(mapper)),
                     vulnerabilityScanner,

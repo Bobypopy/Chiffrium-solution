@@ -10,6 +10,7 @@ import com.chiffrium.application.port.CryptoDetector;
 import com.chiffrium.application.port.CryptoDetector.DetectionContext;
 import com.chiffrium.application.port.CryptoDetector.DetectionResult;
 import com.chiffrium.application.port.CryptoDetector.FileFlow;
+import com.chiffrium.application.port.HistoryScanner;
 import com.chiffrium.application.port.LibraryReader;
 import com.chiffrium.application.port.ProjectScanner;
 import com.chiffrium.application.port.ProjectScanner.ScanResult;
@@ -56,6 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Enchaîne les étapes d'une analyse : récupération, parcours, SBOM, détections, évaluation,
@@ -72,6 +74,7 @@ public final class AnalysisPipeline {
     /** Seules les copies de travail jetables (clones) peuvent être modifiées avant analyse. */
     static final String DISPOSABLE_SOURCE_KIND = "git";
     static final String STEP_DETECT_PREFIX = "détection ";
+    static final String STEP_HISTORY = "historique Git";
     static final String STEP_EVALUATE = "évaluation";
     static final String STEP_LIBRARIES = "dépendances";
     static final String STEP_VULNERABILITIES = "vulnérabilités";
@@ -88,6 +91,7 @@ public final class AnalysisPipeline {
     private final SbomGenerator sbomGenerator;
     private final List<SourcePreparer> preparers;
     private final DetectorProvider detectorProvider;
+    private final HistoryScanner historyScanner;
     private final CallEdgeExtractor callEdgeExtractor;
     private final LibraryReader libraryReader;
     private final VulnerabilityScanner vulnerabilityScanner;
@@ -103,6 +107,7 @@ public final class AnalysisPipeline {
                             List<SourcePreparer> preparers,
                             SbomGenerator sbomGenerator,
                             DetectorProvider detectorProvider,
+                            HistoryScanner historyScanner,
                             CallEdgeExtractor callEdgeExtractor,
                             LibraryReader libraryReader,
                             VulnerabilityScanner vulnerabilityScanner,
@@ -117,6 +122,7 @@ public final class AnalysisPipeline {
         this.preparers = List.copyOf(preparers);
         this.sbomGenerator = sbomGenerator;
         this.detectorProvider = detectorProvider;
+        this.historyScanner = historyScanner;
         this.callEdgeExtractor = callEdgeExtractor;
         this.libraryReader = libraryReader;
         this.vulnerabilityScanner = vulnerabilityScanner;
@@ -126,6 +132,20 @@ public final class AnalysisPipeline {
         this.catalogRepository = catalogRepository;
         this.clock = clock;
         this.settings = settings;
+    }
+
+    /**
+     * Ajoute les secrets et clés qui ne subsistent que dans l'historique Git ; un secret encore présent dans le
+     * code actuel n'est signalé qu'une fois, à son emplacement actuel.
+     */
+    private void addHistoryFindings(FetchedSource source, Map<String, SecurityFinding> findings, StepRecorder steps) {
+        HistoryScanner.HistoryResult history = steps.optional(STEP_HISTORY, () -> historyScanner.scan(source.root()),
+                r -> r.findings().size() + " constat(s)", HistoryScanner.HistoryResult.empty());
+        Set<String> current = findings.values().stream().map(HistoryScanner::sameSecret).collect(Collectors.toSet());
+        history.findings().stream()
+                .filter(f -> !current.contains(HistoryScanner.sameSecret(f)))
+                .forEach(f -> findings.putIfAbsent(f.id(), f));
+        steps.warn(history.warnings());
     }
 
     /**
@@ -169,6 +189,9 @@ public final class AnalysisPipeline {
                 fileFlows.addAll(result.fileFlows());
                 result.findings().forEach(f -> findings.putIfAbsent(f.id(), f));
                 steps.warn(result.warnings());
+            }
+            if (request.scanGitHistory()) {
+                addHistoryFindings(source, findings, steps);
             }
 
             PolicyEvaluator evaluator = new PolicyEvaluator(catalog, clock);

@@ -39,7 +39,15 @@ public final class SourceText {
      * @return vide pour un fichier binaire (octet nul) ou minifié
      */
     public static Optional<SourceText> load(Path file) throws IOException {
-        byte[] bytes = Files.readAllBytes(file);
+        return of(Files.readAllBytes(file));
+    }
+
+    /**
+     * Même lecture à partir d'un contenu déjà chargé (ex. version d'un fichier dans l'historique Git).
+     *
+     * @return vide pour un contenu binaire (octet nul) ou minifié
+     */
+    public static Optional<SourceText> of(byte[] bytes) {
         int probe = Math.min(bytes.length, BINARY_PROBE_BYTES);
         for (int i = 0; i < probe; i++) {
             if (bytes[i] == 0) {

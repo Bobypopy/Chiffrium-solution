@@ -17,6 +17,7 @@ import java.util.Objects;
  * @param scanVulnerabilities rechercher les vulnérabilités OSV (défaut : oui)
  * @param cdxgenTimeoutSeconds délai maximal de cdxgen
  * @param groupId             groupe auquel rattacher les analyses (null : privées)
+ * @param scanGitHistory      chercher aussi secrets et clés dans l'historique Git (défaut : non)
  */
 public record AnalysisSubmission(
         String target,
@@ -26,7 +27,8 @@ public record AnalysisSubmission(
         Boolean runCdxgen,
         Boolean scanVulnerabilities,
         Integer cdxgenTimeoutSeconds,
-        String groupId) {
+        String groupId,
+        Boolean scanGitHistory) {
 
     static final int MAX_TARGETS = 50;
     static final int MAX_TARGET_LENGTH = 2_048;
@@ -57,7 +59,8 @@ public record AnalysisSubmission(
                         !Boolean.FALSE.equals(recurseSubmodules),
                         !Boolean.FALSE.equals(runCdxgen),
                         !Boolean.FALSE.equals(scanVulnerabilities),
-                        cdxgenTimeoutSeconds))
+                        cdxgenTimeoutSeconds,
+                        Boolean.TRUE.equals(scanGitHistory)))
                 .toList();
     }
 }

@@ -54,6 +54,12 @@ export const ANALYSES = {
   'Inclure les sous-modules Git': 'Include Git submodules',
   'Clone aussi les dépôts référencés comme sous-modules.':
     'Also clones the repositories referenced as submodules.',
+  'Chercher aussi dans l\'historique Git (secrets et clés supprimés)':
+    'Also search the Git history (deleted secrets and keys)',
+  ['Cherche les secrets et les clés supprimés du code mais restés dans les anciens commits. Clone tout '
+    + 'l\'historique : plus long sur les gros dépôts.']:
+    'Looks for secrets and keys removed from the code but still present in old commits. Clones the whole '
+    + 'history: slower on large repositories.',
   'Exécuter cdxgen (SBOM + analyse de flux)': 'Run cdxgen (SBOM + flow analysis)',
   ['Inventaire des dépendances (SBOM) et flux cryptographiques Java/Python. Plus lent ; sans lui, seul le '
     + "moteur de règles s'exécute (rapide, tous langages)."]:

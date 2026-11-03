@@ -121,6 +121,13 @@ export const RAPPORT = {
   'Risque et correction': 'Risk and fix',
   'Élément :': 'Element:',
   'Afficher cet emplacement dans le graphe': 'Show this location in the graph',
+  'Supprimé du code actuel, mais toujours lisible dans l\'historique Git':
+    'Removed from the current code, but still readable in the Git history',
+  'Historique Git non analysé : le dossier n\'est pas un dépôt Git.':
+    'Git history not analysed: the folder is not a Git repository.',
+  'Historique Git vide : le dépôt n\'a aucun commit.': 'Empty Git history: the repository has no commit.',
+  'Historique Git partiel (clone superficiel) : seuls les commits récupérés sont analysés.':
+    'Partial Git history (shallow clone): only the fetched commits are analysed.',
   'Aucun constat ne correspond aux filtres.': 'No finding matches the filters.',
   ["Aucun constat : pas de secret en clair, de validation TLS désactivée, d'aléa faible, de clé en dur ni "
     + 'de suite TLS obsolète détectés.']:

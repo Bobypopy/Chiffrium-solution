@@ -48,6 +48,11 @@ class AlgorithmNormalizerTest {
             "TLS1_3_VERSION                          | TLS 1.3                 | tls13     | other",
             "SSLv3                                   | SSL 3.0                 | sslv3     | other",
             "ML-KEM-768                              | ML-KEM-768              | ml-kem    | kem",
+            "ML-DSA-65                               | ML-DSA-65               | ml-dsa    | signature",
+            "ml_dsa_87                               | ML-DSA-87               | ml-dsa    | signature",
+            "MlDsa44                                 | ML-DSA-44               | ml-dsa    | signature",
+            "Dilithium3                              | ML-DSA                  | ml-dsa    | signature",
+            "SHA1withDSA                             | SHA-1withDSA            | dsa       | signature",
             "Argon2id                                | Argon2                  | argon2    | kdf",
             "RIJNDAEL_128                            | AES-128                 | aes       | block-cipher",
             "JWT alg=none                            | JWT alg=none            | jwt-none  | signature"
