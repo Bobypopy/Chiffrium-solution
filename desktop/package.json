@@ -1,7 +1,7 @@
 {
   "name": "chiffrium-desktop",
   "productName": "Chiffrium",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Application de bureau Chiffrium : inventaire cryptographique (CBOM), constats de sécurité et préparation post-quantique, en local",
   "main": "src/main.js",
   "private": true,
