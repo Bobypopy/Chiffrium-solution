@@ -1,0 +1,88 @@
+{
+  "id": "lua",
+  "languages": [
+    "lua"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "--"
+  ],
+  "functionPatterns": [
+    "^\\s*(?:local\\s+)?function\\s+(?:[\\w.]+[.:])?(?<name>\\w+)\\s*\\(",
+    "^\\s*(?:local\\s+)?(?:[\\w.]+\\.)?(?<name>\\w+)\\s*=\\s*function\\s*\\("
+  ],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "lua.resty-aes.cipher",
+      "pattern": "\\baes\\s*\\.\\s*cipher\\s*\\(\\s*(?<size>128|192|256)\\s*(?:,\\s*[\\\"'](?<mode>ecb|cbc|cfb1|cfb8|cfb128|ofb|ctr|gcm)[\\\"'])?",
+      "algorithm": "AES",
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "lua.resty-aes.hash",
+      "pattern": "\\baes\\s*\\.\\s*hash\\s*\\.\\s*(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\b",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "lua.ngx",
+      "pattern": "\\bngx\\s*\\.\\s*(?<name>md5|md5_bin|sha1_bin|hmac_sha1)\\s*\\(",
+      "map": {
+        "md5_bin": "MD5",
+        "sha1_bin": "SHA-1",
+        "hmac_sha1": "HMAC-SHA-1"
+      },
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "lua.resty-hash",
+      "pattern": "\\brequire\\s*\\(?\\s*[\\\"']resty\\.(?<name>md5|sha1|sha224|sha256|sha384|sha512)[\\\"']",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "lua.resty-rsa.keygen",
+      "pattern": "\\bgenerate_rsa_keys\\s*\\(\\s*{SIZE}",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "lua.resty-rsa.algorithm",
+      "pattern": "\\brsa\\s*:\\s*new\\s*\\(\\s*\\{[^}]*?\\balgorithm\\s*=\\s*[\\\"'](?<name>md5|sha1|sha224|sha256|sha384|sha512)[\\\"']",
+      "template": "{name}withRSA",
+      "primitive": "signature",
+      "functions": [
+        "sign",
+        "verify"
+      ]
+    },
+    {
+      "id": "lua.openssl.cipher",
+      "pattern": "\\b(?:openssl\\s*\\.\\s*)?cipher\\s*\\.\\s*(?:new|get)\\s*\\(\\s*[\\\"'](?<name>[a-z0-9-]+)[\\\"']",
+      "skipUnrecognized": true,
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "lua.openssl.digest",
+      "pattern": "\\b(?:openssl\\s*\\.\\s*)?(?:digest|hmac)\\s*\\.\\s*(?:new|get)\\s*\\(\\s*[\\\"'](?<name>[a-z0-9-]+)[\\\"']",
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    }
+  ]
+}

@@ -200,6 +200,19 @@
       "title": "Aléa non cryptographique pour un secret",
       "description": "java.util.Random / Math.random / RandomStringUtils sont prévisibles.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-solidity-block-values",
+      "category": "weak-random",
+      "severity": "high",
+      "cwe": "CWE-330",
+      "languages": [
+        "solidity"
+      ],
+      "pattern": "\\b(?:keccak256|sha256)\\s*\\([^;]*?\\b(?:block\\s*\\.\\s*(?:timestamp|difficulty|prevrandao|number|coinbase)|blockhash\\s*\\(|now\\b)",
+      "title": "Aléa tiré de la blockchain (Solidity)",
+      "description": "Un hachage de valeurs du bloc (horodatage, difficulté, blockhash) est prévisible et influençable par les validateurs : il ne doit pas servir de source d'aléa.",
+      "recommendation": "Utiliser un oracle d'aléa vérifiable (VRF) ou un schéma d'engagement/révélation."
     }
   ]
 }

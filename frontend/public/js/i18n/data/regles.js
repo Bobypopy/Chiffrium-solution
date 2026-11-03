@@ -340,6 +340,24 @@ export const REGLES = {
   'Algorithmes SSH faibles': 'Weak SSH algorithms',
   'La configuration SSH active des algorithmes obsolètes.':
     'The SSH configuration enables outdated algorithms.',
+  "Vérification TLS désactivée (Lua)":
+    "TLS verification disabled (Lua)",
+  "La requête HTTPS accepte n'importe quel certificat (ssl_verify = false) : le trafic peut être intercepté.":
+    "The HTTPS request accepts any certificate (ssl_verify = false): the traffic can be intercepted.",
+  "Laisser ssl_verify à true et configurer lua_ssl_trusted_certificate avec les autorités de confiance.":
+    "Keep ssl_verify to true and set lua_ssl_trusted_certificate with the trusted authorities.",
+  "Vérification TLS désactivée (R)":
+    "TLS verification disabled (R)",
+  "La configuration curl/httr désactive la vérification du certificat ou du nom du serveur.":
+    "The curl/httr configuration disables the verification of the certificate or of the server name.",
+  "Retirer ssl_verifypeer et ssl_verifyhost ; pour une autorité interne, la déclarer avec cainfo.":
+    "Remove ssl_verifypeer and ssl_verifyhost; for an internal authority, declare it with cainfo.",
+  "Aléa tiré de la blockchain (Solidity)":
+    "Randomness drawn from the blockchain (Solidity)",
+  "Un hachage de valeurs du bloc (horodatage, difficulté, blockhash) est prévisible et influençable par les validateurs : il ne doit pas servir de source d'aléa.":
+    "A hash of block values (timestamp, difficulty, blockhash) is predictable and can be influenced by validators: it must not be used as a source of randomness.",
+  "Utiliser un oracle d'aléa vérifiable (VRF) ou un schéma d'engagement/révélation.":
+    "Use a verifiable randomness oracle (VRF) or a commit-reveal scheme.",
   "Trafic en clair autorisé (Android)":
     "Cleartext traffic allowed (Android)",
   "L'application Android accepte des connexions HTTP non chiffrées.":

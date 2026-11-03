@@ -40,8 +40,8 @@ class AppConfigTest {
     void rejectsInvalidValues() {
         assertThatThrownBy(() -> AppConfig.from(Map.of("PORT", "abc"))).hasMessageContaining("PORT");
         assertThatThrownBy(() -> AppConfig.from(Map.of("MAX_CONCURRENT_ANALYSES", "0"))).hasMessageContaining("bornes");
-        assertThatThrownBy(() -> AppConfig.from(Map.of("CDXGEN_CRYPTO_LANGUAGES", "cobol")))
-                .hasMessageContaining("cobol");
+        assertThatThrownBy(() -> AppConfig.from(Map.of("CDXGEN_CRYPTO_LANGUAGES", "klingon")))
+                .hasMessageContaining("klingon");
     }
 
     @Test

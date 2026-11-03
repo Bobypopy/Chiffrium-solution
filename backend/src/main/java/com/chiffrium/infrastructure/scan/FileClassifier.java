@@ -31,6 +31,10 @@ public final class FileClassifier {
             Map.entry("pyi", Language.PYTHON), Map.entry("ipynb", Language.PYTHON),
             Map.entry("vb", Language.VBNET), Map.entry("fs", Language.FSHARP), Map.entry("fsx", Language.FSHARP),
             Map.entry("fsi", Language.FSHARP), Map.entry("erl", Language.ERLANG), Map.entry("hrl", Language.ERLANG),
+            Map.entry("cbl", Language.COBOL), Map.entry("cob", Language.COBOL), Map.entry("cpy", Language.COBOL),
+            Map.entry("cobol", Language.COBOL), Map.entry("abap", Language.ABAP), Map.entry("lua", Language.LUA),
+            Map.entry("sol", Language.SOLIDITY), Map.entry("cls", Language.APEX), Map.entry("trigger", Language.APEX),
+            Map.entry("hs", Language.HASKELL), Map.entry("lhs", Language.HASKELL), Map.entry("r", Language.R),
             Map.entry("ts", Language.TYPESCRIPT), Map.entry("tsx", Language.TYPESCRIPT),
             Map.entry("mts", Language.TYPESCRIPT), Map.entry("cts", Language.TYPESCRIPT),
             Map.entry("go", Language.GO),
@@ -88,6 +92,13 @@ public final class FileClassifier {
     private static final Set<String> DATA_FILE_NAMES = Set.of("kubeconfig");
     private static final String TERRAFORM_STATE_BACKUP = ".tfstate.backup";
 
+    /**
+     * Code compilé (bytecode Java, assemblages .NET, bibliothèques et exécutables natifs) : on y lit les chaînes
+     * et les symboles qui nomment un algorithme ("DES/ECB/PKCS5Padding", EVP_des_ede3_cbc, MD5CryptoServiceProvider).
+     */
+    private static final Set<String> BINARY_EXTENSIONS = Set.of("class", "dll", "exe", "so", "dylib", "a", "o",
+            "lib", "dex", "node", "pyd");
+
     /** Archives versionnées, ouvertes en mémoire pour y chercher clés et secrets (voir {@link ArchiveEntries}). */
     private static final Set<String> ZIP_EXTENSIONS = Set.of("zip", "jar", "war", "ear", "aar", "apk", "whl", "nupkg");
     private static final List<String> TAR_SUFFIXES = List.of(".tar", ".tar.gz", ".tgz");
@@ -132,6 +143,11 @@ public final class FileClassifier {
         String lower = fileName.toLowerCase(Locale.ROOT);
         return DATA_FILE_NAMES.contains(lower) || lower.endsWith(TERRAFORM_STATE_BACKUP)
                 || extension(lower).map(DATA_EXTENSIONS::contains).orElse(false);
+    }
+
+    public static boolean isBinary(String fileName) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return extension(lower).map(BINARY_EXTENSIONS::contains).orElse(false) || lower.matches(".*\\.so\\.\\d.*");
     }
 
     /** Fichier lu par les détecteurs : code ou configuration, matériel cryptographique, ou données. */

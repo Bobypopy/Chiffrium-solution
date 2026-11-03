@@ -1,0 +1,90 @@
+{
+  "id": "haskell",
+  "languages": [
+    "haskell"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "--",
+    "{-"
+  ],
+  "functionPatterns": [
+    "^(?<name>[a-z_]\\w*'*)\\s*::"
+  ],
+  "classPatterns": [
+    "^module\\s+(?<name>[\\w.]+)"
+  ],
+  "rules": [
+    {
+      "id": "haskell.hmac",
+      "pattern": "::\\s*HMAC\\s+(?<name>MD5|SHA1|SHA224|SHA256|SHA384|SHA512|SHA3_256|SHA3_512)\\b",
+      "template": "HMAC-{name}",
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "haskell.hash",
+      "pattern": "(?:\\bhashWith\\s+|\\bhash\\s*@|::\\s*(?:Digest|Context)\\s+)(?<name>MD2|MD4|MD5|SHA1|SHA224|SHA256|SHA384|SHA512|SHA3_224|SHA3_256|SHA3_384|SHA3_512|Blake2b_256|Blake2b_512|Blake2s_256|RIPEMD160|Keccak_256|Whirlpool)\\b",
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "haskell.cipher",
+      "pattern": "(?:::\\s*(?:CryptoFailable\\s+)?|\\bcipherInit\\s*@)(?<name>AES128|AES192|AES256|DES|DES_EDE2|DES_EDE3|Blowfish|Blowfish128|Blowfish256|Blowfish448|Twofish128|Twofish256|Camellia128|RC4|ChaCha20)\\b",
+      "map": {
+        "aes128": "AES-128",
+        "aes192": "AES-192",
+        "aes256": "AES-256",
+        "des_ede2": "3DES",
+        "des_ede3": "3DES",
+        "blowfish128": "Blowfish",
+        "blowfish256": "Blowfish",
+        "blowfish448": "Blowfish",
+        "twofish128": "Twofish",
+        "twofish256": "Twofish",
+        "camellia128": "Camellia-128"
+      },
+      "skipUnrecognized": true,
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "haskell.cipher-import",
+      "pattern": "\\bimport\\s+(?:qualified\\s+)?Crypto\\.Cipher\\.(?<name>DES|TripleDES|Blowfish|RC4|AES|ChaCha|ChaChaPoly1305|Camellia|Twofish|Salsa|XSalsa)\\b",
+      "map": {
+        "tripledes": "3DES",
+        "chacha": "ChaCha20",
+        "chachapoly1305": "ChaCha20-Poly1305",
+        "salsa": "Salsa20",
+        "xsalsa": "XSalsa20"
+      },
+      "skipUnrecognized": true,
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "haskell.rsa-generate",
+      "pattern": "\\bRSA\\s*\\.\\s*generate\\s+(?<bits>64|128|192|256|384|512)\\b",
+      "template": "RSA-{bits}",
+      "map": {
+        "64": "512",
+        "128": "1024",
+        "192": "1536",
+        "256": "2048",
+        "384": "3072",
+        "512": "4096"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    }
+  ]
+}

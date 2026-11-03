@@ -101,7 +101,8 @@ public final class FileSystemProjectScanner implements ProjectScanner {
             String name = file.getFileName().toString();
             Optional<Language> language = FileClassifier.languageOf(name);
             boolean material = FileClassifier.isMaterial(name);
-            if (language.isEmpty() && !material && !FileClassifier.isData(name) && !FileClassifier.isArchive(name)) {
+            if (language.isEmpty() && !material && !FileClassifier.isData(name) && !FileClassifier.isArchive(name)
+                    && !FileClassifier.isBinary(name)) {
                 return FileVisitResult.CONTINUE;
             }
             if (attrs.size() > maxFileBytes) {

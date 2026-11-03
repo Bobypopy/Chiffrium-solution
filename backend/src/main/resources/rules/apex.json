@@ -1,0 +1,80 @@
+{
+  "id": "apex",
+  "languages": [
+    "apex"
+  ],
+  "commentPrefixes": [
+    "//",
+    "/*",
+    "*"
+  ],
+  "functionPatterns": [
+    "^\\s*(?:@\\w+\\s+)*(?:(?i:public|private|protected|global|static|override|virtual|webservice|testmethod)\\s+)+[\\w<>\\[\\],.]+\\s+(?<name>\\w+)\\s*\\("
+  ],
+  "classPatterns": [
+    "\\b(?i:class|interface|trigger)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "apex.crypto.digest",
+      "pattern": "(?i)\\bCrypto\\s*\\.\\s*generateDigest\\s*\\(\\s*'(?<name>[\\w-]+)'",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "apex.crypto.mac",
+      "pattern": "(?i)\\bCrypto\\s*\\.\\s*generateMac\\s*\\(\\s*'(?<name>\\w+)'",
+      "map": {
+        "hmacmd5": "HMAC-MD5",
+        "hmacsha1": "HMAC-SHA-1",
+        "hmacsha256": "HMAC-SHA-256",
+        "hmacsha512": "HMAC-SHA-512"
+      },
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "apex.crypto.cipher",
+      "pattern": "(?i)\\bCrypto\\s*\\.\\s*(?<op>encrypt|decrypt|encryptWithManagedIV|decryptWithManagedIV)\\s*\\(\\s*'(?<name>AES\\d{3})'",
+      "map": {
+        "aes128": "AES-128-CBC",
+        "aes192": "AES-192-CBC",
+        "aes256": "AES-256-CBC"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "apex.crypto.aes-key",
+      "pattern": "(?i)\\bCrypto\\s*\\.\\s*generateAesKey\\s*\\(\\s*{SIZE}",
+      "algorithm": "AES",
+      "functions": [
+        "keygen"
+      ],
+      "key": "secret-key"
+    },
+    {
+      "id": "apex.crypto.sign",
+      "pattern": "(?i)\\bCrypto\\s*\\.\\s*(?:sign|verify|signWithCertificate|signXml)\\s*\\(\\s*'(?<name>[\\w-]+)'",
+      "map": {
+        "rsa": "SHA1withRSA",
+        "rsa-sha1": "SHA1withRSA",
+        "rsa-sha256": "SHA256withRSA",
+        "rsa-sha384": "SHA384withRSA",
+        "rsa-sha512": "SHA512withRSA",
+        "ecdsa-sha256": "SHA256withECDSA",
+        "ecdsa-sha384": "SHA384withECDSA",
+        "ecdsa-sha512": "SHA512withECDSA"
+      },
+      "primitive": "signature",
+      "functions": [
+        "sign",
+        "verify"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "cobol",
+  "languages": [
+    "cobol"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "*",
+    "*>",
+    "/"
+  ],
+  "functionPatterns": [
+    "^\\s{0,7}(?<name>[A-Za-z0-9][\\w-]*)\\s+(?i:SECTION)\\s*\\.",
+    "^\\s{0,7}(?<name>[A-Za-z0-9][\\w-]*)\\.\\s*$"
+  ],
+  "classPatterns": [
+    "(?i)PROGRAM-ID\\.\\s*(?<name>[\\w-]+)"
+  ],
+  "rules": [
+    {
+      "id": "cobol.icsf.service",
+      "pattern": "(?i)\\bCALL\\s+['\\\"](?<name>CSNBENC1?|CSNBDEC1?|CSNBSAE|CSNBSAD|CSNBMGN|CSNBMVR|CSNBTRV)['\\\"]",
+      "map": {
+        "csnbenc": "DES-CBC",
+        "csnbenc1": "DES-CBC",
+        "csnbdec": "DES-CBC",
+        "csnbdec1": "DES-CBC",
+        "csnbsae": "AES",
+        "csnbsad": "AES",
+        "csnbmgn": "DES",
+        "csnbmvr": "DES",
+        "csnbtrv": "DES"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "cobol.icsf.hash-rule",
+      "pattern": "(?i)\\bMOVE\\s+['\\\"](?<name>MD5|SHA-1|SHA-224|SHA-256|SHA-384|SHA-512|RPMD-160)\\s*['\\\"]\\s+TO\\b",
+      "map": {
+        "rpmd-160": "RIPEMD-160"
+      },
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "cobol.icsf.pka-keygen",
+      "pattern": "(?i)\\bCALL\\s+['\\\"]CSNDPKG['\\\"]",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    }
+  ]
+}

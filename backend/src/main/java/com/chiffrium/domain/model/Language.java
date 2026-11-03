@@ -34,6 +34,13 @@ public enum Language {
     VBNET("vbnet"),
     FSHARP("fsharp"),
     ERLANG("erlang"),
+    COBOL("cobol"),
+    ABAP("abap"),
+    LUA("lua"),
+    SOLIDITY("solidity"),
+    APEX("apex"),
+    HASKELL("haskell"),
+    R("r"),
     CONFIG("config"),
     UNKNOWN("unknown");
 

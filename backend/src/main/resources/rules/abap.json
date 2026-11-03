@@ -1,0 +1,58 @@
+{
+  "id": "abap",
+  "languages": [
+    "abap"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "*",
+    "\""
+  ],
+  "functionPatterns": [
+    "^\\s*(?i:METHOD|FORM|FUNCTION|MODULE)\\s+(?<name>[\\w~/]+)"
+  ],
+  "classPatterns": [
+    "^\\s*(?i:CLASS)\\s+(?<name>[\\w/]+)\\s+(?i:IMPLEMENTATION|DEFINITION)"
+  ],
+  "rules": [
+    {
+      "id": "abap.hmac",
+      "pattern": "(?i)\\bcl_abap_hmac\\s*=>\\s*\\w+\\s*\\((?:[^.]|\\.(?!\\s))*?\\bif_algorithm\\s*=\\s*'(?<name>[\\w-]+)'",
+      "template": "HMAC-{name}",
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "abap.message-digest",
+      "pattern": "(?i)\\bcl_abap_message_digest\\s*=>\\s*\\w+\\s*\\((?:[^.]|\\.(?!\\s))*?\\bif_algorithm\\s*=\\s*'(?<name>[\\w-]+)'",
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "abap.hash-function",
+      "pattern": "(?i)\\bCALL\\s+FUNCTION\\s+'CALCULATE_HASH_FOR_(?:CHAR|RAW)'(?:[^.]|\\.(?!\\s))*?\\balg\\s*=\\s*'(?<name>[\\w-]+)'",
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "abap.sxml-encryption",
+      "pattern": "(?i)\\bcl_sec_sxml_writer\\s*=>\\s*co_(?<name>aes128|aes192|aes256|des3|tripledes)_algorithm(?:_(?<mode>gcm))?",
+      "map": {
+        "aes128": "AES-128-CBC",
+        "aes192": "AES-192-CBC",
+        "aes256": "AES-256-CBC",
+        "des3": "3DES",
+        "tripledes": "3DES"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "r",
+  "languages": [
+    "r"
+  ],
+  "commentPrefixes": [
+    "#"
+  ],
+  "functionPatterns": [
+    "^\\s*(?<name>[\\w.]+)\\s*(?:<-|=)\\s*function\\s*\\("
+  ],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "r.hmac",
+      "pattern": "\\bhmac\\s*\\([^)\\n]*\\balgo\\s*=\\s*[\\\"'](?<name>md5|sha1|sha256|sha512|crc32)[\\\"']",
+      "template": "HMAC-{name}",
+      "skipUnrecognized": true,
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "r.digest",
+      "pattern": "\\bdigest\\s*\\([^)\\n]*\\balgo\\s*=\\s*[\\\"'](?<name>md5|sha1|sha256|sha512|blake3|xxhash32|xxhash64|murmur32|crc32)[\\\"']",
+      "skipUnrecognized": true,
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "r.digest-default",
+      "pattern": "\\bdigest::digest\\s*\\((?![^)\\n]*\\balgo\\s*=)",
+      "algorithm": "MD5",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "r.openssl.hash",
+      "pattern": "\\bopenssl::(?<name>md4|md5|sha1|sha224|sha256|sha384|sha512|ripemd160|blake2b|blake2s)\\s*\\(",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "r.openssl.rsa-keygen",
+      "pattern": "\\bopenssl::rsa_keygen\\s*\\(\\s*(?:bits\\s*=\\s*)?{SIZE}",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "r.openssl.ec-keygen",
+      "pattern": "\\bopenssl::ec_keygen\\s*\\(\\s*(?:curve\\s*=\\s*)?[\\\"'](?<curve>[\\w-]+)[\\\"']",
+      "algorithm": "EC",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "r.openssl.aes",
+      "pattern": "\\bopenssl::aes_(?<mode>cbc|ctr|gcm)_(?:encrypt|decrypt)\\s*\\(",
+      "algorithm": "AES",
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    }
+  ]
+}

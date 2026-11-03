@@ -1,0 +1,35 @@
+{
+  "id": "solidity",
+  "languages": [
+    "solidity"
+  ],
+  "commentPrefixes": [
+    "//",
+    "/*",
+    "*"
+  ],
+  "functionPatterns": [
+    "^\\s*(?:function|modifier)\\s+(?<name>\\w+)\\s*\\(",
+    "^\\s*(?<name>constructor)\\s*\\("
+  ],
+  "classPatterns": [
+    "^\\s*(?:abstract\\s+)?(?:contract|library|interface)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "solidity.hash",
+      "pattern": "\\b(?<name>keccak256|sha256|ripemd160)\\s*\\(",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "solidity.ecrecover",
+      "pattern": "\\b(?:ecrecover|ECDSA\\s*\\.\\s*(?:recover|tryRecover))\\s*\\(",
+      "algorithm": "ECDSA",
+      "functions": [
+        "verify"
+      ]
+    }
+  ]
+}

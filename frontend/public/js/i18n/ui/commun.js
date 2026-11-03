@@ -25,6 +25,7 @@ export const COMMUN = {
   Combinaison: 'Combination',
   'Matériel (clé, keystore)': 'Key material (key, keystore)',
   Matériel: 'Key material',
+  'Code compilé': 'Compiled code',
   'Chiffrement par blocs': 'Block cipher',
   'Chiffrement par flot': 'Stream cipher',
   'Chiffrement authentifié': 'Authenticated encryption',

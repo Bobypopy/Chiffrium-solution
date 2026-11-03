@@ -1,0 +1,89 @@
+{
+  "description": "Chaînes et symboles qui nomment un algorithme dans du code compilé. Chaque motif s'applique à une chaîne entière extraite du binaire (constante du bytecode Java, chaîne .NET, symbole natif).",
+  "signatures": [
+    {
+      "id": "jca-transformation",
+      "pattern": "^(?<name>(?:AES|DES|DESede|TripleDES|RC2|RC4|ARCFOUR|Blowfish|IDEA|RSA)/[A-Za-z0-9]+/[\\w-]+)$",
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "jca-name",
+      "pattern": "^(?<name>DESede|TripleDES|ARCFOUR|Blowfish|MD2|MD4|MD5|SHA-?1|SHA-(?:224|256|384|512)|SHA3-(?:224|256|384|512)|Hmac(?:MD5|SHA1|SHA224|SHA256|SHA384|SHA512)|(?:MD2|MD5|SHA1|SHA224|SHA256|SHA384|SHA512)with(?:RSA|DSA|ECDSA)|PBKDF2WithHmacSHA(?:1|256|384|512))$"
+    },
+    {
+      "id": "openssl-evp-cipher",
+      "pattern": "^_?EVP_(?<name>aes_(?:128|192|256)_(?:ecb|cbc|cfb\\d*|ofb|ctr|gcm|ccm|xts|ocb|wrap(?:_pad)?)|des_(?:ede3?_)?(?:ecb|cbc|cfb\\d*|ofb)|des_ede3?|rc4(?:_\\d+)?|rc2_\\w+|bf_\\w+|cast5_\\w+|idea_\\w+|seed_\\w+|camellia_\\w+|chacha20(?:_poly1305)?|sm4_\\w+|aria_\\w+)$",
+      "map": {
+        "bf_cbc": "Blowfish/CBC",
+        "bf_ecb": "Blowfish/ECB",
+        "bf_cfb64": "Blowfish/CFB",
+        "bf_ofb": "Blowfish/OFB"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "openssl-evp-digest",
+      "pattern": "^_?EVP_(?<name>md5|md4|md2|sha1|sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|shake128|shake256|blake2b512|blake2s256|ripemd160|sm3|mdc2|whirlpool)$",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "openssl-legacy",
+      "pattern": "^_?(?<name>MD4|MD5|SHA1|SHA224|SHA256|SHA512|RIPEMD160|DES|RC4|RC2|BF|CAST)_(?:Init|Update|Final|set_key|ecb_encrypt|cbc_encrypt|ede3_cbc_encrypt|encrypt)$",
+      "map": {
+        "bf": "Blowfish",
+        "cast": "CAST5"
+      }
+    },
+    {
+      "id": "openssl-name",
+      "pattern": "^(?<name>(?:aes-(?:128|192|256)|des-ede3|des|bf|camellia-(?:128|256))-(?:ecb|cbc|cfb|ofb|ctr|gcm)|des-ede3|rc4)$",
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "dotnet-type",
+      "pattern": "^(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160|DES|TripleDES|RC2|Rijndael|Aes|RSA|DSA)(?:CryptoServiceProvider|Managed|Cng)$"
+    },
+    {
+      "id": "dotnet-hmac",
+      "pattern": "^(?<name>HMACMD5|HMACSHA1|HMACRIPEMD160)$",
+      "map": {
+        "hmacmd5": "HMAC-MD5",
+        "hmacsha1": "HMAC-SHA-1",
+        "hmacripemd160": "HMAC-RIPEMD-160"
+      },
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "commoncrypto-digest",
+      "pattern": "^_?CC_(?<name>MD2|MD4|MD5|SHA1|SHA224|SHA256|SHA384|SHA512)$",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "commoncrypto-cipher",
+      "pattern": "^_?kCCAlgorithm(?<name>DES|3DES|RC4|RC2|CAST|Blowfish|AES128|AES)$",
+      "map": {
+        "aes128": "AES",
+        "cast": "CAST5"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    }
+  ]
+}

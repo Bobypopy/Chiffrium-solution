@@ -48,7 +48,7 @@ export const ASSET_TYPE_LABELS = Object.freeze({
 });
 
 export const SOURCE_LABELS = Object.freeze({
-  cdxgen: 'cdxgen (flux)', rules: 'Règles', material: 'Matériel',
+  cdxgen: 'cdxgen (flux)', rules: 'Règles', material: 'Matériel', binary: 'Code compilé',
 });
 
 /** Risque juridique des licences de dépendances (LicenseRisk côté serveur), du moins au plus contraignant. */

@@ -11,7 +11,9 @@ public enum DetectionSource {
     /** Moteur de règles multi-langages interne. */
     RULES("rules"),
     /** Analyse de fichiers de matériel cryptographique (certificats, clés, keystores). */
-    MATERIAL("material");
+    MATERIAL("material"),
+    /** Chaînes et symboles du code compilé (bytecode Java, assemblages .NET, binaires natifs). */
+    BINARY("binary");
 
     private final String id;
 

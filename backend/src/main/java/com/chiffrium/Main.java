@@ -65,6 +65,8 @@ import com.chiffrium.infrastructure.json.JsonMapper;
 import com.chiffrium.infrastructure.licenses.LicensePolicyLoader;
 import com.chiffrium.infrastructure.logging.LoggingSetup;
 import com.chiffrium.infrastructure.mail.SmtpMailSender;
+import com.chiffrium.infrastructure.binary.BinaryCryptoDetector;
+import com.chiffrium.infrastructure.binary.BinarySignatures;
 import com.chiffrium.infrastructure.material.MaterialDetector;
 import com.chiffrium.infrastructure.npm.NpmLockfileGenerator;
 import com.chiffrium.infrastructure.oidc.OidcIdentityProvider;
@@ -231,10 +233,12 @@ public final class Main {
 
             SecurityFindingDetector findingDetector = new SecurityFindingDetector(
                     new FindingRuleLoader(mapper).loadBuiltIn());
+            List<BinarySignatures.Signature> binarySignatures = BinarySignatures.loadBuiltIn(mapper);
             DetectorProvider detectors = assetFactory -> List.of(
                     new CdxgenCryptoDetector(assetFactory, mapper),
                     new RuleBasedCryptoDetector(rulePacks, assetFactory),
                     new MaterialDetector(assetFactory),
+                    new BinaryCryptoDetector(assetFactory, binarySignatures),
                     findingDetector);
             VulnerabilityScanner osv = new OsvVulnerabilityScanner(mapper, config.osvUrl(), config.osvTimeout());
             // OSV_ENABLED coupe définitivement l'accès réseau ; le réglage d'administration le coupe à chaud.

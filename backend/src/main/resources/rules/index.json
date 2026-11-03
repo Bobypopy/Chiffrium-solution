@@ -20,5 +20,12 @@
   "xml-security.json",
   "vbnet.json",
   "fsharp.json",
-  "erlang.json"
+  "erlang.json",
+  "cobol.json",
+  "abap.json",
+  "lua.json",
+  "solidity.json",
+  "apex.json",
+  "haskell.json",
+  "r.json"
 ]

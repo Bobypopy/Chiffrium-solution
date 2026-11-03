@@ -259,6 +259,32 @@
       "title": "Vérification du nom d'hôte désactivée",
       "description": "SSLSocket créé directement : Java ne vérifie pas que le certificat correspond au serveur contacté sans setEndpointIdentificationAlgorithm(\"HTTPS\").",
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-lua-ssl-verify-off",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "lua"
+      ],
+      "pattern": "\\bssl_verify\\s*=\\s*false\\b",
+      "title": "Vérification TLS désactivée (Lua)",
+      "description": "La requête HTTPS accepte n'importe quel certificat (ssl_verify = false) : le trafic peut être intercepté.",
+      "recommendation": "Laisser ssl_verify à true et configurer lua_ssl_trusted_certificate avec les autorités de confiance."
+    },
+    {
+      "id": "tls-r-verifypeer-off",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "r"
+      ],
+      "pattern": "\\bssl_verify(?:peer|host)\\s*=\\s*(?:0L?|FALSE|F)\\b",
+      "title": "Vérification TLS désactivée (R)",
+      "description": "La configuration curl/httr désactive la vérification du certificat ou du nom du serveur.",
+      "recommendation": "Retirer ssl_verifypeer et ssl_verifyhost ; pour une autorité interne, la déclarer avec cainfo."
     }
   ]
 }
