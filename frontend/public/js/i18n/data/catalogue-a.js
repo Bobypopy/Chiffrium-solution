@@ -127,6 +127,10 @@ export const CATALOGUE_A = {
   "Déclaré obsolète par son auteur (2012) : cassé rapidement sur GPU.":
     'Declared obsolete by its author (2012): cracked quickly on GPUs.',
   'Déprécié par la RFC 8996.': 'Deprecated by RFC 8996.',
+  'Dérivation de clé de PKCS#12 (RFC 7292, annexe B), conservée pour la compatibilité.':
+    'PKCS#12 key derivation (RFC 7292, appendix B), kept for compatibility.',
+  'Dérivation de clé du format PVK de Microsoft : SHA-1 sans itérations.':
+    'Key derivation of the Microsoft PVK format: SHA-1 with no iterations.',
   "Dérivation du secret partagé d'un échange de clés.":
     'Derivation from the shared secret of a key agreement.',
   "Dérivation à partir d'une clé secrète (mode compteur / feedback / double pipeline).":
@@ -166,6 +170,7 @@ export const CATALOGUE_A = {
     'HMAC-SHA-256 for integrity, SHA-256 for hashing.',
   'HPKE avec un KEM hybride (X-Wing, ML-KEM + X25519).':
     'HPKE with a hybrid KEM (X-Wing, ML-KEM + X25519).',
+  'Hachage fondé sur DES (ISO/IEC 10118-2), retiré d\'OpenSSL 3.': 'DES-based hash (ISO/IEC 10118-2), removed from OpenSSL 3.',
   'Hachage de mots de passe Unix ; acceptable avec beaucoup de tours, mais pas résistant aux GPU.':
     'Unix password hashing; acceptable with many rounds, but not GPU-resistant.',
   'Hachage de mots de passe par défaut de nombreuses distributions Linux ; résistant au matériel dédié.':

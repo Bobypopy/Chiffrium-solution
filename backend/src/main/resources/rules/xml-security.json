@@ -1,5 +1,6 @@
 {
   "id": "xml-security",
+  "matchesInStrings": true,
   "languages": [
     "config",
     "java",

@@ -149,6 +149,7 @@
         "ruby"
       ],
       "pattern": "VERIFY_NONE|verify_mode\\s*[:=]>?\\s*0\\b|ssl_verify\\s*[:=]>?\\s*false",
+      "exclude": "[!=]=\\s*(?:OpenSSL::SSL::)?VERIFY_NONE|VERIFY_NONE\\s*[!=]=|\\bwhen\\s+(?:OpenSSL::SSL::)?VERIFY_NONE",
       "title": "VERIFY_NONE",
       "description": "Connexion TLS Ruby sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."

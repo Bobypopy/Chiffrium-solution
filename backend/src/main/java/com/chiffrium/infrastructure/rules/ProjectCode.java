@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -53,9 +52,6 @@ final class ProjectCode {
     private static final String CHAINED = "()";
     /** Collection parcourue, en fin de texte avant {@code .forEach(} : {@code algos}, {@code List.of("A", "B")}. */
     private static final Pattern FOR_EACH_RECEIVER = Pattern.compile("(?<value>[\\w$.]+(?:\\([^()\\n]*\\))?)\\s*$");
-    /** Langages où l'apostrophe n'ouvre pas une chaîne (durée de vie Rust, commentaire VB, type 'a F#...). */
-    private static final Set<Language> APOSTROPHE_NOT_QUOTE = EnumSet.of(Language.RUST, Language.VBNET,
-            Language.FSHARP, Language.HASKELL, Language.SCALA);
     private static final int TEXT_CACHE_SIZE = 256;
     /** Lignes où chercher un appel passé en argument d'un appel écrit sur plusieurs lignes. */
     private static final int MAX_ARGUMENT_LINES = 10;
@@ -308,7 +304,7 @@ final class ProjectCode {
         }
         List<Assignment> found = new ArrayList<>();
         String content = loaded.text().content();
-        boolean apostrophes = !APOSTROPHE_NOT_QUOTE.contains(language(path));
+        boolean apostrophes = StringLiterals.apostrophesQuote(language(path));
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
             int line = loaded.text().lineOf(matcher.start());

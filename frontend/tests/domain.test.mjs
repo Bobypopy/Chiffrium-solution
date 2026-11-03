@@ -8,7 +8,7 @@ import {
 } from '../public/js/domain/graph.js';
 import { statusInfo } from '../public/js/domain/labels.js';
 import {
-  distribution, facets, filterAssets, occurrencesByFile, priorities, scoreBreakdown, scoreTone, sortAssets,
+  distribution, facets, filterAssets, occurrencesByFile, originOf, priorities, scoreBreakdown, scoreTone, sortAssets,
   statusDistribution,
 } from '../public/js/domain/report.js';
 import { clearPref, readPref, writePref } from '../public/js/ui/prefs.js';
@@ -269,4 +269,16 @@ test('le graphe se parcourt au clavier : ordre, voisins et description parlée',
   assert.equal(describeNode(model, 'asset:crypto/algorithm/MD5'),
     'MD5, actif cryptographique. 1 lien : A.run utilise ce nœud.');
   assert.equal(describeNode(model, 'inconnu'), '');
+});
+
+test('le code de test est reconnu dans chaque écosystème, comme par l\'analyse', () => {
+  for (const file of ['src/test/java/A.java', 'pkg/x/y_test.go', 'src/app.spec.ts', 'lib/Crypto/SelfTest/test_CBC.py',
+    'src/foo/test_bar.py', 'helper/config_test_helpers.go', 'api/test-fixtures/key.pem',
+    'vectors/cryptography_vectors/x.pem', 'fuzz/client.c', 'src/main/java/CryptoTest.java']) {
+    assert.equal(originOf(file), 'test', file);
+  }
+  for (const file of ['src/latest/app.py', 'attest/verify.go', 'lib/contest.rb', 'src/main/java/Testing.java']) {
+    assert.equal(originOf(file), 'project', file);
+  }
+  assert.equal(originOf('node_modules/x/test/a.js'), 'dependency');
 });

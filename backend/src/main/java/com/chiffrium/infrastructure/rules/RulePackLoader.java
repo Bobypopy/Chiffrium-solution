@@ -90,6 +90,7 @@ public final class RulePackLoader {
                 strings(node.path("functionPatterns")).stream().map(p -> compile(p, origin + " (fonctions)")).toList(),
                 strings(node.path("classPatterns")).stream().map(p -> compile(p, origin + " (classes)")).toList(),
                 node.path("blockStyle").asText("braces"),
+                node.path("matchesInStrings").asBoolean(false),
                 rules);
     }
 

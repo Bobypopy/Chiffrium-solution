@@ -53,6 +53,16 @@ public final class SecurityFindingDetector implements CryptoDetector {
     /** Ce qui reste exploitable une fois supprimé du code : secrets, clés, IV et sels en dur. */
     private static final Set<FindingCategory> HISTORY_CATEGORIES = EnumSet.of(FindingCategory.SECRET,
             FindingCategory.HARDCODED_KEY_MATERIAL);
+    /** Importation : le nom d'une classe n'est pas son usage (import ...NoopHostnameVerifier;). */
+    private static final Pattern IMPORT_LINE = Pattern.compile(
+            "^\\s*(?:import\\s|using\\s+[\\w.]+\\s*;|#\\s*include\\s|from\\s+[\\w.]+\\s+import\\s|use\\s+[\\w:\\\\]+\\s*;)");
+    /** Fichiers de données : une liste de suites y est écrite sans guillemets (ssl_ciphers HIGH:!aNULL;). */
+    private static final Set<Language> NOT_CODE = EnumSet.of(Language.CONFIG, Language.SQL, Language.UNKNOWN);
+    /** Liste de suites écrite dans du code : chaîne, ou constantes du registre (tls.TLS_RSA_WITH_RC4_128_SHA). */
+    private static final Pattern SUITE_CONSTANT = Pattern.compile("\\b(?:TLS|SSL)_\\w+_WITH_\\w+");
+    /** Nom de constante ou de variable qui annonce une donnée de test (TEST_FAKE_RSA_KEY_0, fakeToken). */
+    private static final Pattern TEST_NAMED = Pattern.compile(
+            "(?<![A-Za-z0-9])(?i:test|fake|dummy|example|sample|mock)(?![a-z])");
 
     private final FindingRuleSet ruleSet;
     /** Paquets de règles du code : leur syntaxe sert à remonter les valeurs des règles "traceGroup". */
@@ -206,7 +216,8 @@ public final class SecurityFindingDetector implements CryptoDetector {
                 String lineText = text.line(line);
                 if (lineText.contains(ruleSet.suppressionMarker())
                         || !rule.includeComments() && text.isCommentLine(line, comments)
-                        || rule.exclude() != null && rule.exclude().matcher(lineText).find()) {
+                        || rule.exclude() != null && rule.exclude().matcher(lineText).find()
+                        || IMPORT_LINE.matcher(lineText).find()) {
                     continue;
                 }
                 if (rule.traceGroup() != null) {
@@ -214,7 +225,7 @@ public final class SecurityFindingDetector implements CryptoDetector {
                             matcher.group(rule.traceGroup()), analysis));
                     continue;
                 }
-                evaluate(rule, matcher).ifPresent(match -> result.add(finding(rule, source, text, line,
+                evaluate(rule, matcher, language).ifPresent(match -> result.add(finding(rule, source, text, line,
                         text.columnOf(matcher.start()), match)));
             }
         }
@@ -238,7 +249,12 @@ public final class SecurityFindingDetector implements CryptoDetector {
             if (match.isEmpty()) {
                 continue;
             }
-            SecurityFinding atCall = finding(rule, source, text, line, column, match.get());
+            // "password" écrit dans un test et transmis au code testé : une donnée de test, pas un secret livré.
+            boolean fromTests = !origin.locations().isEmpty() && origin.locations().stream()
+                    .allMatch(location -> ruleSet.testPath().matcher(location.substring(0, location.lastIndexOf(':')))
+                            .find());
+            Source atSource = fromTests ? new Source(source.path(), source.language(), true, source.commit()) : source;
+            SecurityFinding atCall = finding(rule, atSource, text, line, column, match.get());
             result.add(atCall);
             analysis.origins().computeIfAbsent(atCall.id(), k -> new ArrayList<>()).addAll(origin.locations());
             for (String location : origin.locations()) {
@@ -300,7 +316,7 @@ public final class SecurityFindingDetector implements CryptoDetector {
      * @return l'élément déclencheur (caviardé si c'est un secret) et la gravité, ou vide si la correspondance
      * ne constitue pas un constat
      */
-    private Optional<Match> evaluate(FindingRule rule, Matcher matcher) {
+    private Optional<Match> evaluate(FindingRule rule, Matcher matcher, Language language) {
         Severity severity = rule.severity();
         String evidence = null;
         String detail = null;
@@ -323,6 +339,10 @@ public final class SecurityFindingDetector implements CryptoDetector {
             String list = Optional.ofNullable(matcher.group(rule.listGroup())).orElse("");
             switch (rule.listCheck()) {
                 case CIPHER_SUITES -> {
+                    // Dans du code, "ciphers = null", "Ciphers is not null" ou un commentaire ne sont pas des listes.
+                    if (!NOT_CODE.contains(language) && !writtenAsList(matcher, rule.listGroup())) {
+                        return Optional.empty();
+                    }
                     List<CipherSuitePolicy.Verdict> weak = ruleSet.cipherSuites().weakSuites(list);
                     if (weak.isEmpty()) {
                         return Optional.empty();
@@ -359,10 +379,28 @@ public final class SecurityFindingDetector implements CryptoDetector {
         }
         String description = match.detail() == null ? rule.description()
                 : (rule.description() == null ? "" : rule.description() + " ") + match.detail();
-        Severity severity = source.testCode() ? match.severity().lower() : match.severity();
+        boolean testCode = source.testCode() || namedAsTestData(rule, text.line(line), column);
+        Severity severity = testCode ? match.severity().lower() : match.severity();
         return new SecurityFinding(id(rule.id(), source, line), rule.id(), rule.category(), severity,
                 rule.title(), description, rule.recommendation(), rule.cwe(), source.path(), line, column, snippet,
-                match.evidence(), source.language(), source.testCode(), source.commit());
+                match.evidence(), source.language(), testCode, source.commit());
+    }
+
+    /** Secret affecté à un nom qui le déclare factice (const TEST_FAKE_RSA_KEY_0 = "-----BEGIN ...") : donnée de test. */
+    private static boolean namedAsTestData(FindingRule rule, String lineText, int column) {
+        return rule.category() == FindingCategory.SECRET && column > 1
+                && TEST_NAMED.matcher(lineText.substring(0, Math.min(column - 1, lineText.length()))).find();
+    }
+
+    /** Liste de suites écrite comme telle dans du code : entre guillemets, ou par constantes du registre. */
+    private static boolean writtenAsList(Matcher matcher, String group) {
+        String list = matcher.group(group);
+        if (list == null) {
+            return false;
+        }
+        String before = matcher.group().substring(0, matcher.start(group) - matcher.start()).stripTrailing();
+        return before.endsWith("\"") || before.endsWith("'") || list.contains("\"")
+                || SUITE_CONSTANT.matcher(list).find();
     }
 
     private SecurityFinding fileFinding(FindingRule rule, Source source) {

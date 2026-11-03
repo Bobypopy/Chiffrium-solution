@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
  * @param functionPatterns déclarations de fonctions (groupe {@code name}), pour trouver la fonction englobante
  * @param classPatterns    déclarations de classes/modules (groupe {@code name}), pour qualifier la fonction
  * @param blockStyle       délimitation des blocs : "braces" (défaut) ou "indent" (Python, Ruby)
+ * @param matchesInStrings vrai si les règles lisent le contenu des chaînes (XML de signature écrit dans du
+ *                         Java) ; sinon un appel cité dans un message ("getInstance(...) executed") est ignoré
  * @param rules            règles, de la plus spécifique à la plus générique (une zone déjà reconnue
  *                         par une règle d'algorithme n'est plus proposée aux suivantes)
  */
@@ -25,6 +27,7 @@ public record RulePack(
         List<Pattern> functionPatterns,
         List<Pattern> classPatterns,
         String blockStyle,
+        boolean matchesInStrings,
         List<Rule> rules) {
 
     public RulePack {

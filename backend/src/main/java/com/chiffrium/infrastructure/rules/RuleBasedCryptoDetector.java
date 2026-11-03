@@ -56,6 +56,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
     private static final Pattern LIST_SEPARATOR = Pattern.compile("[\\s,:;|]+");
     private static final Pattern TEMPLATE_PLACEHOLDER = Pattern.compile("\\{(\\w+)}");
     private static final Pattern QUOTED = Pattern.compile("^[bBrRuUfF@]{0,2}([\"'`])(.*)\\1$");
+    /** Premier appel écrit dans la correspondance : "hashlib.new", "SecretKeySpec", "forge.pki.rsa.generateKeyPair". */
+    private static final Pattern CALLED = Pattern.compile("([A-Za-z_$][\\w$]*(?:\\s*\\.\\s*[A-Za-z_$][\\w$]*)*)\\s*\\(");
     private static final Set<String> WRITE_HINTS = Set.of("write", "create", "put", "save", "dump", "export", "append");
     private static final List<String> MATERIAL_NAME_HINTS = List.of(
             "key", "cert", "secret", "private", "public", "keystore", "truststore", "pem", "cipher", "encrypted",
@@ -96,15 +98,19 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         Map<String, ConstantResolver> resolvers = new HashMap<>();
         Map<String, Supplier<ProjectCode>> codes = new HashMap<>();
         Map<String, Supplier<ValueTracer>> tracers = new HashMap<>();
+        // Réglages communs à tous les langages : getProperty("hashAlg1", "SHA512") vaut ce que dit le .properties.
+        Supplier<Map<String, List<String>>> settings = memoize(() -> SettingsIndex.build(context.projectRoot(),
+                context.scan().files()));
         for (RulePack pack : packs) {
             List<ScannedFile> packFiles = sources.stream().filter(f -> pack.appliesTo(f.language())).toList();
             if (pack.functionPatterns().isEmpty()) {
-                resolvers.put(pack.id(), new ConstantResolver(memoize(() -> buildProjectIndex(context.projectRoot(), packFiles))));
+                resolvers.put(pack.id(), new ConstantResolver(memoize(() -> buildProjectIndex(context.projectRoot(), packFiles)),
+                        settings));
                 continue;
             }
             Supplier<ProjectCode> code = memoize(() -> ProjectCode.load(context.projectRoot(), packFiles,
                     language -> scopePackFor(language, pack)));
-            ConstantResolver resolver = new ConstantResolver(() -> code.get().constants());
+            ConstantResolver resolver = new ConstantResolver(() -> code.get().constants(), settings);
             codes.put(pack.id(), code);
             resolvers.put(pack.id(), resolver);
             tracers.put(pack.id(), memoize(() -> new ValueTracer(code.get(), resolver)));
@@ -366,11 +372,18 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         }
 
         void run() {
+            boolean skipStrings = !pack.matchesInStrings() && StringLiterals.isCode(file.language());
+            boolean apostrophes = StringLiterals.apostrophesQuote(file.language());
             for (Rule rule : pack.rules()) {
                 Matcher matcher = rule.pattern().matcher(text.content());
                 while (matcher.find()) {
                     int line = text.lineOf(matcher.start());
                     if (text.isCommentLine(line, commentPrefixes)) {
+                        continue;
+                    }
+                    // "Hash Test java.security.MessageDigest.getInstance(java.lang.String) executed" : un
+                    // message qui cite l'appel. Un nom écrit entre guillemets commence au guillemet : il reste vu.
+                    if (skipStrings && StringLiterals.inside(text.content(), matcher.start(), apostrophes)) {
                         continue;
                     }
                     switch (rule.kind()) {
@@ -425,7 +438,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
 
             for (Candidate candidate : candidates(rule, matcher, line)) {
                 if (candidate.raw == null) {
-                    String apiName = api != null ? api : rule.id();
+                    String apiName = api != null ? api : calledName(matcher.group(), rule.id());
                     detections.add(new Detection(null, line, column, function, functions, rule.id(), apiName, key));
                     continue;
                 }
@@ -755,6 +768,12 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         if (value != null && !value.isBlank()) {
             builder.append(separator).append(stripQuotes(value));
         }
+    }
+
+    /** Nom d'un appel non résolu tel qu'il est écrit, à défaut l'identifiant de la règle. */
+    private static String calledName(String matched, String fallback) {
+        Matcher call = CALLED.matcher(matched);
+        return call.find() ? call.group(1).replaceAll("\\s+", "") : fallback;
     }
 
     private static String group(Matcher matcher, String name) {

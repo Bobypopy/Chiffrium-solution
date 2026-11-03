@@ -187,6 +187,9 @@ export const REGLES = {
   'Aléa non cryptographique pour un secret': 'Non-cryptographic randomness for a secret',
   'Math.random pour un secret': 'Math.random for a secret',
   'Math.random n\'est pas un générateur cryptographique.': 'Math.random is not a cryptographic generator.',
+  'Générateur non cryptographique': 'Non-cryptographic generator',
+  'Générateur prévisible : aucun usage sensible n\'est visible sur la ligne, vérifier qu\'il ne produit ni secret, ni jeton, ni identifiant.':
+    'Predictable generator: no sensitive use is visible on the line; check that it produces no secret, token or identifier.',
   'Module random pour un secret': 'random module for a secret',
   'Le module random (Mersenne Twister) est prévisible.':
     'The random module (Mersenne Twister) is predictable.',

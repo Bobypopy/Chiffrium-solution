@@ -81,7 +81,13 @@ export function priorities(assets, limit) {
 const VENDOR_DIRS = ['node_modules', 'vendor', 'third_party', 'thirdparty', 'external', 'externals', 'site-packages',
   '.venv', 'venv', 'bower_components', 'packages', 'dist-packages', '.gradle', '.m2'];
 /** Dossiers de test : un algorithme faible y est souvent volontaire (vecteurs de test). */
-const TEST_DIRS = ['test', 'tests', 'testing', 'spec', 'specs', '__tests__', 'testdata', 'test-data', 'fixtures'];
+const TEST_DIRS = ['test', 'tests', 'testing', 'spec', 'specs', '__tests__', 'testdata', 'test-data', 'fixtures',
+  'selftest', 'test-fixtures', 'test_fixtures', 'test-vectors', 'test_vectors', 'fuzz', 'fuzzing'];
+/**
+ * Fichiers de test, mêmes conventions que l'analyse (FooTest.java, x_test.go, a.spec.ts, test_x.py,
+ * config_test_helpers.go) : leurs constats y sont déjà abaissés.
+ */
+const TEST_FILE = /^test_.+\.py$|[._-](test|spec)s?\.[a-z0-9]+$|[._-]tests?[._-]|[a-z0-9]Tests?\.[A-Za-z]+$/;
 
 export const ORIGINS = Object.freeze({
   project: { label: 'code du projet', hint: 'Fichier du dépôt analysé : à corriger chez vous.' },
@@ -108,7 +114,9 @@ export function originOf(file, modules = []) {
     .map((m) => String(m.path).replace(/^\.\//, '').toLowerCase());
   const path = lower.join('/');
   if (submodules.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) return 'submodule';
-  if (lower.some((part) => TEST_DIRS.includes(part))) return 'test';
+  const directories = lower.slice(0, -1);
+  if (directories.some((part) => TEST_DIRS.includes(part) || part.endsWith('vectors'))) return 'test';
+  if (TEST_FILE.test(parts.at(-1) ?? '')) return 'test';
   return 'project';
 }
 

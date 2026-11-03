@@ -11,9 +11,25 @@
         "scala",
         "groovy"
       ],
-      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new\\s+Random\\s*\\(|Math\\.random\\s*\\(|ThreadLocalRandom\\.current\\s*\\(|RandomStringUtils\\.random(?:Alphanumeric|Alphabetic|Numeric|Ascii)?\\s*\\()",
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new\\s+(?:java\\.util\\.)?Random\\s*\\(|Math\\.random\\s*\\(|ThreadLocalRandom\\.current\\s*\\(|RandomStringUtils\\.random(?:Alphanumeric|Alphabetic|Numeric|Ascii)?\\s*\\()",
       "title": "Aléa non cryptographique pour un secret",
       "description": "java.util.Random / Math.random / RandomStringUtils sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-java-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new\\s+(?:java\\.util\\.)?Random\\s*\\(|Math\\.random\\s*\\(|ThreadLocalRandom\\.current\\s*\\(|RandomStringUtils\\.random(?:Alphanumeric|Alphabetic|Numeric|Ascii)?\\s*\\()",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {
@@ -30,6 +46,19 @@
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {
+      "id": "random-python-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "python"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\brandom\\.(?:random|randint|randrange|choice|choices|getrandbits|sample|shuffle|uniform)\\s*\\(",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
       "id": "random-js-insecure",
       "category": "weak-random",
       "severity": "medium",
@@ -41,6 +70,20 @@
       "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?Math\\.random\\s*\\(",
       "title": "Math.random pour un secret",
       "description": "Math.random n'est pas un générateur cryptographique.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-js-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?Math\\.random\\s*\\(",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {
@@ -85,6 +128,19 @@
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {
+      "id": "random-php-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "php"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\b(?:rand|mt_rand|uniqid|lcg_value|str_shuffle)\\s*\\(",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
       "id": "random-ruby-insecure",
       "category": "weak-random",
       "severity": "medium",
@@ -110,6 +166,21 @@
       "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new|New)\\s+Random\\s*\\(",
       "title": "System.Random pour un secret",
       "description": "System.Random est prévisible.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-csharp-general",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "csharp",
+        "vbnet",
+        "fsharp"
+      ],
+      "pattern": "(?m)^(?![^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new|New)\\s+Random\\s*\\(",
+      "title": "Générateur non cryptographique",
+      "description": "Générateur prévisible : aucun usage sensible n'est visible sur la ligne, vérifier qu'il ne produit ni secret, ni jeton, ni identifiant.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     },
     {

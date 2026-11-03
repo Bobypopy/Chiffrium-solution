@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -20,6 +21,12 @@ final class CipherSuitePolicy {
 
     private static final Pattern SEPARATORS = Pattern.compile("[\\s,:;\"'\\[\\]{}()]+");
     private static final String EXCLUSION_PREFIXES = "!-+@";
+    /**
+     * Jamais une suite activée : la valeur nulle des langages (OpenSSL écrit NULL, eNULL, aNULL en majuscules)
+     * et l'état initial d'une connexion, que la RFC 5246 interdit de négocier.
+     */
+    private static final Set<String> NOT_SUITES = Set.of("null", "None", "nil", "TLS_NULL_WITH_NULL_NULL",
+            "SSL_NULL_WITH_NULL_NULL");
 
     /**
      * @param pattern  motif sur le nom de suite en majuscules
@@ -42,7 +49,8 @@ final class CipherSuitePolicy {
     List<Verdict> weakSuites(String list) {
         List<Verdict> verdicts = new ArrayList<>();
         for (String token : SEPARATORS.split(list)) {
-            if (token.isEmpty() || EXCLUSION_PREFIXES.indexOf(token.charAt(0)) >= 0) {
+            if (token.isEmpty() || EXCLUSION_PREFIXES.indexOf(token.charAt(0)) >= 0
+                    || NOT_SUITES.contains(token.substring(token.lastIndexOf('.') + 1))) {
                 continue;
             }
             evaluate(token).filter(v -> verdicts.stream().noneMatch(x -> x.suite().equals(v.suite())))

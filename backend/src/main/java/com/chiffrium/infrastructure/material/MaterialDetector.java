@@ -24,6 +24,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,6 +69,11 @@ public final class MaterialDetector implements CryptoDetector {
     private static final String ENCRYPTED = "ENCRYPTED";
     private static final String PRIVATE = "PRIVATE";
     private static final String PUBLIC_KEY_EXTENSION = "pub";
+    /**
+     * Au-delà, les clés d'un même fichier (jeu de vecteurs de test : des milliers de clés Wycheproof) forment un
+     * actif par type et algorithme, avec toutes leurs occurrences : l'inventaire reste lisible.
+     */
+    static final int MAX_KEYS_PER_FILE = 25;
 
     private final AssetFactory assetFactory;
     private final CertificateFactory certificateFactory;
@@ -175,7 +181,27 @@ public final class MaterialDetector implements CryptoDetector {
                 assets.add(jwk(file, jwk.group(), jwk.group("kty"), assets.size(), lineOf(text, jwk.start())));
             }
         }
-        return assets;
+        return grouped(assets);
+    }
+
+    /** Clés d'un fichier qui en contient beaucoup : une par type et algorithme ; les certificats restent un à un. */
+    private static List<CryptoAsset> grouped(List<CryptoAsset> assets) {
+        if (assets.size() <= MAX_KEYS_PER_FILE) {
+            return assets;
+        }
+        Map<String, CryptoAsset> groups = new LinkedHashMap<>();
+        for (CryptoAsset asset : assets) {
+            String key = asset.material() == null ? asset.bomRef()
+                    : asset.material().materialType() + "|" + (asset.algorithm() == null ? "" : asset.algorithm().displayName());
+            groups.merge(key, asset, (first, next) -> {
+                List<Occurrence> occurrences = new ArrayList<>(first.occurrences());
+                occurrences.addAll(next.occurrences());
+                return new CryptoAsset(first.bomRef(), first.name(), first.assetType(), first.algorithm(),
+                        first.material(), first.description(), first.functions(), first.sources(), occurrences,
+                        first.verdict());
+            });
+        }
+        return List.copyOf(groups.values());
     }
 
     /** JWK : clé privée si elle porte "d" (secrète pour "oct"), publique sinon ; RSA mesurée sur son module. */

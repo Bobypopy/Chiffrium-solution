@@ -150,6 +150,25 @@ class AlgorithmNormalizerTest {
         assertThat(normalizer.normalize("X931RNG").catalogId()).isEqualTo("x931-rng");
     }
 
+    /** Noms relevés sur le corpus : JWT (Tink, spring-security), XDH (Tink), noms d'OpenSSL. */
+    @ParameterizedTest(name = "{0} -> {1}")
+    @CsvSource(delimiter = '|', value = {
+            "HS256             | jwt-hs256",
+            "JWT_RS256_2048_F4 | jwt-rs256",
+            "JWT_PS512_4096_F4 | jwt-ps512",
+            "JWT_ES256         | jwt-es256",
+            "ES256K            | jwt-es256k",
+            "XDH               | xdh",
+            "mdc2              | mdc2",
+            "PKCS12KDF         | pkcs12-kdf",
+            "PVKKDF            | pvk-kdf",
+            "AES256            | aes",
+            "AES/GCM/NoPadding | aes",
+    })
+    void recognizesNamesFoundOnTheCorpus(String raw, String catalogId) {
+        assertThat(normalizer.normalize(raw).catalogId()).isEqualTo(catalogId);
+    }
+
     /** Un nom composé reprend la variante écrite, sans les précisions du libellé du catalogue. */
     @Test
     void composedNamesUseTheWrittenVariant() {

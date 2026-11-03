@@ -189,6 +189,15 @@
       "key": "auto"
     },
     {
+      "id": "js.forge.rsa",
+      "pattern": "\\bforge\\s*\\.\\s*pki\\s*\\.\\s*rsa\\s*\\.\\s*generateKeyPair\\s*\\(\\s*(?:\\{\\s*bits\\s*:\\s*)?{SIZE}?",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
       "id": "js.node.keypair",
       "pattern": "\\bgenerateKeyPair(?:Sync)?\\s*\\(\\s*{ARG}(?:\\s*,\\s*\\{[^}]*?(?:modulusLength\\s*:\\s*{SIZE}|namedCurve\\s*:\\s*['\"](?<curve>[\\w-]+)['\"]))?",
       "functions": [
@@ -327,15 +336,6 @@
           "decrypt"
         ]
       }
-    },
-    {
-      "id": "js.forge.rsa",
-      "pattern": "\\bforge\\s*\\.\\s*pki\\s*\\.\\s*rsa\\s*\\.\\s*generateKeyPair\\s*\\(\\s*(?:\\{\\s*bits\\s*:\\s*)?{SIZE}?",
-      "algorithm": "RSA",
-      "functions": [
-        "keygen"
-      ],
-      "key": "private-key"
     },
     {
       "id": "js.bcrypt",

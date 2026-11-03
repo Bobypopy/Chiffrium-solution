@@ -63,6 +63,8 @@ export const COMPLEMENTS = {
   // --- Catalogue : noms d'entrées écrits en français
   'Générateur du système': 'System generator',
   'KDF à une étape (SP 800-56C)': 'One-step KDF (SP 800-56C)',
+  'KDF de PKCS#12': 'PKCS#12 KDF',
+  'KDF du format PVK': 'PVK format KDF',
   'Keccak (pré-standard)': 'Keccak (pre-standard)',
   'BLS (signature agrégeable)': 'BLS (aggregatable signature)',
   'DES-crypt (crypt(3) historique)': 'DES-crypt (historic crypt(3))',

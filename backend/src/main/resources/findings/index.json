@@ -151,7 +151,7 @@
       "#"
     ]
   },
-  "testPathPattern": "(^|/)(src/test|[Tt]ests?|[Ss]pecs?|__tests__|__mocks__|testdata|test-data|[Ff]ixtures?|[Mm]ocks?|[Ee]xamples?|[Ss]amples?|[Dd]emos?)(/|$)|[._-](test|spec)s?\\.[A-Za-z0-9]+$|[a-z0-9]Tests?\\.[A-Za-z]+$",
+  "testPathPattern": "(^|/)(src/test|[Tt]ests?|[Ss]pecs?|__tests__|__mocks__|testdata|test-data|[Ff]ixtures?|[Mm]ocks?|[Ee]xamples?|[Ss]amples?|[Dd]emos?|[Ss]elf[Tt]ests?|test[-_](?:fixtures?|vectors?|data|helpers?|utils?)|[\\w-]*[Vv]ectors|fuzz(?:ing|ers?)?)(/|$)|[._-](test|spec)s?\\.[A-Za-z0-9]+$|[a-z0-9]Tests?\\.[A-Za-z]+$|(^|/)test_[^/]+$|[._-]tests?[._-][^/]*$",
   "placeholderPattern": "^(\\$\\{.*\\}|\\$\\(.*\\)|\\$[A-Za-z_][A-Za-z0-9_]*|%[A-Za-z_]+%|<[^>]*>|\\{\\{.*\\}\\}|\\*+|x{3,}|\\.{3,}|#+|-+|0+|1234.*|null|none|nil|undefined|true|false)$|change_?me|example|placeholder|dummy|sample|your[_-]|redacted|todo|fixme|secret[_-]?here|replace|insert|getenv|environ|process\\.env|config\\[|settings\\.|vault:|arn:aws|^test|^fake|^mock",
   "suppressionMarker": "chiffrium:ignore"
 }

@@ -5,7 +5,7 @@
       "category": "weak-cipher-suite",
       "severity": "medium",
       "cwe": "CWE-327",
-      "pattern": "(?:(?:ssl_ciphers|SSLCipherSuite|ssl-default-(?:bind|server)-ciphers|\\bciphers|cipher[-_]?suites?|cipher[-_]?list|tls[-_]?ciphers)[\\\"']?\\s*(?:[:=](?!=)|=>|\\s)(?:\\s*\\[\\]\\s*uint16\\s*\\{)?|(?:setEnabledCipherSuites|set_?CipherSuites|\\.cipherSuites|set_?ciphers|set_?cipher_?list)\\s*\\((?:\\s*new\\s+String\\s*\\[\\s*\\]\\s*\\{)?)\\s*[\\\"'\\[]?\\s*(?![!=]=)(?<list>[A-Za-z0-9_:+!@=,.\\-\\\" ]{3,})",
+      "pattern": "(?:(?:ssl_ciphers|SSLCipherSuite|ssl-default-(?:bind|server)-ciphers|\\bciphers|cipher[-_]?suites?|cipher[-_]?list|tls[-_]?ciphers)[\\\"']?[ \\t]*(?:[:=](?!=)|=>|[ \\t])(?:\\s*\\[\\]\\s*uint16\\s*\\{)?|(?:setEnabledCipherSuites|set_?CipherSuites|\\.cipherSuites|set_?ciphers|set_?cipher_?list)\\s*\\((?:\\s*new\\s+String\\s*\\[\\s*\\]\\s*\\{)?)\\s*[\\\"'\\[]?\\s*(?![!=]=)(?<list>[A-Za-z0-9_:+!@=,.\\-\\\" ]{3,})",
       "ignoreCase": true,
       "listGroup": "list",
       "listCheck": "cipher-suites",
@@ -22,7 +22,7 @@
       "pattern": "\\b(?<list>(?:TLS|SSL)_[A-Z0-9]+(?:_[A-Z0-9]+)*_WITH_[A-Z0-9_]+)\\b",
       "listGroup": "list",
       "listCheck": "cipher-suites",
-      "exclude": "ssl_ciphers|SSLCipherSuite|ciphers|cipher[-_]?suites?\\s*[\\\"']?\\s*[:=]|cipher[-_]?list|\\b(?:TLS|SSL)_\\w+\\s*(?::\\s*\\w+\\s*|\\s+\\w+\\s*)?=\\s*(?:\\(\\s*\\w+\\s*\\)\\s*)?(?:0x[0-9A-Fa-f]+|\\d+)\\b|#define\\s+(?:TLS|SSL)_\\w+\\s+(?:0x[0-9A-Fa-f]+|\\d+)|\\b(?:TLS|SSL)_\\w+\\s*\\(\\s*(?:0x[0-9A-Fa-f]+|\\d+)\\s*[,)]",
+      "exclude": "ssl_ciphers|SSLCipherSuite|ciphers|cipher[-_]?suites?\\s*[\\\"']?\\s*[:=]|cipher[-_]?list|\\b(?:TLS|SSL)_\\w+\\s*(?::\\s*\\w+\\s*|\\s+\\w+\\s*)?=\\s*(?:\\(\\s*\\w+\\s*\\)\\s*)?(?:0x[0-9A-Fa-f]+|\\d+)\\b|#define\\s+(?:TLS|SSL)_\\w+\\s+(?:0x[0-9A-Fa-f]+|\\d+)|\\b(?:TLS|SSL)_\\w+\\s*\\(\\s*(?:0x[0-9A-Fa-f]+|\\d+)\\s*[,)]|#define\\s+\\w+\\s+\"(?:TLS|SSL)_\\w+\"|\\bcase\\s+[\\w.]*(?:TLS|SSL)_\\w+\\s*[,:]|^\\s*[\\w.]*(?:TLS|SSL)_\\w+\\s*:\\s*$|\\{\\s*0x[0-9A-Fa-f]+\\s*,\\s*\"(?:TLS|SSL)_\\w+\"\\s*\\}",
       "title": "Suite TLS faible",
       "description": "Suite de chiffrement TLS obsolète référencée dans le code.",
       "recommendation": "N'activer que des suites AEAD avec échange de clés éphémère (ECDHE + AES-GCM ou ChaCha20-Poly1305) et TLS 1.3 ; voir les guides TLS de l'ANSSI et de Mozilla (profil \"intermediate\")."
