@@ -121,7 +121,7 @@ public final class Main {
      * Code source correspondant (AGPL-3.0, article 13) : proposé à toute personne qui utilise l'outil, y compris
      * à travers le réseau. Une version modifiée déployée en serveur doit pointer vers son propre code.
      */
-    static final String SOURCE_URL = "https://github.com/Bobypopy/CryptoAnalyzer-solution";
+    static final String SOURCE_URL = "https://github.com/Bobypopy/Chiffrium-solution";
     private static final String THIRD_PARTY_RESOURCE = "/legal/third-party.json";
     private static final String KEY_SETTINGS = "settings";
     private static final String KEY_DB_FILE = "h2-file";

@@ -1,11 +1,11 @@
 {
   "name": "chiffrium-desktop",
   "productName": "Chiffrium",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "description": "Application de bureau Chiffrium : inventaire cryptographique (CBOM), constats de sécurité et préparation post-quantique, en local",
   "main": "src/main.js",
   "private": true,
-  "homepage": "https://github.com/Bobypopy/Chiffrium-releases",
+  "homepage": "https://github.com/Bobypopy/Chiffrium-solution",
   "author": "Les auteurs de Chiffrium",
   "desktopName": "chiffrium.desktop",
   "license": "AGPL-3.0-only",

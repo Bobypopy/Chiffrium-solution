@@ -1,13 +1,13 @@
 name: Release
 
-# Publier une version : git tag v2.4.0 && git push origin v2.4.0
-# Construit l'installateur Windows et les paquets Linux, puis les publie dans une release GitHub où les
-# applications installées vont chercher leurs mises à jour.
+# Publier une version : git tag v1.3.0 && git push origin v1.3.0
+# Construit l'installateur Windows, les paquets Linux et le moteur seul, puis les publie dans une release de ce
+# dépôt, où les applications installées vont chercher leurs mises à jour. Seul un dépôt public publie : une
+# release privée ne servirait pas les mises à jour, et SignPath ne signe que ce que construit le dépôt public.
 #
-# Si la variable RELEASES_REPO (ex. Bobypopy/Chiffrium-releases) et le secret RELEASES_TOKEN sont définis, les
-# releases partent dans ce dépôt public. Sinon, elles restent dans ce dépôt (qui doit alors être public pour
-# que les mises à jour automatiques fonctionnent). La signature SignPath demande que ce workflow tourne dans le
-# dépôt public du code (voir CONTRIBUTING.md, section Releases).
+# Ancien dépôt des versions : tant que la variable MIRROR_REPO (ex. Bobypopy/Chiffrium-releases) et le secret
+# MIRROR_TOKEN sont définis, chaque version y est aussi recopiée, pour les installations qui y cherchent encore
+# leurs mises à jour.
 
 on:
   push:
@@ -19,6 +19,7 @@ permissions:
 jobs:
   backend:
     name: Backend (tests + JAR)
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -27,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      # Version unique : le numéro du tag (v2.4.0 -> 2.4.0) s'applique au backend et à l'application de bureau.
+      # Version unique : le numéro du tag (v1.3.0 -> 1.3.0) s'applique au backend et à l'application de bureau.
       - run: mvn -B -f backend/pom.xml verify -Drevision="${GITHUB_REF_NAME#v}"
       - uses: actions/upload-artifact@v6
         with:
@@ -43,6 +44,8 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v7
@@ -71,25 +74,12 @@ jobs:
         working-directory: desktop
         shell: bash
         env:
-          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
-          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Signature Windows (voir CONTRIBUTING.md, section Releases) : par SignPath si la variable SIGNPATH_ORGANIZATION_ID
-          # est définie, sinon par le certificat des secrets WINDOWS_CSC_*, s'ils existent.
+          # Signature Windows : par SignPath si la variable SIGNPATH_ORGANIZATION_ID est définie, sinon par le
+          # certificat des secrets WINDOWS_CSC_*, s'ils existent.
           SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
         run: |
-          if [ -n "$RELEASES_REPO" ]; then
-            if [ -z "$RELEASES_TOKEN" ]; then
-              echo "::error::RELEASES_REPO est défini mais le secret RELEASES_TOKEN manque (voir CONTRIBUTING.md, section Releases)."
-              exit 1
-            fi
-            export UPDATE_OWNER="${RELEASES_REPO%%/*}" UPDATE_REPO="${RELEASES_REPO#*/}" GH_TOKEN="$RELEASES_TOKEN"
-            echo "Publication dans $RELEASES_REPO"
-          else
-            export GH_TOKEN="$REPO_TOKEN"
-          fi
           # Avec SignPath, l'installateur Windows est publié après sa signature (étapes suivantes).
           publication=always
           if [ "$RUNNER_OS" = "Windows" ] && [ -n "$SIGNPATH_ORGANIZATION_ID" ]; then
@@ -125,45 +115,34 @@ jobs:
         if: runner.os == 'Windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
         working-directory: desktop
         shell: bash
-        env:
-          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
-          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          installateur="Chiffrium-Setup-$version.exe"
+          installateur="Chiffrium-Setup-${GITHUB_REF_NAME#v}.exe"
           node scripts/after-sign.mjs "signe/$installateur" dist
-          export GH_TOKEN="${RELEASES_TOKEN:-$REPO_TOKEN}"
-          depot="${RELEASES_REPO:-$GITHUB_REPOSITORY}"
-          # La release peut déjà exister (créée par le job Linux) : on ne la crée que si elle manque.
-          gh release view "$GITHUB_REF_NAME" --repo "$depot" > /dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --repo "$depot" --title "$version" --notes "" \
-            || gh release view "$GITHUB_REF_NAME" --repo "$depot" > /dev/null
-          gh release upload "$GITHUB_REF_NAME" "dist/$installateur" "dist/$installateur.blockmap" dist/latest.yml \
-            --repo "$depot" --clobber
+          bash ../.github/scripts/publier.sh "$GITHUB_REPOSITORY" "dist/$installateur" "dist/$installateur.blockmap" \
+            dist/latest.yml
 
-      # Le moteur seul, téléchargé par l'action GitHub (docs/releases-repo/action) et la ligne de commande.
+      # Le moteur seul, téléchargé par l'action GitHub (action/) et la ligne de commande.
       - name: Moteur en ligne de commande
         if: runner.os == 'Linux'
         shell: bash
-        env:
-          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
-          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          GH_TOKEN="${RELEASES_TOKEN:-$REPO_TOKEN}" gh release upload "$GITHUB_REF_NAME" \
-            backend/target/chiffrium-backend.jar --repo "${RELEASES_REPO:-$GITHUB_REPOSITORY}" --clobber
+        run: bash .github/scripts/publier.sh "$GITHUB_REPOSITORY" backend/target/chiffrium-backend.jar
 
-      # Les pages de release sont les seules pages publiques du produit, donc les premières indexées : on y
-      # écrit ce que fait l'outil et ce que contient la version, au lieu de les laisser vides.
+      - name: Copie vers l'ancien dépôt des versions
+        if: vars.MIRROR_REPO != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          MIRROR_REPO: ${{ vars.MIRROR_REPO }}
+        run: |
+          shopt -s nullglob
+          fichiers=(desktop/dist/*.exe desktop/dist/*.exe.blockmap desktop/dist/*.AppImage desktop/dist/*.deb \
+            desktop/dist/latest*.yml)
+          if [ "$RUNNER_OS" = "Linux" ]; then fichiers+=(backend/target/chiffrium-backend.jar); fi
+          bash .github/scripts/publier.sh "$MIRROR_REPO" "${fichiers[@]}"
+
+      # Les pages de release sont les premières indexées par les moteurs de recherche : on y écrit ce que fait
+      # l'outil et ce que contient la version, au lieu de les laisser vides.
       - name: Notes de version
         if: runner.os == 'Linux'
         shell: bash
-        env:
-          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
-          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          depot="${RELEASES_REPO:-$GITHUB_REPOSITORY}"
-          jeton="${RELEASES_TOKEN:-$REPO_TOKEN}"
-          python .github/scripts/notes-de-version.py "${GITHUB_REF_NAME#v}" "$depot" "$jeton"
+        run: python .github/scripts/notes-de-version.py "${GITHUB_REF_NAME#v}" "$GITHUB_REPOSITORY" "$GH_TOKEN"

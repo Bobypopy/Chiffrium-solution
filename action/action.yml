@@ -1,0 +1,89 @@
+name: Chiffrium
+description: >-
+  Inventaire cryptographique et préparation post-quantique : analyse le dépôt, produit un SARIF pour GitHub code
+  scanning et fait échouer le job si la politique est dépassée. Le code n'est envoyé nulle part.
+author: Bobypopy
+branding:
+  icon: lock
+  color: blue
+
+inputs:
+  path:
+    description: Dossier à analyser (par défaut tout le dépôt récupéré par actions/checkout).
+    default: "."
+  fail-on:
+    description: >-
+      Fait échouer le job dès qu'un actif atteint ce statut : "disallowed" (interdit) ou "deprecated" (déprécié
+      ou pire). Vide pour ne jamais échouer.
+    default: disallowed
+  sarif:
+    description: Fichier SARIF produit (à transmettre à github/codeql-action/upload-sarif).
+    default: chiffrium.sarif
+  history:
+    description: >-
+      "true" pour chercher aussi les secrets et clés restés dans l'historique Git (avec actions/checkout et
+      fetch-depth 0).
+    default: "false"
+  vulnerabilities:
+    description: >-
+      "true" pour interroger la base publique OSV avec les noms et versions des dépendances (aucune ligne de
+      code envoyée).
+    default: "false"
+  version:
+    description: >-
+      Version de Chiffrium ("1.2.5"...). Par défaut, celle de l'action si elle est appelée par un numéro de
+      version (@v1.2.5), sinon la dernière publiée.
+    default: ""
+
+outputs:
+  sarif:
+    description: Chemin du fichier SARIF produit.
+    value: ${{ steps.analyse.outputs.sarif }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: "21"
+
+    # Les entrées passent par des variables d'environnement, jamais interpolées dans le script.
+    - name: Télécharger Chiffrium
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        ACTION_REF: ${{ github.action_ref }}
+        # Le moteur est publié dans les releases du dépôt de l'action (Bobypopy/Chiffrium-solution ou un fork).
+        ACTION_REPO: ${{ github.action_repository }}
+      run: |
+        version="$VERSION"
+        if [ -z "$version" ] && [[ "$ACTION_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          version="${ACTION_REF#v}"
+        fi
+        if [ -n "$version" ]; then
+          url="https://github.com/${ACTION_REPO}/releases/download/v${version}/chiffrium-backend.jar"
+        else
+          url="https://github.com/${ACTION_REPO}/releases/latest/download/chiffrium-backend.jar"
+        fi
+        curl -fsSL --retry 3 -o "$RUNNER_TEMP/chiffrium.jar" "$url"
+
+    - name: Analyser
+      id: analyse
+      shell: bash
+      env:
+        TARGET: ${{ inputs.path }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        SARIF: ${{ inputs.sarif }}
+        HISTORY: ${{ inputs.history }}
+        VULNERABILITIES: ${{ inputs.vulnerabilities }}
+      run: |
+        target="$(realpath "$TARGET")"
+        sarif="$(realpath -m "$SARIF")"
+        args=(analyze "$target" --no-cdxgen --sarif "$sarif")
+        if [ -n "$FAIL_ON" ]; then args+=(--fail-on "$FAIL_ON"); fi
+        if [ "$HISTORY" = "true" ]; then args+=(--history); fi
+        if [ "$VULNERABILITIES" != "true" ]; then args+=(--no-vulns); fi
+        echo "sarif=$sarif" >> "$GITHUB_OUTPUT"
+        DATA_DIR="$RUNNER_TEMP/chiffrium-data" ALLOWED_LOCAL_ROOTS="$target" \
+          java -jar "$RUNNER_TEMP/chiffrium.jar" "${args[@]}"
