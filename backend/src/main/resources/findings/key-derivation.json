@@ -85,7 +85,9 @@
       "severity": "medium",
       "cwe": "CWE-916",
       "languages": [
-        "csharp"
+        "csharp",
+        "vbnet",
+        "fsharp"
       ],
       "pattern": "Rfc2898DeriveBytes(?:\\.Pbkdf2)?\\s*\\([^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
       "numberGroup": "iterations",

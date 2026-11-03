@@ -65,6 +65,7 @@ public final class CdxgenSbomGenerator implements SbomGenerator {
             Map.entry(Language.SCALA, "scala"), Map.entry(Language.PYTHON, "python"),
             Map.entry(Language.JAVASCRIPT, "js"), Map.entry(Language.TYPESCRIPT, "js"),
             Map.entry(Language.GO, "go"), Map.entry(Language.CSHARP, "dotnet"),
+            Map.entry(Language.VBNET, "dotnet"), Map.entry(Language.FSHARP, "dotnet"),
             Map.entry(Language.C, "c"), Map.entry(Language.CPP, "c"),
             Map.entry(Language.PHP, "php"), Map.entry(Language.RUBY, "ruby"),
             Map.entry(Language.RUST, "rust"), Map.entry(Language.SWIFT, "swift"),

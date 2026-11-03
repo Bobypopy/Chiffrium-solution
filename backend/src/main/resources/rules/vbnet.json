@@ -1,0 +1,18 @@
+{
+  "id": "vbnet",
+  "languages": [
+    "vbnet"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "'",
+    "REM "
+  ],
+  "functionPatterns": [
+    "^\\s*(?:<[^>]*>\\s*)?(?:(?i:public|private|protected|friend|shared|overrides|overridable|overloads|async|static|notoverridable|mustoverride)\\s+)*(?i:function|sub)\\s+(?<name>\\w+)"
+  ],
+  "classPatterns": [
+    "^\\s*(?:(?i:public|private|friend|partial|notinheritable|mustinherit)\\s+)*(?i:class|module|structure)\\s+(?<name>\\w+)"
+  ],
+  "rules": []
+}

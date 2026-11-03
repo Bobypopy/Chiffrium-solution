@@ -31,6 +31,9 @@ public enum Language {
     PERL("perl"),
     OBJC("objc"),
     SQL("sql"),
+    VBNET("vbnet"),
+    FSHARP("fsharp"),
+    ERLANG("erlang"),
     CONFIG("config"),
     UNKNOWN("unknown");
 

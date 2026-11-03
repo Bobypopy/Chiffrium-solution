@@ -1,6 +1,6 @@
 {
   "id": "csharp",
-  "languages": ["csharp"],
+  "languages": ["csharp", "vbnet", "fsharp"],
   "commentPrefixes": ["//", "/*", "*"],
   "functionPatterns": [
     "^(?!\\s*(?:return|new|else|throw|case|if|for|foreach|while|switch|catch|using|lock|do|try)\\b)\\s*(?:\\[[^\\]]*\\]\\s*)*(?:(?:public|private|protected|internal|static|virtual|override|abstract|sealed|async|extern|unsafe|partial|new|readonly)\\s+)*(?:[\\w.\\[\\]<>?,]+\\s+)(?<name>[A-Za-z_]\\w*)\\s*(?:<[^>]*>)?\\s*\\([^=;]*$"
@@ -16,12 +16,12 @@
     },
     {
       "id": "cs.hash.provider",
-      "pattern": "\\bnew\\s+(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
       "functions": ["digest"]
     },
     {
       "id": "cs.hmac",
-      "pattern": "\\b(?:new\\s+)?(?<name>HMACMD5|HMACSHA1|HMACSHA256|HMACSHA384|HMACSHA512|HMACSHA3_256)\\s*(?:\\(|\\.\\s*HashData)",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>HMACMD5|HMACSHA1|HMACSHA256|HMACSHA384|HMACSHA512|HMACSHA3_256)\\s*(?:\\(|\\.\\s*HashData)",
       "functions": ["tag"]
     },
     {
@@ -32,13 +32,13 @@
     },
     {
       "id": "cs.symmetric.provider",
-      "pattern": "\\bnew\\s+(?<name>Aes|DES|TripleDES|RC2|Rijndael)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>Aes|DES|TripleDES|RC2|Rijndael)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
       "map": { "tripledes": "3DES" },
       "functions": ["encrypt", "decrypt"]
     },
     {
       "id": "cs.aead",
-      "pattern": "\\bnew\\s+(?<name>AesGcm|AesCcm|ChaCha20Poly1305)\\s*\\(",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>AesGcm|AesCcm|ChaCha20Poly1305)\\s*\\(",
       "functions": ["encrypt", "decrypt"]
     },
     {
@@ -59,7 +59,7 @@
     {
       "id": "cs.bc.keysize",
       "kind": "keysize",
-      "pattern": "\\bnew\\s+(?:RsaKeyGenerationParameters\\s*\\([^;]*?,|KeyGenerationParameters\\s*\\(\\s*[^,]+,)\\s*{SIZE}\\b"
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?:RsaKeyGenerationParameters\\s*\\([^;]*?,|KeyGenerationParameters\\s*\\(\\s*[^,]+,)\\s*{SIZE}\\b"
     },
     {
       "id": "cs.bc.pqc-parameter-set",
@@ -94,7 +94,7 @@
     },
     {
       "id": "cs.bc.key-pair-generator",
-      "pattern": "\\bnew\\s+(?<name>Rsa|EC|Ed25519|Ed448|X25519|X448|Dsa|DH|MLKem|MLDsa|SlhDsa|Kyber|Dilithium|Falcon|SphincsPlus)KeyPairGenerator\\s*\\(",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>Rsa|EC|Ed25519|Ed448|X25519|X448|Dsa|DH|MLKem|MLDsa|SlhDsa|Kyber|Dilithium|Falcon|SphincsPlus)KeyPairGenerator\\s*\\(",
       "functions": ["keygen"],
       "key": "private-key"
     },
@@ -119,7 +119,7 @@
     },
     {
       "id": "cs.asymmetric.provider",
-      "pattern": "\\bnew\\s+(?<name>RSA|DSA)CryptoServiceProvider\\s*\\(\\s*{SIZE}?",
+      "pattern": "\\b(?:(?:new|New)\\s+)?(?<name>RSA|DSA)CryptoServiceProvider\\s*\\(\\s*{SIZE}?",
       "functions": ["keygen"]
     },
     {
@@ -150,7 +150,7 @@
     },
     {
       "id": "cs.pbkdf2",
-      "pattern": "\\bnew\\s+Rfc2898DeriveBytes\\s*\\(",
+      "pattern": "\\b(?:(?:new|New)\\s+)?Rfc2898DeriveBytes\\s*\\(",
       "algorithm": "PBKDF2",
       "functions": ["keyderive"]
     },
@@ -176,7 +176,7 @@
       "id": "cs.io.read",
       "kind": "file",
       "direction": "read",
-      "pattern": "\\b(?:File\\s*\\.\\s*(?:ReadAllText|ReadAllBytes|ReadAllLines|OpenRead|OpenText)(?:Async)?|new\\s+X509Certificate2|X509CertificateLoader\\s*\\.\\s*Load\\w*)\\s*\\(\\s*{FILE}"
+      "pattern": "\\b(?:File\\s*\\.\\s*(?:ReadAllText|ReadAllBytes|ReadAllLines|OpenRead|OpenText)(?:Async)?|(?:new|New)\\s+X509Certificate2|X509CertificateLoader\\s*\\.\\s*Load\\w*)\\s*\\(\\s*{FILE}"
     }
   ]
 }

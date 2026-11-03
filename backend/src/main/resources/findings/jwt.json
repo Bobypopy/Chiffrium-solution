@@ -59,9 +59,11 @@
       "severity": "high",
       "cwe": "CWE-347",
       "languages": [
-        "csharp"
+        "csharp",
+        "vbnet",
+        "fsharp"
       ],
-      "pattern": "(?:RequireSignedTokens|ValidateIssuerSigningKey|ValidateLifetime|RequireExpirationTime)\\s*=\\s*false",
+      "pattern": "(?:RequireSignedTokens|ValidateIssuerSigningKey|ValidateLifetime|RequireExpirationTime)\\s*=\\s*(?:false|False)",
       "title": "Validation JWT désactivée (.NET)",
       "description": "Un paramètre de validation essentiel du jeton est désactivé.",
       "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."

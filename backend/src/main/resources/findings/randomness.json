@@ -103,9 +103,11 @@
       "severity": "medium",
       "cwe": "CWE-338",
       "languages": [
-        "csharp"
+        "csharp",
+        "vbnet",
+        "fsharp"
       ],
-      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?new\\s+Random\\s*\\(",
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new|New)\\s+Random\\s*\\(",
       "title": "System.Random pour un secret",
       "description": "System.Random est prévisible.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
@@ -146,9 +148,10 @@
       "severity": "medium",
       "cwe": "CWE-338",
       "languages": [
-        "elixir"
+        "elixir",
+        "erlang"
       ],
-      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?::rand\\s*\\.\\s*(?:uniform|bytes)|\\bEnum\\s*\\.\\s*random)\\s*\\(",
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:(?::rand\\s*\\.|\\brand\\s*:)\\s*(?:uniform|bytes)|\\bEnum\\s*\\.\\s*random)\\s*\\(",
       "title": ":rand pour un secret",
       "description": ":rand et Enum.random sont prévisibles.",
       "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."

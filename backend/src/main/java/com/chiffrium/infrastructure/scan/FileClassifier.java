@@ -22,6 +22,15 @@ public final class FileClassifier {
             Map.entry("py", Language.PYTHON), Map.entry("pyw", Language.PYTHON),
             Map.entry("js", Language.JAVASCRIPT), Map.entry("mjs", Language.JAVASCRIPT),
             Map.entry("cjs", Language.JAVASCRIPT), Map.entry("jsx", Language.JAVASCRIPT),
+            // Composants web : le script est du JavaScript ou du TypeScript au milieu du gabarit.
+            Map.entry("vue", Language.JAVASCRIPT), Map.entry("svelte", Language.JAVASCRIPT),
+            Map.entry("astro", Language.JAVASCRIPT),
+            // Pages serveur et gabarits : le code du langage hôte.
+            Map.entry("jsp", Language.JAVA), Map.entry("cshtml", Language.CSHARP), Map.entry("razor", Language.CSHARP),
+            Map.entry("erb", Language.RUBY), Map.entry("gradle", Language.GROOVY),
+            Map.entry("pyi", Language.PYTHON), Map.entry("ipynb", Language.PYTHON),
+            Map.entry("vb", Language.VBNET), Map.entry("fs", Language.FSHARP), Map.entry("fsx", Language.FSHARP),
+            Map.entry("fsi", Language.FSHARP), Map.entry("erl", Language.ERLANG), Map.entry("hrl", Language.ERLANG),
             Map.entry("ts", Language.TYPESCRIPT), Map.entry("tsx", Language.TYPESCRIPT),
             Map.entry("mts", Language.TYPESCRIPT), Map.entry("cts", Language.TYPESCRIPT),
             Map.entry("go", Language.GO),
@@ -44,7 +53,16 @@ public final class FileClassifier {
             Map.entry("toml", Language.CONFIG), Map.entry("env", Language.CONFIG), Map.entry("cfg", Language.CONFIG),
             Map.entry("xml", Language.CONFIG), Map.entry("plist", Language.CONFIG),Map.entry("security", Language.CONFIG), Map.entry("tf", Language.CONFIG),
             Map.entry("tfvars", Language.CONFIG), Map.entry("sh", Language.CONFIG), Map.entry("bash", Language.CONFIG),
-            Map.entry("ps1", Language.CONFIG), Map.entry("npmrc", Language.CONFIG), Map.entry("pypirc", Language.CONFIG));
+            Map.entry("ps1", Language.CONFIG), Map.entry("npmrc", Language.CONFIG), Map.entry("pypirc", Language.CONFIG),
+            Map.entry("zsh", Language.CONFIG), Map.entry("bat", Language.CONFIG), Map.entry("cmd", Language.CONFIG),
+            Map.entry("psm1", Language.CONFIG), Map.entry("hcl", Language.CONFIG), Map.entry("bicep", Language.CONFIG),
+            Map.entry("tpl", Language.CONFIG), Map.entry("j2", Language.CONFIG), Map.entry("nix", Language.CONFIG),
+            // CloudFormation, modèles ARM, configurations applicatives (les fichiers de verrouillage sont écartés).
+            Map.entry("json", Language.CONFIG));
+
+    /** Listes de dépendances générées : volumineuses, sans configuration cryptographique, lues comme données. */
+    private static final Set<String> LOCK_FILES = Set.of("package-lock.json", "npm-shrinkwrap.json",
+            "composer.lock", "packages.lock.json");
 
     /** Fichiers de configuration sans extension significative. */
     private static final Map<String, Language> FILE_NAMES = Map.of(
@@ -98,6 +116,9 @@ public final class FileClassifier {
         }
         if (lower.startsWith(ENV_FILE_PREFIX)) {
             return Optional.of(Language.CONFIG);
+        }
+        if (LOCK_FILES.contains(lower)) {
+            return Optional.empty();
         }
         return extension(fileName).map(EXTENSIONS::get);
     }

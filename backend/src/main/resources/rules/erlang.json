@@ -1,0 +1,17 @@
+{
+  "id": "erlang",
+  "languages": [
+    "erlang"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "%"
+  ],
+  "functionPatterns": [
+    "^(?<name>[a-z]\\w*)\\s*\\([^)]*\\)\\s*(?:when\\b.*)?->"
+  ],
+  "classPatterns": [
+    "^-module\\s*\\(\\s*(?<name>\\w+)\\s*\\)"
+  ],
+  "rules": []
+}

@@ -117,9 +117,11 @@
       "severity": "high",
       "cwe": "CWE-295",
       "languages": [
-        "csharp"
+        "csharp",
+        "vbnet",
+        "fsharp"
       ],
-      "pattern": "ServerCertificate(?:Custom)?ValidationCallback\\s*\\+?=\\s*(?:\\([^)]*\\)|\\w+)\\s*=>\\s*true|DangerousAcceptAnyServerCertificateValidator",
+      "pattern": "ServerCertificate(?:Custom)?ValidationCallback\\s*\\+?=\\s*(?:\\([^)]*\\)|\\w+)\\s*=>\\s*true|ServerCertificate(?:Custom)?ValidationCallback\\s*\\+?=\\s*(?:Function\\s*\\([^)]*\\)\\s*True|fun\\b[^\\n]*?->\\s*true)|DangerousAcceptAnyServerCertificateValidator",
       "title": "Callback de certificat permissif",
       "description": "La validation du certificat renvoie toujours vrai : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
@@ -221,9 +223,10 @@
       "severity": "high",
       "cwe": "CWE-295",
       "languages": [
-        "elixir"
+        "elixir",
+        "erlang"
       ],
-      "pattern": "\\bverify\\s*:\\s*:verify_none\\b",
+      "pattern": "\\bverify\\s*:\\s*:verify_none\\b|\\{\\s*verify\\s*,\\s*verify_none\\s*\\}",
       "title": "VERIFY_NONE",
       "description": "Connexion TLS Erlang/Elixir sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."

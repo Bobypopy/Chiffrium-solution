@@ -1,6 +1,6 @@
 {
   "id": "elixir",
-  "languages": ["elixir"],
+  "languages": ["elixir", "erlang"],
   "blockStyle": "indent",
   "commentPrefixes": ["#"],
   "functionPatterns": [
@@ -12,59 +12,59 @@
   "rules": [
     {
       "id": "elixir.crypto.hash",
-      "pattern": ":crypto\\s*\\.\\s*hash\\s*\\(\\s*:(?<name>md4|md5|sha|sha224|sha256|sha384|sha512|sha3_256|sha3_384|sha3_512|blake2b|blake2s)\\b",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*hash\\s*\\(\\s*:?(?<name>md4|md5|sha|sha224|sha256|sha384|sha512|sha3_256|sha3_384|sha3_512|blake2b|blake2s)\\b",
       "map": { "sha": "SHA-1" },
       "functions": ["digest"]
     },
     {
       "id": "elixir.crypto.hmac",
-      "pattern": ":crypto\\s*\\.\\s*(?:mac\\s*\\(\\s*:hmac\\s*,|hmac\\s*\\()\\s*:(?<name>md5|sha|sha224|sha256|sha384|sha512)\\b",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*(?:mac\\s*\\(\\s*:?hmac\\s*,|hmac\\s*\\()\\s*:?(?<name>md5|sha|sha224|sha256|sha384|sha512)\\b",
       "template": "HMAC-{name}",
       "map": { "sha": "SHA-1" },
       "functions": ["tag"]
     },
     {
       "id": "elixir.crypto.cipher",
-      "pattern": ":crypto\\s*\\.\\s*(?<op>crypto_one_time_aead|crypto_one_time|crypto_init|block_encrypt|block_decrypt)\\s*\\(\\s*:(?<name>\\w+)",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*(?<op>crypto_one_time_aead|crypto_one_time|crypto_init|block_encrypt|block_decrypt)\\s*\\(\\s*:?(?<name>\\w+)",
       "functions": ["encrypt", "decrypt"]
     },
     {
       "id": "elixir.crypto.sign",
-      "pattern": ":crypto\\s*\\.\\s*(?<op>sign|verify)\\s*\\(\\s*:(?<name>rsa|ecdsa|eddsa|dss)\\b",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*(?<op>sign|verify)\\s*\\(\\s*:?(?<name>rsa|ecdsa|eddsa|dss)\\b",
       "map": { "dss": "DSA" },
       "primitive": "signature",
       "functionsByApi": { "sign": ["sign"], "verify": ["verify"] }
     },
     {
       "id": "elixir.crypto.pbkdf2",
-      "pattern": ":crypto\\s*\\.\\s*pbkdf2_hmac\\s*\\(\\s*:(?<name>sha|sha256|sha384|sha512)\\b",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*pbkdf2_hmac\\s*\\(\\s*:?(?<name>sha|sha256|sha384|sha512)\\b",
       "template": "PBKDF2WithHmac{name}",
       "map": { "sha": "SHA1" },
       "functions": ["keyderive"]
     },
     {
       "id": "elixir.crypto.generate-rsa",
-      "pattern": ":crypto\\s*\\.\\s*generate_key\\s*\\(\\s*:rsa\\s*,\\s*\\{\\s*{SIZE}",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*generate_key\\s*\\(\\s*:?rsa\\s*,\\s*\\{\\s*{SIZE}",
       "algorithm": "RSA",
       "functions": ["keygen"],
       "key": "private-key"
     },
     {
       "id": "elixir.crypto.generate-curve",
-      "pattern": ":crypto\\s*\\.\\s*generate_key\\s*\\(\\s*:(?:ecdh|eddsa)\\s*,\\s*:(?<name>\\w+)",
+      "pattern": "(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*generate_key\\s*\\(\\s*:?(?:ecdh|eddsa)\\s*,\\s*:?(?<name>\\w+)",
       "functions": ["keygen"],
       "key": "private-key"
     },
     {
       "id": "elixir.public-key.generate-rsa",
-      "pattern": ":public_key\\s*\\.\\s*generate_key\\s*\\(\\s*\\{\\s*:rsa\\s*,\\s*{SIZE}",
+      "pattern": "(?::public_key\\s*\\.|\\bpublic_key\\s*:)\\s*generate_key\\s*\\(\\s*\\{\\s*:?rsa\\s*,\\s*{SIZE}",
       "algorithm": "RSA",
       "functions": ["keygen"],
       "key": "private-key"
     },
     {
       "id": "elixir.public-key.generate-ec",
-      "pattern": ":public_key\\s*\\.\\s*generate_key\\s*\\(\\s*\\{\\s*:namedCurve\\s*,\\s*:(?<curve>\\w+)",
+      "pattern": "(?::public_key\\s*\\.|\\bpublic_key\\s*:)\\s*generate_key\\s*\\(\\s*\\{\\s*:?namedCurve\\s*,\\s*:?(?<curve>\\w+)",
       "algorithm": "EC",
       "functions": ["keygen"],
       "key": "private-key"
@@ -78,7 +78,7 @@
     {
       "id": "elixir.random-key-bytes",
       "kind": "keybytes",
-      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*:crypto\\s*\\.\\s*strong_rand_bytes\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
+      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*(?::crypto\\s*\\.|\\bcrypto\\s*:)\\s*strong_rand_bytes\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
     },
     {
       "id": "elixir.io.write",

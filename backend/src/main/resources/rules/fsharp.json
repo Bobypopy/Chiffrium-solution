@@ -1,0 +1,20 @@
+{
+  "id": "fsharp",
+  "languages": [
+    "fsharp"
+  ],
+  "blockStyle": "indent",
+  "commentPrefixes": [
+    "//",
+    "(*",
+    "*"
+  ],
+  "functionPatterns": [
+    "^\\s*let\\s+(?:rec\\s+|inline\\s+|private\\s+|internal\\s+)*(?<name>[a-z_]\\w*)\\s+(?!=)[\\w(]",
+    "^\\s*(?:override|member|abstract|static\\s+member)\\s+(?:\\w+\\s*\\.\\s*)?(?<name>\\w+)\\s*[(\\w]"
+  ],
+  "classPatterns": [
+    "^\\s*(?:type|module)\\s+(?<name>[A-Za-z_]\\w*)"
+  ],
+  "rules": []
+}

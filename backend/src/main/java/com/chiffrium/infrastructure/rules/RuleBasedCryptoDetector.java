@@ -103,7 +103,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 continue;
             }
             Supplier<ProjectCode> code = memoize(() -> ProjectCode.load(context.projectRoot(), packFiles,
-                    language -> scopePackFor(language, pack), pack.commentPrefixes()));
+                    language -> scopePackFor(language, pack)));
             ConstantResolver resolver = new ConstantResolver(() -> code.get().constants());
             codes.put(pack.id(), code);
             resolvers.put(pack.id(), resolver);
@@ -339,6 +339,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         /** Null pour un paquet transverse (JWT, KMS) : sans déclarations de fonctions, rien à remonter. */
         private final Supplier<ValueTracer> tracer;
         private final ScopeResolver scopes;
+        private final List<String> commentPrefixes;
         private final String fileStem;
         private final List<int[]> consumed = new ArrayList<>();
         private final List<Modifier> modifiers = new ArrayList<>();
@@ -356,6 +357,9 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             RulePack scopePack = scopePackFor(file.language(), pack);
             this.scopes = new ScopeResolver(scopePack.functionPatterns(), scopePack.classPatterns(),
                     ScopeResolver.BlockStyle.of(scopePack.blockStyle()));
+            // Règles empruntées (VB.NET lu par le paquet C#) : les commentaires sont ceux du langage du fichier.
+            this.commentPrefixes = scopePack != pack && !pack.functionPatterns().isEmpty()
+                    ? scopePack.commentPrefixes() : pack.commentPrefixes();
             String name = file.path().substring(file.path().lastIndexOf('/') + 1);
             int dot = name.indexOf('.');
             this.fileStem = dot > 0 ? name.substring(0, dot) : name;
@@ -366,7 +370,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 Matcher matcher = rule.pattern().matcher(text.content());
                 while (matcher.find()) {
                     int line = text.lineOf(matcher.start());
-                    if (text.isCommentLine(line, pack.commentPrefixes())) {
+                    if (text.isCommentLine(line, commentPrefixes)) {
                         continue;
                     }
                     switch (rule.kind()) {
@@ -708,12 +712,16 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
     }
 
     /**
-     * Paquet fournissant les motifs de déclaration du langage : un paquet transverse (ex. JWT) réutilise
-     * ceux du paquet principal du langage.
+     * Paquet fournissant les motifs de déclaration et les commentaires du langage : un paquet transverse (ex. JWT)
+     * réutilise ceux du paquet principal du langage ; un langage qui emprunte les règles d'un autre (VB.NET et
+     * F# celles de C#, Erlang celles d'Elixir) garde sa syntaxe, décrite par un paquet qui lui est propre.
      */
     private RulePack scopePackFor(Language language, RulePack current) {
+        Optional<RulePack> dedicated = packs.stream()
+                .filter(p -> p.languages().equals(Set.of(language)) && !p.functionPatterns().isEmpty())
+                .findFirst();
         if (!current.functionPatterns().isEmpty()) {
-            return current;
+            return dedicated.filter(d -> !current.languages().equals(Set.of(language))).orElse(current);
         }
         return packs.stream()
                 .filter(p -> p.appliesTo(language) && !p.functionPatterns().isEmpty())

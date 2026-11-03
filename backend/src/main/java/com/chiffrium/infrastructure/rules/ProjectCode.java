@@ -112,7 +112,6 @@ final class ProjectCode {
     private final Path root;
     private final Map<String, ScannedFile> files = new LinkedHashMap<>();
     private final Function<Language, RulePack> scopePack;
-    private final List<String> commentPrefixes;
     private final Map<String, List<String>> constants = new HashMap<>();
     private final Map<String, List<FunctionDef>> functionsByName = new HashMap<>();
     private final Map<String, FunctionDef> functionsByLocation = new HashMap<>();
@@ -131,21 +130,20 @@ final class ProjectCode {
         }
     };
 
-    private ProjectCode(Path root, List<ScannedFile> files, Function<Language, RulePack> scopePack,
-                        List<String> commentPrefixes) {
+    private ProjectCode(Path root, List<ScannedFile> files, Function<Language, RulePack> scopePack) {
         this.root = root;
         files.forEach(f -> this.files.put(f.path(), f));
         this.scopePack = scopePack;
-        this.commentPrefixes = commentPrefixes;
     }
 
     /**
      * Lit les fichiers deux fois : déclarations et constantes d'abord, puis les appels, que l'on ne peut relier
      * qu'une fois toutes les déclarations connues. Seul l'index est gardé en mémoire, pas le texte.
+     *
+     * @param scopePack paquet qui décrit la syntaxe (déclarations, commentaires) de chaque langage
      */
-    static ProjectCode load(Path root, List<ScannedFile> files, Function<Language, RulePack> scopePack,
-                            List<String> commentPrefixes) {
-        ProjectCode code = new ProjectCode(root, files, scopePack, commentPrefixes);
+    static ProjectCode load(Path root, List<ScannedFile> files, Function<Language, RulePack> scopePack) {
+        ProjectCode code = new ProjectCode(root, files, scopePack);
         code.indexDeclarations();
         code.indexCalls();
         return code;
@@ -707,7 +705,7 @@ final class ProjectCode {
             int dot = name.indexOf('.');
             Set<Integer> commentLines = new HashSet<>();
             for (int i = 1; i <= text.get().lineCount(); i++) {
-                if (text.get().isCommentLine(i, commentPrefixes)) {
+                if (text.get().isCommentLine(i, pack.commentPrefixes())) {
                     commentLines.add(i);
                 }
             }

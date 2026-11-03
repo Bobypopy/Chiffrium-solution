@@ -39,7 +39,10 @@ public final class SourceText {
      * @return vide pour un fichier binaire (octet nul) ou minifié
      */
     public static Optional<SourceText> load(Path file) throws IOException {
-        return of(Files.readAllBytes(file));
+        Optional<SourceText> text = of(Files.readAllBytes(file));
+        // Notebook Jupyter : le code des cellules, sorti de ses guillemets JSON, à la même ligne.
+        return file.getFileName() != null && NotebookText.isNotebook(file.getFileName().toString())
+                ? text.map(t -> new SourceText(NotebookText.codeInPlace(t.content()))) : text;
     }
 
     /**

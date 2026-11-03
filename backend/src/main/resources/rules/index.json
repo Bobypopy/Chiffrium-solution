@@ -17,5 +17,8 @@
   "config.json",
   "jwt.json",
   "cloud-kms.json",
-  "xml-security.json"
+  "xml-security.json",
+  "vbnet.json",
+  "fsharp.json",
+  "erlang.json"
 ]
