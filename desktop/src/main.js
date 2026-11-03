@@ -42,9 +42,16 @@ const MAX_LOG_BYTES = 5 * 1024 * 1024;
 
 /** Nom du produit avant la 1.0.0 : ses données vivent dans un dossier voisin, à reprendre une fois. */
 const ANCIEN_PRODUIT = 'CryptoAnalyzer';
-/** Ce qui nous appartient dans le dossier utilisateur (le reste est le cache de Chromium, à ne pas déplacer). */
+/**
+ * Ce qui nous appartient dans le dossier utilisateur (le reste est le cache de Chromium, à ne pas déplacer).
+ *
+ * "Local State" fait exception : c'est un fichier de Chromium, mais il contient la clé avec laquelle le
+ * système a chiffré master.key.enc. Sans lui, la clé maîtresse devient illisible et l'application ne démarre
+ * plus du tout ("Error while decrypting the ciphertext"). Il n'est repris que lors de la reprise, c'est-à-dire
+ * avant que la nouvelle installation n'ait écrit quoi que ce soit.
+ */
 const AFFAIRES = ['data', 'bin', 'desktop-config.json', 'desktop.log', 'desktop.old.log',
-  'master.key.enc', '.updaterId'];
+  'master.key.enc', '.updaterId', 'Local State'];
 
 /**
  * Reprend les données de l'ancien nom du produit. Sans cela, une installation existante repart vide :
@@ -61,7 +68,11 @@ function reprendreDonneesAnciennes() {
     for (const nom of AFFAIRES) {
       const source = path.join(ancien, nom);
       if (!fs.existsSync(source)) continue;
-      fs.renameSync(source, path.join(cible, nom));
+      const destination = path.join(cible, nom);
+      // Chromium a pu écrire son "Local State" avant nous : le sien ne vaut rien, celui de l'ancienne
+      // installation porte la clé de déchiffrement.
+      fs.rmSync(destination, { force: true, recursive: true });
+      fs.renameSync(source, destination);
       repris.push(nom);
     }
     if (repris.length) log(`Données reprises depuis ${ANCIEN_PRODUIT} : ${repris.join(', ')}.`);
@@ -434,7 +445,6 @@ async function stopBackend() {
 }
 
 async function start() {
-  reprendreDonneesAnciennes();
   rotateLog();
   buildMenu();
   setupAutoUpdate();
@@ -453,6 +463,9 @@ if (!app.requestSingleInstanceLock()) {
       mainWindow.focus();
     }
   });
+  // Avant que Chromium ne s'installe dans le dossier utilisateur : il y écrit son "Local State", qu'il ne
+  // faut surtout pas laisser prendre la place de celui qui porte la clé de déchiffrement.
+  reprendreDonneesAnciennes();
   app.whenReady().then(start);
   app.on('window-all-closed', () => app.quit());
   app.on('before-quit', (event) => {
