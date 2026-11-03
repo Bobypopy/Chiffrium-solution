@@ -213,6 +213,24 @@
       "title": "Aléa tiré de la blockchain (Solidity)",
       "description": "Un hachage de valeurs du bloc (horodatage, difficulté, blockhash) est prévisible et influençable par les validateurs : il ne doit pas servir de source d'aléa.",
       "recommendation": "Utiliser un oracle d'aléa vérifiable (VRF) ou un schéma d'engagement/révélation."
+    },
+    {
+      "id": "random-seed-traced",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-337",
+      "title": "Graine fixe",
+      "description": "Générateur initialisé avec une graine constante : toute la suite est reproductible.",
+      "recommendation": "Ne jamais fixer la graine d'un générateur utilisé pour la sécurité (laisser SecureRandom s'initialiser seul).",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?:\\.\\s*setSeed|\\bnew\\s+(?:[\\w.]+\\.)?SecureRandom)\\s*\\(\\s*(?:new\\s+byte\\s*\\[\\s*\\]\\s*\\{\\s*)?(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*\\}?\\s*\\)",
+      "traceGroup": "value",
+      "traceKind": "constant"
     }
   ]
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +49,15 @@ final class ValueTracer {
     private static final Pattern WRAPPER_METHOD = Pattern.compile(
             "^(?<inner>.+?)\\s*\\.\\s*(?:toCharArray|toString|trim|strip|toUpperCase|toLowerCase|upper|lower|intern)"
                     + "\\s*\\(\\s*\\)$", Pattern.DOTALL);
+    /** Conversions et copies qui gardent la valeur : {@code key.getBytes(UTF_8)}, {@code Arrays.copyOf(iv, 16)}. */
+    private static final Pattern WRAPPER_BYTES = Pattern.compile(
+            "^(?<inner>.+?)\\s*\\.\\s*(?:getBytes|toByteArray|clone|encode)\\s*\\([^()]*\\)$", Pattern.DOTALL);
+    private static final Pattern WRAPPER_COPY = Pattern.compile(
+            "^(?:java\\.util\\.)?Arrays\\s*\\.\\s*copyOf(?:Range)?\\s*\\(\\s*(?<inner>[^,()]+)\\s*,.*\\)$", Pattern.DOTALL);
+    /** Tampon vide de taille fixe, à remplir : {@code new byte[16]}, {@code bytearray(16)}, {@code Buffer.alloc(16)}. */
+    private static final Pattern ALLOCATION = Pattern.compile(
+            "^(?:new\\s+byte\\s*\\[\\s*\\w+\\s*\\]|(?:bytes|bytearray)\\s*\\(\\s*\\w+\\s*\\)"
+                    + "|Buffer\\s*\\.\\s*alloc(?:Unsafe)?\\s*\\(\\s*\\w+\\s*\\)|ByteArray\\s*\\(\\s*\\w+\\s*\\))$");
     /** Élément d'un tableau ou d'une liste : toutes les valeurs de la collection sont possibles. */
     private static final Pattern INDEXED = Pattern.compile("^(?<inner>[\\w$.]+)\\s*\\[[^\\]]*\\]$");
     /** Liste écrite dans le code : ses éléments sont les valeurs possibles. */
@@ -82,10 +92,20 @@ final class ValueTracer {
 
     private final ProjectCode code;
     private final ConstantResolver resolver;
+    /**
+     * Expression où s'arrêter, gardée telle quelle comme valeur : un tableau d'octets écrit dans le code, un
+     * nombre, une chaîne (constats). Null pour un nom d'algorithme ou une taille, résolus par les constantes.
+     */
+    private final Predicate<String> terminal;
 
     ValueTracer(ProjectCode code, ConstantResolver resolver) {
+        this(code, resolver, null);
+    }
+
+    ValueTracer(ProjectCode code, ConstantResolver resolver, Predicate<String> terminal) {
         this.code = code;
         this.resolver = resolver;
+        this.terminal = terminal;
     }
 
     /** Valeurs possibles de l'expression écrite à cette ligne ; vide si aucune n'est retrouvée. */
@@ -111,7 +131,12 @@ final class ValueTracer {
         if (text.isEmpty()) {
             return;
         }
-        if (NUMBER.matcher(unwrapped).matches()) {
+        if (terminal != null) {
+            if (terminal.test(unwrapped)) {
+                record(unwrapped, at, trail, found, true);
+                return;
+            }
+        } else if (NUMBER.matcher(unwrapped).matches()) {
             record(unwrapped, at, trail, found, true);
             return;
         }
@@ -165,6 +190,9 @@ final class ValueTracer {
     private void followName(String expression, SourceText text, Hop at, int hops, String self, List<Hop> trail,
                             Set<String> visited, Map<String, Found> found) {
         String name = ConstantResolver.lastSegment(expression.replace("->", "."));
+        // Tampon rempli par l'aléa ou une lecture (new byte[16] puis nextBytes) : l'allocation n'est pas une valeur
+        // écrite dans le code. Une vraie valeur ("abcde".getBytes()) reste suivie, même remplacée sur une branche.
+        boolean filled = code.filled(at.path(), name);
         int before = pathCount(found);
         ProjectCode.FunctionDef function = code.functionAt(at.path(), at.line());
         int parameter = function == null || function.parameters() == null ? -1 : function.parameters().indexOf(name);
@@ -184,6 +212,9 @@ final class ValueTracer {
         boolean localName = parameter >= 0 || !local.isEmpty() || !loops.isEmpty();
         List<ProjectCode.Assignment> sources = localName ? local : assignments;
         for (ProjectCode.Assignment assignment : sources) {
+            if (filled && ALLOCATION.matcher(assignment.expression().trim()).matches()) {
+                continue;
+            }
             Hop next = new Hop(at.path(), assignment.line());
             follow(assignment.expression(), next, hops + 1, self, with(trail, next), visited, found);
         }
@@ -299,6 +330,14 @@ final class ValueTracer {
             Matcher method = WRAPPER_METHOD.matcher(current);
             if (method.matches()) {
                 current = method.group("inner").trim();
+            }
+            Matcher bytes = WRAPPER_BYTES.matcher(current);
+            if (bytes.matches()) {
+                current = bytes.group("inner").trim();
+            }
+            Matcher copy = WRAPPER_COPY.matcher(current);
+            if (copy.matches()) {
+                current = copy.group("inner").trim();
             }
             Matcher indexed = INDEXED.matcher(current);
             if (indexed.matches()) {

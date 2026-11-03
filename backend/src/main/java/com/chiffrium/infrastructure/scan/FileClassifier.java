@@ -97,7 +97,7 @@ public final class FileClassifier {
      * et les symboles qui nomment un algorithme ("DES/ECB/PKCS5Padding", EVP_des_ede3_cbc, MD5CryptoServiceProvider).
      */
     private static final Set<String> BINARY_EXTENSIONS = Set.of("class", "dll", "exe", "so", "dylib", "a", "o",
-            "lib", "dex", "node", "pyd");
+            "lib", "dex", "node", "pyd", "pyc");
 
     /** Archives versionnées, ouvertes en mémoire pour y chercher clés et secrets (voir {@link ArchiveEntries}). */
     private static final Set<String> ZIP_EXTENSIONS = Set.of("zip", "jar", "war", "ear", "aar", "apk", "whl", "nupkg");
@@ -143,6 +143,25 @@ public final class FileClassifier {
         String lower = fileName.toLowerCase(Locale.ROOT);
         return DATA_FILE_NAMES.contains(lower) || lower.endsWith(TERRAFORM_STATE_BACKUP)
                 || extension(lower).map(DATA_EXTENSIONS::contains).orElse(false);
+    }
+
+    /**
+     * Début d'un exécutable natif (ELF, Mach-O, PE) : les binaires Go ou Rust n'ont souvent pas d'extension sous
+     * Linux et macOS, on les reconnaît à leurs premiers octets.
+     */
+    public static boolean isExecutable(byte[] head) {
+        if (head.length < 4) {
+            return false;
+        }
+        int magic = ((head[0] & 0xFF) << 24) | ((head[1] & 0xFF) << 16) | ((head[2] & 0xFF) << 8) | (head[3] & 0xFF);
+        return magic == 0x7F454C46 || magic == 0xFEEDFACE || magic == 0xFEEDFACF || magic == 0xCEFAEDFE
+                || magic == 0xCFFAEDFE || (head[0] == 'M' && head[1] == 'Z');
+    }
+
+    /** Nom sans extension (binaire Go "server", script "deploy") : seul son contenu dit ce qu'il est. */
+    public static boolean hasNoExtension(String fileName) {
+        String name = fileName.substring(fileName.lastIndexOf('/') + 1);
+        return name.indexOf('.') < 0;
     }
 
     public static boolean isBinary(String fileName) {

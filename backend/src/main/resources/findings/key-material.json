@@ -258,6 +258,139 @@
       "title": "Sel constant",
       "description": "Sel de dérivation constant : les mêmes mots de passe donnent les mêmes clés (attaques par tables).",
       "recommendation": "Générer un sel aléatoire d'au moins 16 octets par mot de passe et le stocker avec l'empreinte."
+    },
+    {
+      "id": "iv-java-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-329",
+      "title": "IV ou nonce constant",
+      "description": "IV/nonce constant ou nul : même chiffré pour un même message, et en GCM perte totale de sécurité.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé.",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?(?:IvParameterSpec\\s*\\(|(?:[\\w.]+\\.)?GCMParameterSpec\\s*\\(\\s*[^,()]+,)\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*[,)]",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "salt-java-traced",
+      "category": "hardcoded-key-material",
+      "severity": "medium",
+      "cwe": "CWE-760",
+      "title": "Sel constant",
+      "description": "Sel de dérivation constant : les mêmes mots de passe donnent les mêmes clés (attaques par tables).",
+      "recommendation": "Générer un sel aléatoire d'au moins 16 octets par mot de passe et le stocker avec l'empreinte.",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?(?:PBEParameterSpec\\s*\\(|(?:[\\w.]+\\.)?PBEKeySpec\\s*\\(\\s*(?:[^,;()]|\\([^()]*\\))+,)\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*,",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "key-java-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "title": "Clé symétrique en dur",
+      "description": "Clé de chiffrement construite à partir d'une constante du code.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?SecretKeySpec\\s*\\(\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*,",
+      "traceGroup": "value",
+      "traceKind": "bytes"
+    },
+    {
+      "id": "iv-python-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-329",
+      "title": "IV ou nonce constant",
+      "description": "IV/nonce littéral.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé.",
+      "languages": [
+        "python"
+      ],
+      "pattern": "\\b(?:AES|DES3|DES|Blowfish|ARC2|CAST)\\s*\\.\\s*new\\s*\\(\\s*[^,()]+,\\s*[\\w.]+\\s*,\\s*(?:iv\\s*=\\s*)?(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*[,)]",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "key-python-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "title": "Clé symétrique en dur",
+      "description": "Clé de chiffrement littérale passée au chiffreur.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "languages": [
+        "python"
+      ],
+      "pattern": "\\b(?:AES|DES3|DES|Blowfish|ARC2|ARC4|CAST|ChaCha20)\\s*\\.\\s*new\\s*\\(\\s*(?:key\\s*=\\s*)?(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*[,)]",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "key-js-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "title": "Clé symétrique en dur",
+      "description": "Clé littérale passée à createCipheriv.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "\\bcreate(?:Cipheriv|Decipheriv)\\s*\\(\\s*[^,()]+,\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*,",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "iv-js-traced",
+      "category": "hardcoded-key-material",
+      "severity": "medium",
+      "cwe": "CWE-329",
+      "title": "IV ou nonce constant",
+      "description": "IV littéral ou nul (Buffer.alloc) passé à createCipheriv.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé.",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "\\bcreate(?:Cipheriv|Decipheriv)\\s*\\(\\s*[^,()]+,\\s*(?:[^,;()]|\\([^()]*\\))+,\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*[,)]",
+      "traceGroup": "value",
+      "traceKind": "constant"
+    },
+    {
+      "id": "key-csharp-traced",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "title": "Clé ou IV en dur",
+      "description": "Clé ou IV défini à partir d'une constante.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "languages": [
+        "csharp",
+        "vbnet",
+        "fsharp"
+      ],
+      "pattern": "\\.\\s*(?:Key|IV)\\s*=\\s*(?<value>[^,;()]*?(?:\\([^()]*\\))?(?:\\s*\\.\\s*\\w+\\s*\\([^()]*\\))*)\\s*;?\\s*$",
+      "traceGroup": "value",
+      "traceKind": "constant"
     }
   ]
 }

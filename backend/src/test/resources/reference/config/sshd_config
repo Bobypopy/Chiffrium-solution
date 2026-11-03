@@ -1,0 +1,2 @@
+Ciphers aes128-cbc,aes256-gcm@openssh.com
+KexAlgorithms diffie-hellman-group1-sha1,curve25519-sha256

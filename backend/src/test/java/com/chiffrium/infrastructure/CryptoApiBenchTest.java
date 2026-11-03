@@ -41,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named = "CRYPTOAPI_BENCH", matches = ".+")
 class CryptoApiBenchTest {
 
-    /** Valeurs mesurées en version 1.0.12 : à relever quand la détection progresse, jamais à baisser. */
-    private static final int MIN_DETECTED = 125;
+    /** Valeurs mesurées en version 1.0.15 : à relever quand la détection progresse, jamais à baisser. */
+    private static final int MIN_DETECTED = 162;
     private static final int MAX_FALSE_ALARMS = 1;
 
     private static final Set<PolicyStatus> WEAK = Set.of(PolicyStatus.DISALLOWED, PolicyStatus.DEPRECATED);
@@ -82,8 +82,8 @@ class CryptoApiBenchTest {
         PolicyEvaluator evaluator = new PolicyEvaluator(TestSupport.CATALOG, TestSupport.clockAt(2026));
         List<CryptoAsset> assets = new RuleBasedCryptoDetector(new RulePackLoader(TestSupport.MAPPER).loadBuiltIn(),
                 TestSupport.ASSETS).detect(context).assets().stream().map(evaluator::evaluate).toList();
-        List<SecurityFinding> findings = new SecurityFindingDetector(
-                new FindingRuleLoader(TestSupport.MAPPER).loadBuiltIn()).detect(context).findings();
+        List<SecurityFinding> findings = new SecurityFindingDetector(new FindingRuleLoader(TestSupport.MAPPER)
+                .loadBuiltIn(), new RulePackLoader(TestSupport.MAPPER).loadBuiltIn()).detect(context).findings();
 
         // Par catégorie : vrais cas trouvés, ratés, fausses alertes, cas sûrs laissés tranquilles.
         Map<String, int[]> counts = new TreeMap<>();

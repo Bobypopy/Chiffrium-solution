@@ -1,0 +1,74 @@
+A c/vault.c:4 3DES-CBC disallowed
+A c/vault.c:8 SHA-256 recommended
+A config/ipsec.conf:2 AES-256 recommended
+A config/ipsec.conf:2 DH-1024 disallowed
+A config/ipsec.conf:2 HMAC-SHA-256 recommended
+A config/ipsec.conf:3 AES-128-GCM recommended
+A config/ipsec.conf:3 ECDH-P-256 acceptable
+A config/nginx.conf:3 TLS 1.0 disallowed
+A config/nginx.conf:3 TLS 1.2 acceptable
+A config/openssl.cnf:2 TLS 1.2 acceptable
+A config/terraform/main.tf:1 Clé privée RSA-2048 générée (main.tf) acceptable
+A config/terraform/main.tf:1 RSA-2048 acceptable
+A dotnet/Crypto.cs:14 AES-ECB disallowed
+A dotnet/Crypto.cs:8 MD5 disallowed
+A dotnet/Legacy.vb:4 3DES disallowed
+A dotnet/Legacy.vb:5 SHA-1 deprecated
+A go/main.go:10 MD5 disallowed
+A go/main.go:12 Clé privée RSA-2048 générée (main.go) acceptable
+A go/main.go:12 RSA-2048 acceptable
+A go/main.go:14 TLS 1.0 disallowed
+A java/src/main/java/shop/LegacyCipher.java:12 DES-ECB-PKCS7 disallowed
+A java/src/main/java/shop/LegacyCipher.java:13 Clé secrète DES générée (LegacyCipher.java) disallowed
+A java/src/main/java/shop/LegacyCipher.java:13 DES disallowed
+A java/src/main/java/shop/LegacyCipher.java:18 MD5 disallowed
+A java/src/main/java/shop/LegacyCipher.java:22 Clé privée RSA-1024 générée (LegacyCipher.java) disallowed
+A java/src/main/java/shop/LegacyCipher.java:22 RSA-1024 disallowed
+A java/src/main/java/shop/ModernCipher.java:10 AES-256 recommended
+A java/src/main/java/shop/ModernCipher.java:10 Clé secrète AES-256 générée (ModernCipher.java) recommended
+A java/src/main/java/shop/ModernCipher.java:14 AES-GCM-NoPadding recommended
+A java/src/main/resources/application.properties:3 SHA-1withRSA deprecated
+A kotlin/Tokens.kt:3 SHA-1 deprecated
+A kotlin/Tokens.kt:5 SHA-256 recommended
+A node/src/derive.ts:4 PBKDF2-HMAC-SHA-256 acceptable
+A node/src/token.js:4 MD5 disallowed
+A node/src/token.js:9 AES-256-GCM recommended
+A php/legacy.php:2 MD5 disallowed
+A php/legacy.php:3 AES-128-ECB disallowed
+A python/app/crypto.py:12 AES-ECB disallowed
+A python/app/crypto.py:6 MD5 disallowed
+A python/app/crypto.py:9 SHA-256 recommended
+A ruby/vault.rb:5 MD5 disallowed
+A ruby/vault.rb:9 DES-CBC disallowed
+A rust/src/main.rs:4 SHA-256 recommended
+A saml/idp-metadata.xml:1 SHA-1withRSA deprecated
+A saml/idp-metadata.xml:2 SHA-256 recommended
+A scripts/backup.sh:2 3DES disallowed
+A scripts/backup.sh:3 Clé privée RSA-2048 générée (backup.sh) acceptable
+A scripts/backup.sh:3 RSA-2048 acceptable
+A swift/Crypto.swift:3 MD5 disallowed
+A swift/Crypto.swift:4 AES-GCM recommended
+F config/nginx.conf:3 tls-old-protocol-enabled high
+F config/openssl.cnf:3 openssl-low-security-level medium
+F config/sshd_config:1 ssh-weak-algorithms low
+F config/sshd_config:2 ssh-weak-algorithms medium
+F dotnet/Crypto.cs:16 tls-csharp-accept-any high
+F go/main.go:14 tls-go-insecure-skip-verify high
+F java/src/main/java/shop/Checkout.java:4 iv-java-traced high
+F java/src/main/java/shop/Checkout.java:4 salt-java-traced medium
+F java/src/main/java/shop/Checkout.java:8 kdf-java-iterations-traced medium
+F java/src/main/java/shop/Payments.java:8 iv-java-traced high
+F java/src/main/java/shop/Payments.java:9 kdf-java-iterations-traced medium
+F java/src/main/java/shop/Payments.java:9 salt-java-traced medium
+F java/src/main/java/shop/Payments.java:9 secret-java-pbe-password high
+F java/src/main/resources/application.properties:2 secret-config-assignment medium
+F mobile/android/AndroidManifest.xml:1 android-cleartext-traffic medium
+F mobile/ios/Info.plist:3 ios-ats-insecure-loads medium
+F node/src/derive.ts:4 kdf-js-iterations-traced medium
+F node/src/derive.ts:8 kdf-js-iterations-traced medium
+F node/src/token.js:13 tls-node-reject-unauthorized high
+F python/app/crypto.py:12 key-python-traced high
+F python/app/crypto.py:15 key-python-traced high
+F python/app/crypto.py:19 tls-python-unverified-context high
+F python/app/crypto.py:20 tls-python-unverified-context high
+F scripts/backup.sh:3 key-cli-unencrypted-export medium

@@ -52,7 +52,7 @@ public final class FindingRuleLoader {
                         String pattern, String fileName, Boolean ignoreCase, String title, String description,
                         String recommendation, String secretGroup, Double minEntropy, String numberGroup, Long below,
                         String listGroup, String listCheck, List<String> required, String exclude,
-                        Boolean includeComments) {
+                        Boolean includeComments, String traceGroup, String traceKind) {
     }
 
     record CipherSuitesDocument(List<WeaknessDocument> weaknesses) {
@@ -97,12 +97,20 @@ public final class FindingRuleLoader {
         requireGroup(pattern, doc.secretGroup(), where);
         requireGroup(pattern, doc.numberGroup(), where);
         requireGroup(pattern, doc.listGroup(), where);
-        require((doc.numberGroup() == null) == (doc.below() == null), where, "numberGroup et below vont ensemble");
+        require(doc.numberGroup() == null || doc.below() != null, where, "numberGroup et below vont ensemble");
+        require(doc.below() == null || doc.numberGroup() != null || doc.traceGroup() != null, where,
+                "below sans numberGroup ni traceGroup");
         FindingRule.ListCheck listCheck = doc.listCheck() == null ? null
                 : FindingRule.ListCheck.valueOf(doc.listCheck().toUpperCase(Locale.ROOT).replace('-', '_'));
         require((doc.listGroup() == null) == (listCheck == null), where, "listGroup et listCheck vont ensemble");
         require(listCheck != FindingRule.ListCheck.REQUIRE_ALL || doc.required() != null && !doc.required().isEmpty(),
                 where, "required obligatoire pour require-all");
+        requireGroup(pattern, doc.traceGroup(), where);
+        FindingRule.TraceKind traceKind = doc.traceKind() == null ? null
+                : FindingRule.TraceKind.valueOf(doc.traceKind().toUpperCase(Locale.ROOT));
+        require((doc.traceGroup() == null) == (traceKind == null), where, "traceGroup et traceKind vont ensemble");
+        require(traceKind != FindingRule.TraceKind.NUMBER || doc.below() != null, where,
+                "below obligatoire pour une trace de nombre");
         Set<Language> languages = new HashSet<>();
         if (doc.languages() != null) {
             doc.languages().forEach(id -> languages.add(language(where, id)));
@@ -112,7 +120,7 @@ public final class FindingRuleLoader {
                     doc.cwe(), languages, pattern, fileName, doc.title(), doc.description(), doc.recommendation(),
                     doc.secretGroup(), doc.minEntropy() == null ? 0 : doc.minEntropy(), doc.numberGroup(), doc.below(),
                     doc.listGroup(), listCheck, doc.required(), doc.exclude() == null ? null : regex(where, doc.exclude(), true),
-                    Boolean.TRUE.equals(doc.includeComments()));
+                    Boolean.TRUE.equals(doc.includeComments()), doc.traceGroup(), traceKind);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("Règle de constat invalide (" + where + ") : " + e.getMessage(), e);
         }

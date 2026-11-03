@@ -35,6 +35,9 @@ import java.util.regex.Pattern;
  * @param required        éléments obligatoires pour {@link ListCheck#REQUIRE_ALL}
  * @param exclude         motif d'exclusion sur la ligne
  * @param includeComments analyser aussi les lignes de commentaire (secrets)
+ * @param traceGroup      argument d'un appel sensible (IV, sel, clé, itérations, graine, mot de passe) remonté
+ *                        jusqu'à l'endroit où sa valeur est écrite, à travers paramètres, champs et classes
+ * @param traceKind       valeur qui fait le constat au bout du trajet
  */
 record FindingRule(
         String id,
@@ -55,7 +58,40 @@ record FindingRule(
         ListCheck listCheck,
         List<String> required,
         Pattern exclude,
-        boolean includeComments) {
+        boolean includeComments,
+        String traceGroup,
+        TraceKind traceKind) {
+
+    /**
+     * Valeur écrite dans le code qui, arrivée à l'appel sensible, fait le constat. Les motifs reconnaissent
+     * l'écriture des principaux langages (tableau Java ou C#, {@code b"..."} Python, {@code Buffer.from("...")}).
+     */
+    enum TraceKind {
+        /** Tableau d'octets écrit dans le code (clé en dur). */
+        BYTES("^(?:new\\s+byte\\s*\\[\\s*\\]\\s*)?\\{\\s*(?:\\(byte\\)\\s*)?(?:-?(?:0x)?[\\da-fA-F]+|'.')"
+                + "(?:\\s*,\\s*(?:\\(byte\\)\\s*)?(?:-?(?:0x)?[\\da-fA-F]+|'.'))*\\s*,?\\s*\\}$"
+                + "|^new\\s+byte\\s*\\[\\s*\\d+\\s*\\]$|^(?:byteArrayOf|bytes|bytearray)\\s*\\(\\s*[\\d\\[(\"']"
+                + "|^Buffer\\s*\\.\\s*(?:from|alloc)\\s*\\(\\s*(?:\\d|[\"'\\[])|^b[\"'][^\"'\\n]*[\"']$"),
+        /** Chaîne écrite dans le code (mot de passe, clé tirée d'un texte). */
+        STRING("^[rRuU@]?([\"'])[^\"'\\n]*\\1$"),
+        /** Nombre écrit dans le code (itérations, comparé au seuil {@code below}). */
+        NUMBER("^\\d[\\d_]*[lL]?$"),
+        /** Toute valeur écrite dans le code : tableau, chaîne ou nombre (IV, sel, graine). */
+        CONSTANT(BYTES.regex + "|" + STRING.regex + "|" + NUMBER.regex
+                + "|^Encoding\\s*\\.\\s*\\w+\\s*\\.\\s*GetBytes\\s*\\(\\s*\"[^\"]*\"\\s*\\)$");
+
+        private final String regex;
+        private final Pattern pattern;
+
+        TraceKind(String regex) {
+            this.regex = regex;
+            this.pattern = Pattern.compile(regex);
+        }
+
+        boolean writtenHere(String expression) {
+            return pattern.matcher(expression.trim()).find();
+        }
+    }
 
     /** Analyse appliquée au groupe {@code listGroup}. */
     enum ListCheck {

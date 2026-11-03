@@ -69,6 +69,16 @@ class BinaryCryptoDetectorTest {
         dll.write(new byte[]{0, 0, 1});
         Files.write(project.resolve("lib/Payments.dll"), dll.toByteArray());
 
+        // Exécutable Go sans extension (Linux) : reconnu à son en-tête ELF, symboles de paquets crypto/....
+        Files.createDirectories(project.resolve("bin"));
+        Files.write(project.resolve("bin/server"), binary("\u007FELF\u0002\u0001\u0000crypto/des.NewTripleDESCipher\u0000"
+                + "crypto/md5.Sum\u0000main.main\u0000md5\u0000"));
+        // Fichier sans extension qui n'est pas un exécutable : ignoré.
+        Files.writeString(project.resolve("bin/NOTES"), "crypto/rc4.NewCipher\n");
+        // Bytecode Python : module PyCryptodome et nom de hachage.
+        Files.write(project.resolve("lib/vault.cpython-312.pyc"), binary("Ë\r\r\n\u0000\u0000ã"
+                + "\u0010Crypto.Cipher.DES3\u0000\u0003sha1)\u0000"));
+
         var scan = new FileSystemProjectScanner(1_000_000).scan(project);
         assets = new BinaryCryptoDetector(TestSupport.ASSETS, BinarySignatures.loadBuiltIn(TestSupport.MAPPER))
                 .detect(new DetectionContext(project, scan, SbomResult.empty())).assets();
@@ -97,6 +107,18 @@ class BinaryCryptoDetectorTest {
     @Test
     void dotNetTypesAndUtf16Strings() {
         assertThat(namesIn("lib/Payments.dll")).contains("RC2", "3DES");
+    }
+
+    @Test
+    void goExecutableWithoutExtension() {
+        // "md5" seul ne compte que dans du bytecode Python : ici, c'est crypto/md5.Sum qui donne MD5.
+        assertThat(namesIn("bin/server")).contains("MD5").anyMatch(n -> n.startsWith("3DES"));
+        assertThat(namesIn("bin/NOTES")).isEmpty();
+    }
+
+    @Test
+    void pythonBytecode() {
+        assertThat(namesIn("lib/vault.cpython-312.pyc")).contains("SHA-1").anyMatch(n -> n.startsWith("3DES"));
     }
 
     @Test

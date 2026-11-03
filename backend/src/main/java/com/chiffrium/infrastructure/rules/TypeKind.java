@@ -25,6 +25,8 @@ enum TypeKind {
     private static final Pattern IDENTIFIER = Pattern.compile("^(?:(?:this|self)\\s*\\.\\s*)?(?<name>[A-Za-z_$][\\w$]*)$");
     private static final Pattern NEW = Pattern.compile("^new\\s+(?<type>[\\w.]+)\\s*(?<array>\\[)?");
     private static final Pattern NUMBER = Pattern.compile("^-?\\d+[lLfFdD]?$");
+    /** Début de ligne commentée, dans les principaux langages. */
+    private static final Pattern COMMENTED = Pattern.compile("\\s*(?://|#|/\\*|\\*|--|%|')");
     private static final Pattern TYPE_BEFORE = Pattern.compile(
             "(?<![\\w$.])(?<type>[A-Za-z_][\\w$.]*(?:<[^<>;\\n]*>)?(?:\\[\\])*)\\s+$");
     private static final Pattern AFTER_DECLARED = Pattern.compile("\\s*[=;,)]");
@@ -107,6 +109,10 @@ enum TypeKind {
             int lineEnd = content.indexOf('\n', occurrence.end());
             String before = content.substring(lineStart, occurrence.start());
             String after = content.substring(occurrence.end(), lineEnd < 0 ? content.length() : lineEnd);
+            if (COMMENTED.matcher(before).lookingAt()) {
+                // "//long seed = 456789L;" n'est pas la déclaration de seed.
+                continue;
+            }
             Matcher typed = TYPE_BEFORE.matcher(before);
             if (typed.find() && AFTER_DECLARED.matcher(after).lookingAt() && !KEYWORDS.contains(typed.group("type"))
                     && (!classOnly || Character.isUpperCase(typed.group("type").charAt(0)))) {

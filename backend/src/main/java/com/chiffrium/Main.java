@@ -232,7 +232,7 @@ public final class Main {
                     config.cdxgenInstallDeps(), processRunner);
 
             SecurityFindingDetector findingDetector = new SecurityFindingDetector(
-                    new FindingRuleLoader(mapper).loadBuiltIn());
+                    new FindingRuleLoader(mapper).loadBuiltIn(), rulePacks);
             List<BinarySignatures.Signature> binarySignatures = BinarySignatures.loadBuiltIn(mapper);
             DetectorProvider detectors = assetFactory -> List.of(
                     new CdxgenCryptoDetector(assetFactory, mapper),

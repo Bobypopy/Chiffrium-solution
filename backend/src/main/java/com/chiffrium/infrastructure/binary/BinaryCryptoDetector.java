@@ -56,6 +56,11 @@ public final class BinaryCryptoDetector implements CryptoDetector {
             try {
                 if (FileClassifier.isBinary(file.path())) {
                     assets.addAll(scan(file.path(), Files.readAllBytes(path)));
+                } else if (file.language() == null && !file.material() && FileClassifier.hasNoExtension(file.path())) {
+                    byte[] content = Files.readAllBytes(path);
+                    if (FileClassifier.isExecutable(content)) {
+                        assets.addAll(scan(file.path(), content));
+                    }
                 } else if (FileClassifier.isArchive(file.path())) {
                     ArchiveEntries.forEach(path, entry -> {
                         if (FileClassifier.isBinary(entry.path())) {
@@ -77,6 +82,9 @@ public final class BinaryCryptoDetector implements CryptoDetector {
         boolean classFile = file.toLowerCase(Locale.ROOT).endsWith(".class");
         for (String text : classFile ? BinaryStrings.classConstants(content) : BinaryStrings.extract(content)) {
             for (BinarySignatures.Signature signature : signatures) {
+                if (!signature.appliesTo(file)) {
+                    continue;
+                }
                 Matcher matcher = signature.pattern().matcher(text);
                 if (!matcher.find()) {
                     continue;

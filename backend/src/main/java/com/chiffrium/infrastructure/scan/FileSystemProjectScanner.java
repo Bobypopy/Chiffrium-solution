@@ -102,7 +102,7 @@ public final class FileSystemProjectScanner implements ProjectScanner {
             Optional<Language> language = FileClassifier.languageOf(name);
             boolean material = FileClassifier.isMaterial(name);
             if (language.isEmpty() && !material && !FileClassifier.isData(name) && !FileClassifier.isArchive(name)
-                    && !FileClassifier.isBinary(name)) {
+                    && !FileClassifier.isBinary(name) && !executableWithoutExtension(file, name)) {
                 return FileVisitResult.CONTINUE;
             }
             if (attrs.size() > maxFileBytes) {
@@ -112,6 +112,18 @@ public final class FileSystemProjectScanner implements ProjectScanner {
             files.add(new ScannedFile(relative(file), language.orElse(null), material, attrs.size()));
             language.ifPresent(l -> nearestModule(file).addFile(l));
             return FileVisitResult.CONTINUE;
+        }
+
+        /** Binaire Go ou Rust sans extension : reconnu à ses premiers octets, sans lire le reste. */
+        private boolean executableWithoutExtension(Path file, String name) {
+            if (!FileClassifier.hasNoExtension(name)) {
+                return false;
+            }
+            try (var in = java.nio.file.Files.newInputStream(file)) {
+                return FileClassifier.isExecutable(in.readNBytes(4));
+            } catch (IOException e) {
+                return false;
+            }
         }
 
         @Override

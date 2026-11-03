@@ -340,6 +340,12 @@ export const REGLES = {
   'Algorithmes SSH faibles': 'Weak SSH algorithms',
   'La configuration SSH active des algorithmes obsolètes.':
     'The SSH configuration enables outdated algorithms.',
+  "Clé tirée d'un texte écrit dans le code":
+    "Key derived from a text written in the code",
+  "La clé de chiffrement est obtenue à partir d'une chaîne écrite dans le code source, transmise jusqu'à SecretKeySpec : quiconque lit le code ou le binaire la connaît.":
+    "The encryption key is derived from a string written in the source code and passed down to SecretKeySpec: anyone who reads the code or the binary knows it.",
+  "Générer la clé (KeyGenerator) ou la lire depuis un coffre ou un magasin de clés ; jamais depuis une chaîne du code.":
+    "Generate the key (KeyGenerator) or read it from a vault or a keystore; never from a string of the code.",
   "Vérification TLS désactivée (Lua)":
     "TLS verification disabled (Lua)",
   "La requête HTTPS accepte n'importe quel certificat (ssl_verify = false) : le trafic peut être intercepté.":

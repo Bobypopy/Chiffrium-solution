@@ -7,6 +7,8 @@ import com.chiffrium.domain.model.Language;
 import com.chiffrium.domain.model.SecurityFinding;
 import com.chiffrium.domain.model.Severity;
 import com.chiffrium.infrastructure.findings.FindingRuleLoader.FindingRuleSet;
+import com.chiffrium.infrastructure.rules.ProjectTraces;
+import com.chiffrium.infrastructure.rules.RulePack;
 import com.chiffrium.infrastructure.rules.SourceText;
 import com.chiffrium.infrastructure.scan.ArchiveEntries;
 import com.chiffrium.infrastructure.scan.FileClassifier;
@@ -17,7 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,9 +55,16 @@ public final class SecurityFindingDetector implements CryptoDetector {
             FindingCategory.HARDCODED_KEY_MATERIAL);
 
     private final FindingRuleSet ruleSet;
+    /** Paquets de règles du code : leur syntaxe sert à remonter les valeurs des règles "traceGroup". */
+    private final List<RulePack> packs;
 
     public SecurityFindingDetector(FindingRuleSet ruleSet) {
+        this(ruleSet, List.of());
+    }
+
+    public SecurityFindingDetector(FindingRuleSet ruleSet, List<RulePack> packs) {
         this.ruleSet = ruleSet;
+        this.packs = List.copyOf(packs);
     }
 
     @Override
@@ -66,6 +77,9 @@ public final class SecurityFindingDetector implements CryptoDetector {
         Map<String, SecurityFinding> findings = new LinkedHashMap<>();
         List<String> warnings = new ArrayList<>();
         FileFailures failures = new FileFailures(name());
+        ProjectTraces traces = packs.isEmpty() ? null
+                : new ProjectTraces(context.projectRoot(), context.scan().files(), packs);
+        Analysis analysis = new Analysis(context, traces, new HashMap<>());
         for (ScannedFile file : context.scan().files()) {
             if (FileClassifier.isArchive(file.path())) {
                 try {
@@ -93,16 +107,42 @@ public final class SecurityFindingDetector implements CryptoDetector {
                 continue;
             }
             try {
-                text.ifPresent(t -> analyze(source, t, ALL_CATEGORIES).forEach(f -> add(findings, f)));
+                text.ifPresent(t -> analyze(source, t, ALL_CATEGORIES, analysis).forEach(f -> add(findings, f)));
             } catch (RuntimeException | StackOverflowError e) {
                 failures.record(file.path(), e);
             }
         }
         warnings.addAll(failures.warnings());
-        List<SecurityFinding> sorted = findings.values().stream()
+        List<SecurityFinding> sorted = withoutTracedDuplicates(findings.values(), analysis.origins()).stream()
                 .sorted(SecurityFinding.BY_SEVERITY_THEN_LOCATION)
                 .toList();
         return new DetectionResult(List.of(), List.of(), warnings, sorted);
+    }
+
+    /**
+     * Projet en cours d'analyse : de quoi remonter une valeur et relire le fichier où elle est écrite.
+     *
+     * @param origins pour chaque constat posé à un appel, les emplacements où la valeur remontée est écrite
+     */
+    private record Analysis(DetectionContext context, ProjectTraces traces, Map<String, List<String>> origins) {
+    }
+
+    /**
+     * Une valeur déjà signalée là où elle est écrite par une règle directe ("IV en dur", "itérations
+     * insuffisantes", y compris "par variable" dans le même fichier) n'est pas signalée une seconde fois : ni au
+     * même endroit, ni à l'appel quand tous les endroits où elle est écrite sont déjà signalés.
+     */
+    private List<SecurityFinding> withoutTracedDuplicates(Collection<SecurityFinding> findings,
+                                                          Map<String, List<String>> origins) {
+        Set<String> traced = ruleSet.rules().stream().filter(r -> r.traceGroup() != null).map(FindingRule::id)
+                .collect(Collectors.toSet());
+        Set<String> direct = findings.stream().filter(f -> !traced.contains(f.ruleId()))
+                .map(f -> f.file() + ":" + f.line() + ":" + f.category()).collect(Collectors.toSet());
+        return findings.stream()
+                .filter(f -> !traced.contains(f.ruleId()) || !direct.contains(f.file() + ":" + f.line() + ":" + f.category()))
+                .filter(f -> !origins.containsKey(f.id()) || !origins.get(f.id()).stream()
+                        .allMatch(location -> direct.contains(location + ":" + f.category())))
+                .toList();
     }
 
     /**
@@ -123,7 +163,7 @@ public final class SecurityFindingDetector implements CryptoDetector {
         Source source = source(path, language, commit);
         List<SecurityFinding> result = new ArrayList<>(fileFindings(source, categories));
         if (!FileClassifier.isMaterial(name) || language != null || isTextMaterial(name)) {
-            SourceText.of(content).ifPresent(t -> result.addAll(analyze(source, t, categories)));
+            SourceText.of(content).ifPresent(t -> result.addAll(analyze(source, t, categories, null)));
         }
         return result;
     }
@@ -146,12 +186,18 @@ public final class SecurityFindingDetector implements CryptoDetector {
                 .toList();
     }
 
-    private List<SecurityFinding> analyze(Source source, SourceText text, Set<FindingCategory> categories) {
+    /**
+     * @param analysis projet en cours d'analyse ; null pour une version de l'historique ou une entrée
+     *                 d'archive, où les règles qui remontent une valeur ne s'appliquent pas
+     */
+    private List<SecurityFinding> analyze(Source source, SourceText text, Set<FindingCategory> categories,
+                                          Analysis analysis) {
         Language language = source.language();
         List<String> comments = ruleSet.commentPrefixes().getOrDefault(language, List.of());
         List<SecurityFinding> result = new ArrayList<>();
         for (FindingRule rule : ruleSet.rules()) {
-            if (rule.pattern() == null || !rule.appliesTo(language) || !categories.contains(rule.category())) {
+            if (rule.pattern() == null || !rule.appliesTo(language) || !categories.contains(rule.category())
+                    || rule.traceGroup() != null && (analysis == null || analysis.traces() == null)) {
                 continue;
             }
             Matcher matcher = rule.pattern().matcher(text.content());
@@ -163,11 +209,89 @@ public final class SecurityFindingDetector implements CryptoDetector {
                         || rule.exclude() != null && rule.exclude().matcher(lineText).find()) {
                     continue;
                 }
+                if (rule.traceGroup() != null) {
+                    result.addAll(traced(rule, source, text, line, text.columnOf(matcher.start()),
+                            matcher.group(rule.traceGroup()), analysis));
+                    continue;
+                }
                 evaluate(rule, matcher).ifPresent(match -> result.add(finding(rule, source, text, line,
                         text.columnOf(matcher.start()), match)));
             }
         }
         return result;
+    }
+
+    /**
+     * Argument d'un appel sensible remonté jusqu'aux endroits où sa valeur est écrite : un constat à l'appel,
+     * avec le trajet, et un à chaque endroit où la valeur est écrite. Une valeur écrite sur place est laissée
+     * aux règles directes ; une valeur calculée (aléa, lecture, paramètre d'API externe) ne donne rien.
+     */
+    private List<SecurityFinding> traced(FindingRule rule, Source source, SourceText text, int line, int column,
+                                         String argument, Analysis analysis) {
+        if (argument == null || rule.traceKind().writtenHere(ProjectTraces.unwrap(argument))) {
+            return List.of();
+        }
+        List<SecurityFinding> result = new ArrayList<>();
+        for (ProjectTraces.Origin origin : analysis.traces().trace(argument, source.path(), source.language(), line,
+                rule.traceKind()::writtenHere)) {
+            Optional<Match> match = tracedMatch(rule, origin);
+            if (match.isEmpty()) {
+                continue;
+            }
+            SecurityFinding atCall = finding(rule, source, text, line, column, match.get());
+            result.add(atCall);
+            analysis.origins().computeIfAbsent(atCall.id(), k -> new ArrayList<>()).addAll(origin.locations());
+            for (String location : origin.locations()) {
+                int colon = location.lastIndexOf(':');
+                String path = location.substring(0, colon);
+                int originLine = Integer.parseInt(location.substring(colon + 1));
+                originFinding(rule, path, originLine, match.get(), analysis).ifPresent(result::add);
+            }
+        }
+        return result;
+    }
+
+    /** Ce que la valeur retrouvée vaut comme constat : nombre sous le seuil, secret non factice, octets en dur. */
+    private Optional<Match> tracedMatch(FindingRule rule, ProjectTraces.Origin origin) {
+        String value = origin.value().trim();
+        String evidence;
+        switch (rule.traceKind()) {
+            case NUMBER -> {
+                Long number = parseLong(value.replaceAll("[lL]$", ""));
+                if (number == null || number >= rule.below()) {
+                    return Optional.empty();
+                }
+                evidence = number + " (< " + rule.below() + ")";
+            }
+            case STRING -> {
+                String secret = value.replaceAll("^[rRuU@]?[\"']|[\"']$", "");
+                if (secret.isEmpty() || ruleSet.placeholder().matcher(secret).find()) {
+                    return Optional.empty();
+                }
+                evidence = redact(secret);
+            }
+            default -> evidence = "valeur écrite dans le code";
+        }
+        String where = String.join(", ", origin.locations());
+        String detail = "Valeur écrite en " + (where.isEmpty() ? "dur" : where)
+                + (origin.path().isEmpty() ? "" : ", transmise par " + String.join(" -> ", origin.path())) + ".";
+        return Optional.of(new Match(rule.severity(), evidence, detail));
+    }
+
+    /** Constat à l'endroit où la valeur est écrite, dans un fichier du projet relu pour l'occasion. */
+    private Optional<SecurityFinding> originFinding(FindingRule rule, String path, int line, Match match,
+                                                    Analysis analysis) {
+        try {
+            Optional<SourceText> text = SourceText.load(analysis.context().projectRoot().resolve(path));
+            if (text.isEmpty() || line > text.get().lineCount()
+                    || text.get().line(line).contains(ruleSet.suppressionMarker())) {
+                return Optional.empty();
+            }
+            Source source = source(path, FileClassifier.languageOf(fileName(path)).orElse(null), null);
+            return Optional.of(finding(rule, source, text.get(), line, 1, match));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
     }
 
     /**

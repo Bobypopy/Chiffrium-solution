@@ -217,7 +217,18 @@ final class ProjectCode {
     List<Assignment> assignments(String path, String name) {
         return lookups.computeIfAbsent("=" + path + "|" + name, k -> matches(path, Pattern.compile(
                 "(?<![\\w$.])(?:(?:this|self)\\s*\\.\\s*)?" + Pattern.quote(name)
-                        + "\\s*(?::\\s*[\\w<>\\[\\], .?]+?)?\\s*=(?![=>])\\s*(?<value>[^;\\n]+)")));
+                        + "\\s*(?:\\[\\s*\\]\\s*)*(?::\\s*[\\w<>\\[\\], .?]+?)?\\s*=(?![=>])\\s*(?<value>[^;\\n]+)")));
+    }
+
+    /**
+     * Vrai si le tableau est rempli par un appel du fichier ({@code random.nextBytes(iv)}, {@code in.read(buf)},
+     * {@code System.arraycopy(..., buf, ...)}) : {@code new byte[16]} n'est alors qu'un tampon, pas une valeur.
+     */
+    boolean filled(String path, String name) {
+        return !lookups.computeIfAbsent("fill" + path + "|" + name, k -> matches(path, Pattern.compile(
+                "(?<value>\\b(?:nextBytes|read|readFully|readNBytes|arraycopy|fill|randomFill(?:Sync)?|getRandomValues"
+                        + "|GetBytes|GetNonZeroBytes)\\s*\\([^;\\n]*(?<![\\w$.])" + Pattern.quote(name) + "(?![\\w$]))")))
+                .isEmpty();
     }
 
     /**

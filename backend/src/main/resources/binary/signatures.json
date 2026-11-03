@@ -84,6 +84,53 @@
         "encrypt",
         "decrypt"
       ]
+    },
+    {
+      "id": "go-triple-des",
+      "pattern": "^(?<name>crypto/des)\\.NewTripleDESCipher$",
+      "map": {
+        "crypto/des": "3DES"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "go-package",
+      "pattern": "^(?:crypto|golang\\.org/x/crypto)/(?<name>des|rc4|md4|md5|sha1|sha256|sha512|sha3|aes|rsa|ecdsa|ed25519|dsa|blowfish|cast5|tea|twofish|xtea|ripemd160|chacha20poly1305|chacha20|bcrypt|scrypt|argon2|pbkdf2|blake2b|blake2s|curve25519|salsa20|mlkem|ecdh)\\.[A-Z]\\w*$",
+      "map": {
+        "sha3": "SHA3-256",
+        "ripemd160": "RIPEMD-160",
+        "chacha20poly1305": "ChaCha20-Poly1305",
+        "curve25519": "X25519",
+        "mlkem": "ML-KEM-768",
+        "salsa20": "Salsa20",
+        "blake2b": "BLAKE2b",
+        "blake2s": "BLAKE2s",
+        "cast5": "CAST5"
+      }
+    },
+    {
+      "id": "python-pycryptodome",
+      "pattern": "^(?:Crypto|Cryptodome)\\.(?:Cipher|Hash)\\.(?<name>DES3|DES|ARC2|ARC4|Blowfish|CAST|AES|ChaCha20|Salsa20|MD2|MD4|MD5|SHA1|SHA256|SHA512|RIPEMD160)(?:[^\\w.]|[zZrRuUsSaAtT])?$",
+      "map": {
+        "des3": "3DES",
+        "arc2": "RC2",
+        "arc4": "RC4",
+        "cast": "CAST5",
+        "ripemd160": "RIPEMD-160"
+      }
+    },
+    {
+      "id": "python-hash-name",
+      "pattern": "^(?<name>md2|md4|md5|sha1|ripemd160)(?:[^\\w.]|[zZrRuUsSaAtT])?$",
+      "extensions": [
+        "pyc"
+      ],
+      "functions": [
+        "digest"
+      ]
     }
   ]
 }
