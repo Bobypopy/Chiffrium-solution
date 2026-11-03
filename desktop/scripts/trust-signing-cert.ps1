@@ -5,7 +5,7 @@
 .DESCRIPTION
   Ajoute le certificat public (.cer) aux magasins "Autorités de certification racines de confiance" et
   "Éditeurs approuvés" de l'ordinateur. Pour un parc entier, préférer une stratégie de groupe
-  (voir docs/code-signing.md) : même effet, sans passer sur chaque poste.
+  (voir CONTRIBUTING.md, section Releases) : même effet, sans passer sur chaque poste.
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File trust-signing-cert.ps1 -Certificate .\Chiffrium-signature.cer

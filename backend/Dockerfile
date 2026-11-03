@@ -17,7 +17,7 @@ RUN mvn -B -q package -DskipTests=${SKIP_TESTS}
 # ---------------------------------------------------------------------------------------------
 # Étape 2 : exécution. Base = image officielle cdxgen, dont la version est ÉPINGLÉE : elle fournit
 # cdxgen, atom et les outils de résolution de dépendances (Maven, Gradle, Python, Node, Go, .NET...).
-# Changer de version de cdxgen = changer CDXGEN_VERSION et relancer les tests (voir docs/cdxgen.md).
+# Changer de version de cdxgen = changer CDXGEN_VERSION et relancer les tests (voir docs/architecture.md).
 # ---------------------------------------------------------------------------------------------
 FROM ghcr.io/cyclonedx/cdxgen:${CDXGEN_VERSION}
 

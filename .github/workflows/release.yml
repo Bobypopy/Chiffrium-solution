@@ -7,7 +7,7 @@ name: Release
 # Si la variable RELEASES_REPO (ex. Bobypopy/Chiffrium-releases) et le secret RELEASES_TOKEN sont définis, les
 # releases partent dans ce dépôt public. Sinon, elles restent dans ce dépôt (qui doit alors être public pour
 # que les mises à jour automatiques fonctionnent). La signature SignPath demande que ce workflow tourne dans le
-# dépôt public du code (voir docs/code-signing.md).
+# dépôt public du code (voir CONTRIBUTING.md, section Releases).
 
 on:
   push:
@@ -74,7 +74,7 @@ jobs:
           RELEASES_REPO: ${{ vars.RELEASES_REPO }}
           RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Signature Windows (voir docs/code-signing.md) : par SignPath si la variable SIGNPATH_ORGANIZATION_ID
+          # Signature Windows (voir CONTRIBUTING.md, section Releases) : par SignPath si la variable SIGNPATH_ORGANIZATION_ID
           # est définie, sinon par le certificat des secrets WINDOWS_CSC_*, s'ils existent.
           SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
@@ -82,7 +82,7 @@ jobs:
         run: |
           if [ -n "$RELEASES_REPO" ]; then
             if [ -z "$RELEASES_TOKEN" ]; then
-              echo "::error::RELEASES_REPO est défini mais le secret RELEASES_TOKEN manque (voir docs/desktop.md)."
+              echo "::error::RELEASES_REPO est défini mais le secret RELEASES_TOKEN manque (voir CONTRIBUTING.md, section Releases)."
               exit 1
             fi
             export UPDATE_OWNER="${RELEASES_REPO%%/*}" UPDATE_REPO="${RELEASES_REPO#*/}" GH_TOKEN="$RELEASES_TOKEN"

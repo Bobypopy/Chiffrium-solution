@@ -120,7 +120,7 @@ public record AppConfig(
     static final int MAX_GIT_DEPTH = 10_000;
     static final long MAX_FILE_BYTES_LIMIT = 50L * 1024 * 1024;
 
-    /** Langages pour lesquels cdxgen/atom sait tagger la cryptographie (voir docs/cdxgen.md). */
+    /** Langages pour lesquels cdxgen/atom sait tagger la cryptographie (voir docs/architecture.md). */
     static final String DEFAULT_CRYPTO_LANGUAGES = "java,python";
 
     public static AppConfig fromEnvironment() {

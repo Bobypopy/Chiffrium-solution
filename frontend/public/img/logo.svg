@@ -3,7 +3,7 @@
     Marque à plat, sans dégradé : une serrure, seule forme qui reste lisible à 16 px, posée sur un réseau
     régulier - les réseaux euclidiens sont la base des algorithmes post-quantiques (ML-KEM, ML-DSA).
     Deux couleurs, deux éléments : ce qui survit au favicon comme à une impression en noir et blanc.
-    Les PNG et le .ico sont rendus à partir de ce fichier (voir docs/logo.md).
+    Les PNG et le .ico sont rendus à partir de ce fichier.
   -->
   <rect width="512" height="512" rx="112" fill="#0e7c74"/>
   <g stroke="#ffffff" stroke-width="4" opacity="0.14" fill="none">

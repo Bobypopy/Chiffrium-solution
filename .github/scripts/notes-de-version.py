@@ -1,4 +1,4 @@
-"""Renseigne la description de la release publiee, a partir de docs/migration.md.
+"""Renseigne la description de la release publiee, a partir du message du commit de la version.
 
 Sans cela les pages de release sont vides : or ce sont elles que les moteurs de recherche indexent en premier,
 puisque ce sont les seules pages publiques du produit. On y met donc ce que fait l'outil, ce que contient la
@@ -7,8 +7,8 @@ version, et de quoi choisir son fichier.
 Appel : python .github/scripts/notes-de-version.py <version sans v> <depot proprietaire/nom> <jeton>
 """
 import json
-import pathlib
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -29,12 +29,13 @@ Generates a CycloneDX 1.6 CBOM, evaluates each asset against a policy, and expor
 """
 
 
-def section(version):
-    """Le contenu de la section `## <version>` de l'historique, sans son titre."""
-    migration = pathlib.Path(__file__).resolve().parents[2] / "docs" / "migration.md"
-    texte = migration.read_text(encoding="utf-8")
-    trouve = re.search(rf"^## {re.escape(version)}\s*$(.*?)(?=^## |\Z)", texte, re.M | re.S)
-    return trouve.group(1).strip() if trouve else ""
+def section():
+    """Le message du commit de la version, sans le numero qui l'ouvre ("v1.2.3 : ...")."""
+    # Le workflow de release tourne sur le commit du tag : HEAD est la version publiee.
+    message = subprocess.run(["git", "log", "-1", "--format=%s", "HEAD"], capture_output=True,
+                             text=True, encoding="utf-8").stdout.strip()
+    texte = re.sub(r"^v?\d+\.\d+\.\d+\s*:\s*", "", message)
+    return texte[:1].upper() + texte[1:] + ("" if texte.endswith(".") or not texte else ".")
 
 
 def telechargement(version):
@@ -62,7 +63,7 @@ def appel(methode, url, jeton, corps=None):
 
 def main():
     version, depot, jeton = sys.argv[1], sys.argv[2], sys.argv[3]
-    nouveautes = section(version)
+    nouveautes = section()
     corps = "\n\n".join(filter(None, [
         PRESENTATION,
         "### Telechargement\n\n" + telechargement(version),

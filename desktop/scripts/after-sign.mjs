@@ -1,4 +1,4 @@
-// Installateur Windows signé par SignPath (voir docs/code-signing.md) : la signature modifie le fichier, donc
+// Installateur Windows signé par SignPath (voir CONTRIBUTING.md, section Releases) : la signature modifie le fichier, donc
 // l'empreinte SHA-512 et la blockmap calculées par electron-builder ne correspondent plus. Sans cette mise à
 // jour, les applications installées refuseraient la mise à jour (empreinte différente) ou téléchargeraient des
 // blocs faux en mode différentiel.

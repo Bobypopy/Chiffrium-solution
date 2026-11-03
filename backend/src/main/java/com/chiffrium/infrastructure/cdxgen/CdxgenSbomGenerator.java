@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Pilote cdxgen. Points importants (voir docs/cdxgen.md) :
+ * Pilote cdxgen. Points importants (voir docs/architecture.md) :
  * <ul>
  *   <li>cdxgen ne produit les slices d'évidence que pour le <b>premier</b> type passé avec -t :
  *       on lance donc une exécution par écosystème ;</li>
