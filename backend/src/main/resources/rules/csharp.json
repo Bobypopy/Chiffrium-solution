@@ -52,6 +52,11 @@
       "pattern": "\\.\\s*Padding\\s*=\\s*PaddingMode\\s*\\.\\s*(?<padding>PKCS7|Zeros|ANSIX923|ISO10126|None)\\b"
     },
     {
+      "id": "cs.random-key-bytes",
+      "kind": "keybytes",
+      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*RandomNumberGenerator\\s*\\.\\s*GetBytes\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
+    },
+    {
       "id": "cs.keysize",
       "kind": "keysize",
       "pattern": "\\.\\s*KeySize\\s*=\\s*{SIZE}\\b"
@@ -60,7 +65,14 @@
       "id": "cs.asymmetric.create-curve",
       "pattern": "\\b(?<name>ECDsa|ECDiffieHellman)\\s*\\.\\s*Create\\s*\\(\\s*ECCurve\\s*\\.\\s*NamedCurves\\s*\\.\\s*(?<curve>\\w+)",
       "map": { "ecdiffiehellman": "ECDH" },
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cs.asymmetric.create-sized",
+      "pattern": "\\b(?<name>RSA|DSA)\\s*\\.\\s*Create\\s*\\(\\s*{SIZE}",
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "cs.asymmetric.create",

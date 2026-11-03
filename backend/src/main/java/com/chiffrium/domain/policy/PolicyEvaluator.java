@@ -90,6 +90,10 @@ public final class PolicyEvaluator {
 
     private PolicyVerdict evaluateMaterial(CryptoAsset asset) {
         MaterialInfo material = asset.material();
+        if (material != null && material.generated()) {
+            // Clé créée à l'exécution : elle n'est pas exposée dans le dépôt, seul son algorithme se juge.
+            return evaluateAlgorithm(asset.algorithm());
+        }
         if (material != null && material.isPrivate()) {
             boolean encrypted = material.format() != null && material.format().contains(ENCRYPTED_FORMAT_MARKER);
             return new PolicyVerdict(PolicyStatus.DISALLOWED, encrypted ? Severity.HIGH : Severity.CRITICAL, false,

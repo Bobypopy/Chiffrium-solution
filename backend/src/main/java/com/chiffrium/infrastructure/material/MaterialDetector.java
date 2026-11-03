@@ -183,7 +183,7 @@ public final class MaterialDetector implements CryptoDetector {
         }
         MaterialInfo material = new MaterialInfo("certificate", format,
                 cert.getSubjectX500Principal().getName(), cert.getIssuerX500Principal().getName(),
-                cert.getNotBefore().toInstant().toString(), cert.getNotAfter().toInstant().toString());
+                cert.getNotBefore().toInstant().toString(), cert.getNotAfter().toInstant().toString(), false);
         return assetFactory.certificate(file, index, spec, material, occurrence(file, line, cert.getSigAlgName()));
     }
 

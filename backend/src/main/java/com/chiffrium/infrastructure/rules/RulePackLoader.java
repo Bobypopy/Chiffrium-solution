@@ -37,6 +37,7 @@ public final class RulePackLoader {
 
     private static final String INDEX = "/rules/index.json";
     private static final String RULES_DIR = "/rules/";
+    private static final Set<String> KEY_TYPES = Set.of("private-key", "secret-key");
 
     private static final String STRING_LITERAL =
             "(?:[bBrRuUfF@]{0,2}\"[^\"\\n]*\"|[bBrRuUfF]{0,2}'[^'\\n]*'|`[^`\\n]*`)";
@@ -106,6 +107,9 @@ public final class RulePackLoader {
         Map<String, Primitive> primitiveByApi = new LinkedHashMap<>();
         node.path("primitiveByApi").properties().forEach(e -> primitiveByApi.put(e.getKey(),
                 Primitive.fromCycloneDx(e.getValue().asText())));
+        String key = node.hasNonNull("key") ? keyType(node.get("key").asText(), where) : null;
+        Map<String, String> keyByApi = new LinkedHashMap<>();
+        node.path("keyByApi").properties().forEach(e -> keyByApi.put(e.getKey(), keyType(e.getValue().asText(), where)));
 
         return new Rule(id, kind, pattern,
                 node.hasNonNull("algorithm") ? node.get("algorithm").asText() : null,
@@ -116,7 +120,16 @@ public final class RulePackLoader {
                 node.hasNonNull("primitive") ? Primitive.fromCycloneDx(node.get("primitive").asText()) : null,
                 primitiveByApi,
                 node.path("skipUnrecognized").asBoolean(false),
-                node.hasNonNull("direction") ? node.get("direction").asText() : null);
+                node.hasNonNull("direction") ? node.get("direction").asText() : null,
+                key,
+                keyByApi);
+    }
+
+    private static String keyType(String value, String where) {
+        if (!KEY_TYPES.contains(value)) {
+            throw new IllegalStateException(where + " : type de clé inconnu " + value + " (attendu : " + KEY_TYPES + ")");
+        }
+        return value;
     }
 
     private static void validateGroups(Rule.Kind kind, Pattern pattern, JsonNode node, String where) {
@@ -124,7 +137,7 @@ public final class RulePackLoader {
         boolean ok = switch (kind) {
             case ALGORITHM -> node.hasNonNull("algorithm") || node.hasNonNull("template") || groups.contains("algo")
                     || groups.contains("name") || groups.contains("list");
-            case KEYSIZE -> groups.contains("size");
+            case KEYSIZE, KEYBYTES -> groups.contains("size");
             case MODE -> groups.contains("mode") || node.hasNonNull("algorithm");
             case PADDING -> groups.contains("padding") || node.hasNonNull("algorithm");
             case CURVE -> groups.contains("curve");

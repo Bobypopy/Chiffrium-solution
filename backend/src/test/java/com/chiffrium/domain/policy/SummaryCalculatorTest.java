@@ -47,6 +47,20 @@ class SummaryCalculatorTest {
     }
 
     @Test
+    void generatedKeysAreListedButNotCountedTwice() {
+        CryptoAsset rsa = evaluated("RSA");
+        CryptoAsset key = evaluator.evaluate(TestSupport.ASSETS.generatedKey("private-key", rsa.algorithm(),
+                rsa.occurrences().get(0)));
+        Summary alone = calculator.summarize(List.of(rsa), List.of());
+        Summary withKey = calculator.summarize(List.of(rsa, key), List.of());
+        assertThat(withKey.score()).isEqualTo(alone.score());
+        assertThat(withKey.quantumVulnerable()).isEqualTo(alone.quantumVulnerable());
+        assertThat(withKey.byStatus()).isEqualTo(alone.byStatus());
+        assertThat(withKey.totalOccurrences()).isEqualTo(alone.totalOccurrences());
+        assertThat(withKey.totalAssets()).isEqualTo(2);
+    }
+
+    @Test
     void countsQuantumVulnerableAssetsAndLibraryVulnerabilities() {
         Library vulnerable = new Library("ref", "pkg:maven/org.bouncycastle/bcprov-jdk15on@1.60", "org.bouncycastle",
                 "bcprov-jdk15on", "1.60", "required", true,

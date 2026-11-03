@@ -187,8 +187,9 @@ export function printableReport(job, report) {
       ? section('Avertissements', h('ul', {}, report.warnings.map((w) => h('li', {}, w))))
       : null,
     h('footer', { class: 'print-foot' },
-      h('p', {}, 'Analyse statique : elle ne voit pas la cryptographie construite à l\'exécution ni les '
-        + 'dépendances calculées par un script de build. Les constats sont à confirmer en revue.')));
+      h('p', {}, 'Analyse statique : elle voit où le code crée ses clés, pas leur valeur ni ce qui se décide à '
+        + 'l\'exécution (configuration, coffre), ni les dépendances calculées par un script de build. Les '
+        + 'constats sont à confirmer en revue.')));
 }
 
 /**

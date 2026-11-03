@@ -48,7 +48,8 @@
         "MessageDigest": "hash",
         "SecureRandom": "drbg",
         "KEM": "kem"
-      }
+      },
+      "keyByApi": { "KeyGenerator": "secret-key", "KeyPairGenerator": "private-key" }
     },
     {
       "id": "java.jca.secret-key-spec",
@@ -103,7 +104,8 @@
     {
       "id": "java.bc.key-pair-generator",
       "pattern": "\\bnew\\s+(?<name>RSA|EC|Ed25519|Ed448|X25519|X448|DSA|DH|ElGamal|GOST3410|SM2|MLKEM|MLDSA|SLHDSA|Kyber|Dilithium|SPHINCSPlus|Falcon)KeyPairGenerator\\s*\\(",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "java.bc.signer",
@@ -121,6 +123,11 @@
       "id": "java.jca.keysize.rsa-spec",
       "kind": "keysize",
       "pattern": "\\bnew\\s+RSAKeyGenParameterSpec\\s*\\(\\s*{SIZE}\\b"
+    },
+    {
+      "id": "java.random-key-bytes",
+      "kind": "keybytes",
+      "pattern": "\\b(?<var>(?i:\\w{0,40}key\\w{0,40}))\\s*=\\s*(?:new\\s+byte\\s*\\[|ByteArray\\s*\\()\\s*(?<size>16|24|32)\\s*[\\])][\\s\\S]{0,300}?\\.\\s*nextBytes\\s*\\(\\s*\\k<var>\\s*\\)"
     },
     {
       "id": "java.io.write",

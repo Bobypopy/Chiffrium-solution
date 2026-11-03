@@ -25,7 +25,8 @@
       "id": "php.openssl.pkey-new",
       "pattern": "\\bopenssl_pkey_new\\s*\\((?:[^;]*?[\"']private_key_bits[\"']\\s*=>\\s*{SIZE})?",
       "algorithm": "RSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     { "id": "php.openssl.keytype", "pattern": "\\bOPENSSL_KEYTYPE_(?<name>RSA|DSA|DH|EC)\\b", "functions": ["keygen"] },
     {

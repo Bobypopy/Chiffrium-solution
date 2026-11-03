@@ -106,9 +106,19 @@ class PolicyEvaluatorTest {
     }
 
     @Test
+    void generatedKeyIsJudgedByItsAlgorithmNotAsACommittedKey() {
+        AlgorithmSpec rsa1024 = TestSupport.NORMALIZER.normalize("RSA").withKeySize(1024);
+        CryptoAsset key = TestSupport.ASSETS.generatedKey("private-key", rsa1024, occurrence("src/Keys.java"));
+        PolicyVerdict verdict = evaluator.evaluate(key).verdict();
+        assertThat(verdict).isEqualTo(evaluator.evaluateAlgorithm(rsa1024));
+        assertThat(verdict.status()).isEqualTo(PolicyStatus.DISALLOWED);
+        assertThat(verdict.severity()).isNotEqualTo(Severity.CRITICAL);
+    }
+
+    @Test
     void expiredCertificateIsDisallowed() {
         MaterialInfo material = new MaterialInfo("certificate", "PEM", "CN=test", "CN=test",
-                "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z");
+                "2020-01-01T00:00:00Z", "2021-01-01T00:00:00Z", false);
         CryptoAsset cert = TestSupport.ASSETS.certificate("cert.pem", 0,
                 TestSupport.NORMALIZER.normalize("SHA256withRSA").withKeySize(2048), material, occurrence("cert.pem"));
         PolicyVerdict verdict = evaluator.evaluate(cert).verdict();

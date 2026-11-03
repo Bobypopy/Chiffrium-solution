@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
  * sans double lecture d'une même zone), résolution des arguments (littéraux, constantes, concaténations),
  * rattachement des tailles de clé / modes / bourrages / courbes à la détection précédente la plus proche,
  * relevé des lectures/écritures de fichiers de clés, puis qualification par la fonction englobante.
+ * Une règle qui déclare le type de clé qu'elle crée ({@code key}) inventorie aussi la clé générée.
  */
 public final class RuleBasedCryptoDetector implements CryptoDetector {
 
@@ -60,6 +61,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             Primitive.PUBLIC_KEY_ENCRYPTION);
     private static final Set<Primitive> MODE_PRIMITIVES = EnumSet.of(Primitive.BLOCK_CIPHER,
             Primitive.AUTHENTICATED_ENCRYPTION);
+    private static final String SECRET_KEY = "secret-key";
 
     private final List<RulePack> packs;
     private final AssetFactory assetFactory;
@@ -117,6 +119,9 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                     } else {
                         assets.add(assetFactory.fromSpec(detection.spec, occurrence, detection.functions,
                                 DetectionSource.RULES, null));
+                        if (detection.key != null && detection.spec.isRecognized()) {
+                            assets.add(assetFactory.generatedKey(detection.key, detection.spec, occurrence));
+                        }
                     }
                 }
                 flows.addAll(analysis.flows);
@@ -178,9 +183,11 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         private final Set<CryptoFunction> functions;
         private final String ruleId;
         private final String unresolvedApi;
+        /** Type de la clé créée à cet endroit ("private-key", "secret-key"), null si aucune. */
+        private final String key;
 
         Detection(AlgorithmSpec spec, int line, int column, String function, Set<CryptoFunction> functions,
-                  String ruleId, String unresolvedApi) {
+                  String ruleId, String unresolvedApi, String key) {
             this.spec = spec;
             this.line = line;
             this.column = column;
@@ -188,10 +195,11 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             this.functions = functions;
             this.ruleId = ruleId;
             this.unresolvedApi = unresolvedApi;
+            this.key = key;
         }
     }
 
-    private record Modifier(Rule.Kind kind, int line, String function, String value) {
+    private record Modifier(Rule.Kind kind, int line, int column, String function, String value, String ruleId) {
     }
 
     /**
@@ -238,7 +246,9 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                     }
                 }
             }
-            modifiers.forEach(this::attach);
+            // Les tailles en octets viennent en dernier : la clé générée reprend la détection déjà complétée.
+            modifiers.stream().filter(m -> m.kind() != Rule.Kind.KEYBYTES).forEach(this::attach);
+            modifiers.stream().filter(m -> m.kind() == Rule.Kind.KEYBYTES).forEach(this::attach);
         }
 
         private void onAlgorithm(Rule rule, Matcher matcher, int line) {
@@ -253,11 +263,12 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             Integer keySize = parseSize(group(matcher, "size"));
             int column = text.columnOf(matcher.start());
             String function = functionAt(line);
+            String key = api != null && rule.keyByApi().containsKey(api) ? rule.keyByApi().get(api) : rule.key();
 
             for (Candidate candidate : candidates(rule, matcher)) {
                 if (candidate.raw == null) {
                     String apiName = api != null ? api : rule.id();
-                    detections.add(new Detection(null, line, column, function, functions, rule.id(), apiName));
+                    detections.add(new Detection(null, line, column, function, functions, rule.id(), apiName, null));
                     continue;
                 }
                 AlgorithmSpec spec = assetFactory.normalizer().normalize(candidate.raw);
@@ -270,20 +281,21 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 if (primitiveHint != null && OVERRIDABLE_PRIMITIVES.contains(spec.primitive())) {
                     spec = spec.withPrimitive(primitiveHint);
                 }
-                detections.add(new Detection(spec, line, column, function, functions, rule.id(), null));
+                detections.add(new Detection(spec, line, column, function, functions, rule.id(), null, key));
             }
         }
 
         private void onModifier(Rule rule, Matcher matcher, int line) {
             String value = switch (rule.kind()) {
-                case KEYSIZE -> group(matcher, "size");
+                case KEYSIZE, KEYBYTES -> group(matcher, "size");
                 case MODE -> Optional.ofNullable(group(matcher, "mode")).orElse(rule.algorithm());
                 case PADDING -> Optional.ofNullable(group(matcher, "padding")).orElse(rule.algorithm());
                 case CURVE -> group(matcher, "curve");
                 default -> null;
             };
             if (value != null) {
-                modifiers.add(new Modifier(rule.kind(), line, functionAt(line), mapped(rule, stripQuotes(value))));
+                modifiers.add(new Modifier(rule.kind(), line, text.columnOf(matcher.start()), functionAt(line),
+                        mapped(rule, stripQuotes(value)), rule.id()));
             }
         }
 
@@ -300,17 +312,22 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             flows.add(new FileFlow(baseName, file.path(), line, functionAt(line), isWrite(rule, matcher)));
         }
 
-        /** Rattache un paramètre à la détection précédente compatible la plus proche. */
+        /**
+         * Rattache un paramètre à la détection compatible la plus proche : au-dessus de lui, ou de part et d'autre
+         * pour une clé tirée au hasard, qui devient alors une clé générée à son emplacement.
+         */
         private void attach(Modifier modifier) {
+            boolean keyBytes = modifier.kind() == Rule.Kind.KEYBYTES;
             Detection target = null;
             for (Detection detection : detections) {
+                int distance = Math.abs(modifier.line() - detection.line);
                 boolean candidate = detection.spec != null
-                        && detection.line <= modifier.line()
-                        && modifier.line() - detection.line <= MAX_ATTACH_DISTANCE_LINES
+                        && (keyBytes || detection.line <= modifier.line())
+                        && distance <= MAX_ATTACH_DISTANCE_LINES
                         && (detection.function == null || modifier.function() == null
                         || detection.function.equals(modifier.function()))
                         && accepts(detection.spec, modifier.kind());
-                if (candidate && (target == null || detection.line >= target.line)) {
+                if (candidate && (target == null || distance <= Math.abs(modifier.line() - target.line))) {
                     target = detection;
                 }
             }
@@ -320,11 +337,17 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             AlgorithmSpec old = target.spec;
             AlgorithmSpec updated = switch (modifier.kind()) {
                 case KEYSIZE -> Optional.ofNullable(parseSize(modifier.value())).map(old::withKeySize).orElse(old);
+                case KEYBYTES -> Optional.ofNullable(parseSize(modifier.value()))
+                        .map(bytes -> old.withKeySize(bytes * Byte.SIZE)).orElse(old);
                 case MODE, PADDING -> renormalize(old, old.rawName() + "/" + modifier.value());
                 case CURVE -> renormalize(old, old.rawName() + "-" + modifier.value());
                 default -> old;
             };
             target.spec = updated;
+            if (keyBytes) {
+                detections.add(new Detection(updated, modifier.line(), modifier.column(), modifier.function(),
+                        EnumSet.of(CryptoFunction.KEYGEN), modifier.ruleId(), null, SECRET_KEY));
+            }
         }
 
         private AlgorithmSpec renormalize(AlgorithmSpec old, String raw) {
@@ -341,6 +364,10 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         private boolean accepts(AlgorithmSpec spec, Rule.Kind kind) {
             return switch (kind) {
                 case KEYSIZE -> spec.keySize() == null && SIZED_PRIMITIVES.contains(spec.primitive());
+                // Seulement si la taille de clé varie (AES) : 32 octets de ChaCha20 n'apprennent rien.
+                case KEYBYTES -> spec.keySize() == null && MODE_PRIMITIVES.contains(spec.primitive())
+                        && assetFactory.normalizer().catalog().findAlgorithm(spec.catalogId())
+                        .map(definition -> !definition.keySizeRules().isEmpty()).orElse(false);
                 case MODE -> spec.mode() == null && MODE_PRIMITIVES.contains(spec.primitive());
                 case PADDING -> spec.padding() == null;
                 case CURVE -> spec.curve() == null;

@@ -21,6 +21,12 @@
       "functions": ["encrypt", "decrypt"]
     },
     {
+      "id": "rust.aead.generate-key",
+      "pattern": "\\b(?<name>Aes128Gcm|Aes256Gcm|Aes128GcmSiv|Aes256GcmSiv|ChaCha20Poly1305|XChaCha20Poly1305)\\s*::\\s*generate_key\\s*\\(",
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
       "id": "rust.aead-block",
       "pattern": "\\b(?<name>Aes128Gcm|Aes256Gcm|Aes128GcmSiv|Aes256GcmSiv|Aes128Ccm|Aes256Ccm|ChaCha20Poly1305|XChaCha20Poly1305|Aes128|Aes192|Aes256|Des|TdesEde3|Blowfish|Aes256SivAead)\\s*::\\s*new(?:_from_slice)?\\s*\\(",
       "functions": ["encrypt", "decrypt"]
@@ -32,7 +38,7 @@
     },
     { "id": "rust.md5-compute", "pattern": "\\bmd5\\s*::\\s*compute\\s*\\(", "algorithm": "MD5", "functions": ["digest"] },
     { "id": "rust.hmac", "pattern": "\\bHmac\\s*<\\s*(?<name>Sha1|Sha256|Sha384|Sha512|Md5|Sha3_256)\\s*>", "template": "HMAC-{name}", "functions": ["tag"] },
-    { "id": "rust.rsa.generate", "pattern": "\\bRsaPrivateKey\\s*::\\s*new\\s*\\(\\s*[^,]+,\\s*{SIZE}?", "algorithm": "RSA", "functions": ["keygen"] },
+    { "id": "rust.rsa.generate", "pattern": "\\bRsaPrivateKey\\s*::\\s*new\\s*\\(\\s*[^,]+,\\s*{SIZE}?", "algorithm": "RSA", "functions": ["keygen"], "key": "private-key" },
     {
       "id": "rust.rsa.padding",
       "pattern": "\\b(?<api>Oaep|Pkcs1v15Encrypt|Pkcs1v15Sign|Pss)\\s*::\\s*new",

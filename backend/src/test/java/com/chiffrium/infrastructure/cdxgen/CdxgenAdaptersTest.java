@@ -130,6 +130,25 @@ class CdxgenAdaptersTest {
                 .isEqualTo("medium");
     }
 
+    @Test
+    void generatedKeyPointsToItsAlgorithmInTheCbom(@TempDir Path dir) throws Exception {
+        Occurrence at = new Occurrence("src/Keys.java", 3, 9, "Keys.pair", "KeyPairGenerator.getInstance(\"RSA\")",
+                Language.JAVA, DetectionSource.RULES, "java.jca.get-instance", Set.of(CryptoFunction.KEYGEN));
+        CryptoAsset rsa = TestSupport.ASSETS.fromAlgorithmName("RSA", at, Set.of(CryptoFunction.KEYGEN),
+                DetectionSource.RULES, null);
+        CryptoAsset key = TestSupport.ASSETS.generatedKey("private-key", rsa.algorithm(), at);
+        SourceInfo source = new SourceInfo("demo", "local", null, null, Set.of(Language.JAVA), List.of());
+
+        Path target = dir.resolve("cbom.json");
+        new CycloneDxCbomWriter(TestSupport.MAPPER, TestSupport.clockAt(2026), "test").write(target, SBOM, source,
+                List.of(rsa, key), List.of());
+
+        JsonNode props = findCrypto(TestSupport.MAPPER.readTree(target.toFile()), key.bomRef())
+                .path("cryptoProperties").path("relatedCryptoMaterialProperties");
+        assertThat(props.path("type").asText()).isEqualTo("private-key");
+        assertThat(props.path("algorithmRef").asText()).isEqualTo(rsa.bomRef());
+    }
+
     private static JsonNode findCrypto(JsonNode bom, String ref) {
         for (JsonNode component : bom.path("components")) {
             if (ref.equals(component.path("bom-ref").asText())) {

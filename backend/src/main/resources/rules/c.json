@@ -113,7 +113,8 @@
       "algorithm": "RSA",
       "functions": [
         "keygen"
-      ]
+      ],
+      "key": "private-key"
     },
     {
       "id": "c.openssl.rsa-generate",
@@ -121,7 +122,26 @@
       "algorithm": "RSA",
       "functions": [
         "keygen"
-      ]
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "c.openssl.evp-rsa-gen",
+      "pattern": "\\bEVP_RSA_gen\\s*\\(\\s*{SIZE}?",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "c.openssl.evp-ec-gen",
+      "pattern": "\\bEVP_EC_gen\\s*\\(\\s*\"(?<curve>[\\w-]+)\"",
+      "algorithm": "EC",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
     },
     {
       "id": "c.openssl.rsa-padding",
@@ -132,6 +152,14 @@
         "pkcs1_oaep_padding": "OAEP",
         "no_padding": "NoPadding"
       }
+    },
+    {
+      "id": "c.openssl.pkey-keygen-pair",
+      "pattern": "\\bEVP_PKEY_CTX_new_id\\s*\\(\\s*EVP_PKEY_(?<name>RSA|EC|DSA|DH|ED25519|ED448|X25519|X448)\\b(?=[\\s\\S]{0,400}?\\bEVP_PKEY_(?:keygen|generate)\\s*\\()",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
     },
     {
       "id": "c.openssl.pkey-keygen",

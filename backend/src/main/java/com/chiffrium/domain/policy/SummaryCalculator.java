@@ -23,6 +23,9 @@ import java.util.TreeMap;
  * Score = moyenne des poids de chaque actif x 100. Un projet sans cryptographie obtient 100.
  * Les poids reflètent l'effort de remédiation : un actif recommandé ne coûte rien, un actif
  * interdit coûte tout, un actif vulnérable au quantique est pénalisé même s'il est acceptable.
+ * <p>
+ * Une clé générée par le code reprend l'algorithme déjà compté au même emplacement : elle figure dans
+ * l'inventaire (nombre d'actifs) mais ne pèse pas une seconde fois sur les indicateurs ni sur le score.
  */
 public final class SummaryCalculator {
 
@@ -54,7 +57,10 @@ public final class SummaryCalculator {
         int symmetricBelow256 = 0;
         int occurrences = 0;
 
-        for (CryptoAsset asset : assets) {
+        List<CryptoAsset> counted = assets.stream()
+                .filter(a -> a.material() == null || !a.material().generated())
+                .toList();
+        for (CryptoAsset asset : counted) {
             PolicyVerdict verdict = asset.verdict();
             PolicyStatus status = verdict == null ? PolicyStatus.UNKNOWN : verdict.status();
             byStatus.merge(status.id(), 1, Integer::sum);
@@ -89,7 +95,7 @@ public final class SummaryCalculator {
         int cryptoLibraries = (int) libraries.stream().filter(Library::cryptoLibrary).count();
 
         return new Summary(assets.size(), occurrences, byStatus, byPrimitive, byLanguage, quantumVulnerable,
-                score(assets), libraries.size(), cryptoLibraries, vulnerabilities, knownExploited, findings.size(),
+                score(counted), libraries.size(), cryptoLibraries, vulnerabilities, knownExploited, findings.size(),
                 bySeverity, PqcReadiness.of(quantumVulnerable, postQuantum, symmetricBelow256), licenseRisks);
     }
 

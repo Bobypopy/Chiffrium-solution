@@ -264,10 +264,16 @@ export const RAPPORT = {
   '- exploitée (KEV)': '- exploited (KEV)',
   'Aucun constat.': 'No finding.',
   'Aucune dépendance inventoriée.': 'No dependency inventoried.',
-  ["Analyse statique : elle ne voit pas la cryptographie construite à l'exécution ni les dépendances "
-    + 'calculées par un script de build. Les constats sont à confirmer en revue.']:
-    'Static analysis: it does not see cryptography built at runtime, nor dependencies computed by a build '
-    + 'script. Findings are to be confirmed in review.',
+  ["Analyse statique : elle voit où le code crée ses clés, pas leur valeur ni ce qui se décide à "
+    + "l'exécution (configuration, coffre), ni les dépendances calculées par un script de build. Les "
+    + 'constats sont à confirmer en revue.']:
+    'Static analysis: it sees where the code creates its keys, not their value nor what is decided at '
+    + 'runtime (configuration, vault), nor dependencies computed by a build script. Findings are to be '
+    + 'confirmed in review.',
+  ["Clé créée à l'exécution par le code : sa valeur n'est pas dans le dépôt, seuls son algorithme et "
+    + "l'endroit où elle est créée sont connus."]:
+    'Key created at runtime by the code: its value is not in the repository, only its algorithm and the '
+    + 'place where it is created are known.',
 
   // --- Comparaison
   'Comparaison en cours...': 'Comparing...',

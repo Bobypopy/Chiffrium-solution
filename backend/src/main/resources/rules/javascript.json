@@ -82,14 +82,16 @@
       "pattern": "\\bgenerateKeyPair(?:Sync)?\\s*\\(\\s*{ARG}(?:\\s*,\\s*\\{[^}]*?(?:modulusLength\\s*:\\s*{SIZE}|namedCurve\\s*:\\s*['\"](?<curve>[\\w-]+)['\"]))?",
       "functions": [
         "keygen"
-      ]
+      ],
+      "key": "private-key"
     },
     {
       "id": "js.node.keygen",
       "pattern": "\\bgenerateKey(?:Sync)?\\s*\\(\\s*{STR}\\s*,\\s*\\{\\s*length\\s*:\\s*{SIZE}",
       "functions": [
         "keygen"
-      ]
+      ],
+      "key": "secret-key"
     },
     {
       "id": "js.node.pbkdf2",
@@ -220,7 +222,8 @@
       "algorithm": "RSA",
       "functions": [
         "keygen"
-      ]
+      ],
+      "key": "private-key"
     },
     {
       "id": "js.bcrypt",

@@ -1,0 +1,227 @@
+{
+  "rules": [
+    {
+      "id": "key-java-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\b(?:write|writeString|print|println)\\s*\\([^;]{0,200}?(?:(?i:\\w{0,40}priv\\w{0,40})|getPrivate\\s*\\(\\s*\\))\\s*\\.\\s*getEncoded\\s*\\(|\\.\\s*writeObject\\s*\\(\\s*(?:(?i:\\w{0,40}priv\\w{0,40})|\\w+\\s*\\.\\s*getPrivate\\s*\\(\\s*\\))\\s*\\)",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-python-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "python"
+      ],
+      "pattern": "\\.\\s*private_bytes\\s*\\([^()]{0,300}NoEncryption\\s*\\(|\\b(?i:\\w{0,40}priv\\w{0,40})\\s*\\.\\s*export_key\\s*\\((?![^)]*passphrase)[^)]*\\)",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-js-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "\\bprivateKeyEncoding\\s*:\\s*\\{(?![^}]*\\bcipher\\s*:)[^}]*\\}|\\.\\s*export\\s*\\(\\s*\\{(?=[^}]*\\btype\\s*:\\s*['\"](?:pkcs8|sec1)['\"])(?![^}]*\\bcipher\\s*:)[^}]*\\}",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-go-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\\bpem\\s*\\.\\s*Block\\s*\\{\\s*Type\\s*:\\s*\"(?:RSA |EC )?PRIVATE KEY\"",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-c-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "c",
+        "cpp"
+      ],
+      "pattern": "\\bPEM_write_(?:bio_)?(?:PrivateKey|RSAPrivateKey|ECPrivateKey|DSAPrivateKey|PKCS8PrivateKey)\\s*\\(\\s*[^,;]+,\\s*[^,;]+,\\s*(?:NULL|nullptr|0)\\s*,",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-csharp-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "\\.\\s*(?:Export(?:RSA|Pkcs8|EC)PrivateKey(?:Pem)?\\s*\\(|ToXmlString\\s*\\(\\s*true\\b)",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-php-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "php"
+      ],
+      "pattern": "\\bopenssl_pkey_export(?:_to_file)?\\s*\\(\\s*[^,();]+,\\s*[^,();]+\\s*(?:\\)|,\\s*(?:null|NULL|''|\"\")\\s*[,)])",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-ruby-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "ruby"
+      ],
+      "pattern": "\\b(?i:\\w{0,40}priv\\w{0,40})\\s*\\.\\s*(?:to_pem|to_der|export|private_to_pem)\\b(?!\\s*\\(\\s*[^)\\s])",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "key-rust-unencrypted-export",
+      "category": "secret",
+      "severity": "medium",
+      "cwe": "CWE-312",
+      "languages": [
+        "rust"
+      ],
+      "pattern": "\\.\\s*(?:to_pkcs8_pem|to_pkcs8_der|write_pkcs8_pem_file|write_pkcs8_der_file)\\s*\\(",
+      "title": "Clé privée exportée sans chiffrement",
+      "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
+      "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."
+    },
+    {
+      "id": "secret-java-keystore-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?:\\.\\s*(?:store|load|getKey|setKeyEntry)\\s*\\([^;]{0,200}?|\\bPasswordProtection\\s*\\(\\s*)\"(?<secret>[^\"\\n]{1,128})\"\\s*\\.\\s*toCharArray\\s*\\(",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-passphrase-assignment",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "pattern": "\\bpassphrase[\"']?\\s*(?:[:=]|=>)\\s*b?[\"'](?<secret>[^\"'\\s]{8,128})[\"']",
+      "ignoreCase": true,
+      "secretGroup": "secret",
+      "minEntropy": 3.0,
+      "exclude": "getenv|environ|process\\.env|System\\.getProperty|\\$\\{|config\\.get|settings\\.|os\\.Getenv|ENV\\[|Environment\\.GetEnvironmentVariable",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-python-key-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "python"
+      ],
+      "pattern": "\\b(?:(?:load_key_and_certificates|load_pem_private_key|load_der_private_key)\\s*\\(\\s*[^,()]+,\\s*(?:password\\s*=\\s*)?|BestAvailableEncryption\\s*\\(\\s*)b[\"'](?<secret>[^\"'\\n]{1,128})[\"']",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-csharp-certificate-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "(?:\\bnew\\s+X509Certificate2\\s*\\(|\\bX509CertificateLoader\\s*\\.\\s*LoadPkcs12\\w*\\s*\\()\\s*[^,;()]+,\\s*\"(?<secret>[^\"\\n]{1,128})\"",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-go-pkcs12-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\\bpkcs12\\s*\\.\\s*(?:\\w+\\s*\\.\\s*)?(?:Decode\\w*|Encode)\\s*\\([^;\\n]{0,200}?,\\s*\"(?<secret>[^\"\\n]{1,128})\"\\s*\\)",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-php-key-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "php"
+      ],
+      "pattern": "\\b(?:openssl_pkcs12_read|openssl_pkcs12_export|openssl_pkey_get_private|openssl_pkey_export)\\s*\\([^;]{0,200}?,\\s*['\"](?<secret>[^'\"\\n]{1,128})['\"]\\s*[,)]",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-ruby-key-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "ruby"
+      ],
+      "pattern": "(?:\\bOpenSSL\\s*::\\s*(?:PKCS12\\s*\\.\\s*new|PKey\\s*(?:::\\s*\\w+\\s*\\.\\s*new|\\.\\s*read))\\s*\\([^;\\n]{0,200}?|\\.\\s*export\\s*\\(\\s*[^,()]+),\\s*['\"](?<secret>[^'\"\\n]{1,128})['\"]\\s*[,)]",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    }
+  ]
+}

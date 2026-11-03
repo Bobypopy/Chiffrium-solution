@@ -22,6 +22,12 @@
     { "id": "ruby.openssl.digest-class", "pattern": "\\bOpenSSL\\s*::\\s*Digest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)\\b", "functions": ["digest"] },
     { "id": "ruby.digest", "pattern": "\\bDigest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|SHA2|RMD160)\\b", "map": { "sha2": "SHA-256", "rmd160": "RIPEMD-160" }, "functions": ["digest"] },
     {
+      "id": "ruby.openssl.pkey-generate",
+      "pattern": "\\bOpenSSL\\s*::\\s*PKey\\s*::\\s*(?<name>RSA|DSA|EC)\\s*\\.\\s*(?:generate|new(?=\\s*\\(\\s*\\d))\\s*\\(\\s*(?:{SIZE}|['\"](?<curve>[\\w-]+)['\"])?",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
       "id": "ruby.openssl.pkey",
       "pattern": "\\bOpenSSL\\s*::\\s*PKey\\s*::\\s*(?<name>RSA|DSA|EC|DH)\\s*\\.\\s*(?:new|generate)\\s*\\(\\s*(?:{SIZE}|['\"](?<curve>[\\w-]+)['\"])?",
       "functions": ["keygen"]

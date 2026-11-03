@@ -69,6 +69,24 @@ export const REGLES = {
     + 'an HSM.',
   'Stocker la clé hors du dépôt (coffre, HSM) et vérifier la robustesse de sa phrase de passe.':
     'Store the key outside the repository (vault, HSM) and check that its passphrase is strong.',
+  'Clé privée exportée sans chiffrement': 'Private key exported without encryption',
+  ['La clé privée est écrite en clair : sur le disque ou en transit, elle n\'est protégée par rien d\'autre '
+    + 'que les droits du fichier.']:
+    'The private key is written in clear text: on disk or in transit, nothing but the file permissions '
+    + 'protects it.',
+  ['Chiffrer la clé à l\'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin '
+    + 'protégé (keystore, trousseau du système, HSM, KMS).']:
+    'Encrypt the key when exporting it (PKCS#8 encrypted with a strong passphrase) or keep it in a protected '
+    + 'store (keystore, system keyring, HSM, KMS).',
+  'Mot de passe de clé ou de magasin de clés en dur': 'Hardcoded key or keystore password',
+  ['Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour '
+    + 'qui lit le dépôt.']:
+    'The password protecting the key or the keystore is written in the code: it protects nothing from '
+    + 'anyone who reads the repository.',
+  ['Lire le mot de passe dans un coffre ou une variable d\'environnement au déploiement, et changer celui du '
+    + 'magasin existant.']:
+    'Read the password from a vault or an environment variable at deployment, and change the one of the '
+    + 'existing keystore.',
   'Clé symétrique en dur': 'Hardcoded symmetric key',
   'Clé symétrique en dur (constante)': 'Hardcoded symmetric key (constant)',
   'Clé de chiffrement littérale passée au chiffreur.': 'A literal encryption key passed to the cipher.',

@@ -195,4 +195,69 @@ class SecurityFindingDetectorTest {
                 "pbkdf2.iterations=600000\nserver.port=8080\n");
         assertThat(ruleIds(detect(root))).doesNotContain("kdf-config-pbkdf2-iterations");
     }
+
+    @Test
+    void flagsPrivateKeysExportedInClearAndHardcodedKeyPasswords(@TempDir Path root) {
+        TestSupport.write(root, "src/Store.java", """
+                class Store {
+                    void save(KeyPair kp, Path p, KeyStore ks, OutputStream out) throws Exception {
+                        Files.write(p, kp.getPrivate().getEncoded());
+                        ks.store(out, "Kq7#vault".toCharArray());
+                        ks.store(out, password);
+                    }
+                }
+                """);
+        TestSupport.write(root, "app/keys.py", """
+                def export(private_key):
+                    clear = private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
+                    safe = private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, BestAvailableEncryption(pw))
+                    other = load_pem_private_key(data, b"Kq7#vault")
+                """);
+        TestSupport.write(root, "app/keys.js", """
+                const clear = crypto.generateKeyPairSync('rsa', { privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
+                const safe = crypto.generateKeyPairSync('rsa', {
+                  privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase: secret } });
+                """);
+        TestSupport.write(root, "app/keys.go", """
+                func save(k *rsa.PrivateKey) {
+                    pem.Encode(f, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(k)})
+                    pfx, _ := pkcs12.Modern.Encode(k, cert, nil, "Kq7#vault")
+                }
+                """);
+        TestSupport.write(root, "app/keys.c", """
+                void save(FILE *f, EVP_PKEY *k) {
+                    PEM_write_PrivateKey(f, k, NULL, NULL, 0, NULL, NULL);
+                    PEM_write_PrivateKey(f, k, EVP_aes_256_cbc(), NULL, 0, NULL, pass);
+                }
+                """);
+        TestSupport.write(root, "app/Keys.cs", """
+                class Keys {
+                    void Save(RSA rsa) {
+                        var clear = rsa.ExportPkcs8PrivateKey();
+                        var safe = rsa.ExportEncryptedPkcs8PrivateKey(pwd, parameters);
+                        var cert = new X509Certificate2("cert.pfx", "Kq7#vault");
+                    }
+                }
+                """);
+        TestSupport.write(root, "app/keys.php", """
+                <?php
+                openssl_pkey_export($res, $pem);
+                openssl_pkey_export($res, $pem, $passphrase);
+                $k = openssl_pkey_get_private('file://key.pem', 'Kq7#vault');
+                """);
+        TestSupport.write(root, "app/keys.rb", "pem = private_key.to_pem\nsafe = private_key.export(cipher, pass)\n");
+        TestSupport.write(root, "app/keys.rs", "let pem = key.to_pkcs8_pem(LineEnding::LF)?;\n");
+
+        List<SecurityFinding> findings = detect(root);
+
+        assertThat(findings).filteredOn(f -> f.ruleId().endsWith("-unencrypted-export"))
+                .extracting(f -> f.file() + ":" + f.line())
+                .containsExactlyInAnyOrder("src/Store.java:3", "app/keys.py:2", "app/keys.js:1", "app/keys.go:2",
+                        "app/keys.c:2", "app/Keys.cs:3", "app/keys.php:2", "app/keys.rb:1", "app/keys.rs:1");
+        assertThat(findings).filteredOn(f -> f.ruleId().startsWith("secret-") && f.ruleId().endsWith("-password"))
+                .extracting(f -> f.file() + ":" + f.line())
+                .containsExactlyInAnyOrder("src/Store.java:4", "app/keys.py:4", "app/keys.go:3", "app/Keys.cs:5",
+                        "app/keys.php:4");
+        assertThat(findings).allSatisfy(f -> assertThat(f.snippet() + " " + f.evidence()).doesNotContain("Kq7#vault"));
+    }
 }

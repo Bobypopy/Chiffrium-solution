@@ -89,8 +89,9 @@ public final class AssetMerger {
                 .toList();
     }
 
+    /** Une clé ou un certificat n'est pas une autre écriture de l'algorithme vu au même endroit : pas de famille. */
     private static String familyOf(CryptoAsset asset) {
-        return asset.algorithm() == null ? null : asset.algorithm().catalogId();
+        return asset.algorithm() == null || asset.material() != null ? null : asset.algorithm().catalogId();
     }
 
     /** Nombre de paramètres connus : plus il est élevé, plus la description est précise. */

@@ -66,6 +66,9 @@ export const PATTERNS_EN = [
     'Longer than usual ($1: $2). A large repository or a slow clone usually explains the gap.'],
   [/^Recommandation : (.+)$/, 'Recommendation: $1'],
   [/^Valide jusqu'en (\d+)$/, 'Valid until $1'],
+  [/^Clé (privée|secrète) (.+) générée \((.+)\)$/,
+    (type, algorithme, fichier) => `${type === 'privée' ? 'Private' : 'Secret'} key ${algorithme} generated `
+      + `(${fichier})`],
   [/^\.\.\. et (\d+) (actifs|constats|dépendances) de plus : voir le rapport complet \(JSON\) ou l'application\.$/,
     (n, quoi) => {
       const mots = { actifs: 'assets', constats: 'findings', dépendances: 'dependencies' };

@@ -49,6 +49,12 @@
       "functions": ["encrypt", "decrypt"]
     },
     {
+      "id": "python.cryptography.aead-generate-key",
+      "pattern": "\\b(?<name>AESGCM|AESCCM|AESOCB3|AESGCMSIV|ChaCha20Poly1305)\\s*\\.\\s*generate_key\\s*\\(\\s*(?:bit_length\\s*=\\s*)?{SIZE}?",
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
       "id": "python.cryptography.aead",
       "pattern": "\\b(?<name>AESGCM|AESCCM|AESOCB3|AESSIV|AESGCMSIV|ChaCha20Poly1305)\\s*\\(",
       "functions": ["encrypt", "decrypt"]
@@ -62,19 +68,22 @@
       "id": "python.cryptography.rsa-keygen-size",
       "pattern": "\\brsa\\s*\\.\\s*generate_private_key\\s*\\((?:[^()]|\\([^()]*\\))*?key_size\\s*=\\s*{SIZE}",
       "algorithm": "RSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.cryptography.rsa-keygen",
       "pattern": "\\brsa\\s*\\.\\s*generate_private_key\\s*\\(",
       "algorithm": "RSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.cryptography.dsa-keygen",
       "pattern": "\\bdsa\\s*\\.\\s*generate_private_key\\s*\\((?:[^()]|\\([^()]*\\))*?(?:key_size\\s*=\\s*)?{SIZE}?",
       "algorithm": "DSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.cryptography.dh",
@@ -86,7 +95,8 @@
       "id": "python.cryptography.ec-keygen",
       "pattern": "\\bec\\s*\\.\\s*generate_private_key\\s*\\(\\s*(?:curve\\s*=\\s*)?ec\\s*\\.\\s*(?<curve>\\w+)",
       "algorithm": "EC",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.cryptography.ecdsa",
@@ -102,8 +112,9 @@
     },
     {
       "id": "python.cryptography.edwards",
-      "pattern": "\\b(?<name>Ed25519|Ed448|X25519|X448)PrivateKey\\s*\\.\\s*(?:generate|from_private_bytes)\\s*\\(",
-      "functions": ["keygen"]
+      "pattern": "\\b(?<name>Ed25519|Ed448|X25519|X448)PrivateKey\\s*\\.\\s*(?<api>generate|from_private_bytes)\\s*\\(",
+      "functions": ["keygen"],
+      "keyByApi": { "generate": "private-key" }
     },
     {
       "id": "python.cryptography.rsa-padding",
@@ -117,6 +128,13 @@
       "pattern": "\\b(?<name>PBKDF2HMAC|Scrypt|HKDF|HKDFExpand|ConcatKDFHash|X963KDF|Argon2id|KBKDFHMAC)\\s*\\(",
       "map": { "pbkdf2hmac": "PBKDF2", "hkdfexpand": "HKDF", "kbkdfhmac": "HMAC", "concatkdfhash": "HKDF", "x963kdf": "HKDF" },
       "functions": ["keyderive"]
+    },
+    {
+      "id": "python.cryptography.fernet-generate-key",
+      "pattern": "\\bFernet\\s*\\.\\s*generate_key\\s*\\(",
+      "algorithm": "AES-128-CBC",
+      "functions": ["keygen"],
+      "key": "secret-key"
     },
     {
       "id": "python.cryptography.fernet",
@@ -170,19 +188,22 @@
       "id": "python.pycryptodome.rsa-generate",
       "pattern": "\\bRSA\\s*\\.\\s*generate\\s*\\(\\s*(?:bits\\s*=\\s*)?{SIZE}",
       "algorithm": "RSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.pycryptodome.dsa-generate",
       "pattern": "\\bDSA\\s*\\.\\s*generate\\s*\\(\\s*(?:bits\\s*=\\s*)?{SIZE}",
       "algorithm": "DSA",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.pycryptodome.ecc-generate",
       "pattern": "\\bECC\\s*\\.\\s*generate\\s*\\(\\s*curve\\s*=\\s*['\"](?<curve>[\\w-]+)['\"]",
       "algorithm": "EC",
-      "functions": ["keygen"]
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "python.pycryptodome.kdf",
@@ -220,6 +241,11 @@
       "pattern": "\\bTLSVersion\\s*\\.\\s*(?<name>\\w+)",
       "skipUnrecognized": true,
       "functions": ["other"]
+    },
+    {
+      "id": "python.random-key-bytes",
+      "kind": "keybytes",
+      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*(?:os\\s*\\.\\s*urandom|(?:secrets\\s*\\.\\s*)?token_bytes|(?:Random\\s*\\.\\s*)?get_random_bytes)\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
     },
     {
       "id": "python.io.open",

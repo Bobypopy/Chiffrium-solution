@@ -26,6 +26,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -84,7 +85,10 @@ public final class CycloneDxCbomWriter implements CbomWriter {
         }
         ArrayNode componentArray = bom.putArray("components");
         components.values().forEach(componentArray::add);
-        assets.forEach(asset -> componentArray.add(toComponent(asset)));
+        // Une clé générée renvoie à l'algorithme qui la crée (algorithmRef) : même nom, actif sans matériel.
+        Map<String, String> algorithmRefs = new HashMap<>();
+        assets.stream().filter(a -> a.material() == null).forEach(a -> algorithmRefs.putIfAbsent(a.name(), a.bomRef()));
+        assets.forEach(asset -> componentArray.add(toComponent(asset, algorithmRefs)));
 
         dependencies.computeIfAbsent(rootRef, k -> new LinkedHashSet<>())
                 .addAll(assets.stream().map(CryptoAsset::bomRef).toList());
@@ -149,7 +153,7 @@ public final class CycloneDxCbomWriter implements CbomWriter {
         }
     }
 
-    ObjectNode toComponent(CryptoAsset asset) {
+    ObjectNode toComponent(CryptoAsset asset, Map<String, String> algorithmRefs) {
         ObjectNode component = mapper.createObjectNode();
         component.put("type", "cryptographic-asset");
         component.put("bom-ref", asset.bomRef());
@@ -165,7 +169,7 @@ public final class CycloneDxCbomWriter implements CbomWriter {
             case PROTOCOL -> crypto.set("protocolProperties", protocolProperties(spec));
             case CERTIFICATE -> crypto.set("certificateProperties", certificateProperties(asset.material(), spec));
             case RELATED_CRYPTO_MATERIAL -> crypto.set("relatedCryptoMaterialProperties",
-                    materialProperties(asset.material(), spec));
+                    materialProperties(asset.material(), spec, algorithmRefs));
         }
         if (spec != null && spec.oid() != null && asset.assetType() == AssetType.ALGORITHM) {
             crypto.put("oid", spec.oid());
@@ -231,12 +235,15 @@ public final class CycloneDxCbomWriter implements CbomWriter {
         return props;
     }
 
-    private ObjectNode materialProperties(MaterialInfo material, AlgorithmSpec spec) {
+    private ObjectNode materialProperties(MaterialInfo material, AlgorithmSpec spec, Map<String, String> algorithmRefs) {
         ObjectNode props = mapper.createObjectNode();
         String type = material == null ? "unknown" : material.materialType();
         props.put("type", "keystore".equals(type) ? OTHER : type);
         if (material != null) {
             putIfPresent(props, "format", material.format());
+            if (material.generated() && spec != null) {
+                putIfPresent(props, "algorithmRef", algorithmRefs.get(spec.displayName()));
+            }
         }
         if (spec != null && spec.keySize() != null) {
             props.put("size", spec.keySize());

@@ -44,6 +44,15 @@ class AssetMergerTest {
     }
 
     @Test
+    void generatedKeyAndItsAlgorithmBothSurviveAtTheSameLocation() {
+        Occurrence at = occurrence("Keys.java", 3, DetectionSource.RULES, CryptoFunction.KEYGEN);
+        CryptoAsset rsa = TestSupport.ASSETS.fromAlgorithmName("RSA", at, Set.of(CryptoFunction.KEYGEN),
+                DetectionSource.RULES, null);
+        CryptoAsset key = TestSupport.ASSETS.generatedKey("private-key", rsa.algorithm(), at);
+        assertThat(AssetMerger.merge(List.of(rsa, key))).hasSize(2);
+    }
+
+    @Test
     void differentParametersStaySeparate() {
         CryptoAsset gcm = TestSupport.ASSETS.fromAlgorithmName("AES/GCM/NoPadding", null, Set.of(),
                 DetectionSource.RULES, null);
