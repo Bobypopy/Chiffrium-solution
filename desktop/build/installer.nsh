@@ -15,22 +15,13 @@
 !macro customInit
   nsExec::Exec `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -C "$$dossier = '$INSTDIR'; if (-not (Test-Path $$dossier)) { exit 0 }; 1..3 | % { Get-CimInstance Win32_Process | ? { $$_.Path -and $$_.Path.StartsWith($$dossier, 'CurrentCultureIgnoreCase') } | Sort-Object { if ($$_.Name -eq '${APP_EXECUTABLE_FILENAME}') { 0 } else { 1 } } | % { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Milliseconds 700 }; exit 0"`
   Pop $0
-
-  ; Desinstaller une version anterieure a 2.5.3, dont le desinstalleur ne sait pas se faire appeler par une
-  ; mise a jour (voir customRemoveFiles). electron-builder l'appellera avec --updated, il rendra 2 sans rien
-  ; supprimer, et l'installation bouclera. On le lance donc ici sans --updated, forme sous laquelle il
-  ; fonctionne, pour qu'il n'y ait plus rien a desinstaller ensuite.
-  ReadRegStr $R7 HKCU "${INSTALL_REGISTRY_KEY}" InstallLocation
-  ReadRegStr $R8 HKCU "${INSTALL_REGISTRY_KEY}" DisplayVersion
-  ${if} $R7 != ""
-  ${andIf} ${FileExists} "$R7\${UNINSTALL_FILENAME}"
-  ${andIf} $R8 != "${VERSION}"
-    CopyFiles /SILENT "$R7\${UNINSTALL_FILENAME}" "$TEMP\ca-ancien-desinstalleur.exe"
-    ExecWait '"$TEMP\ca-ancien-desinstalleur.exe" /S /KEEP_APP_DATA /currentuser _?=$R7' $R9
-    Delete "$TEMP\ca-ancien-desinstalleur.exe"
-    DetailPrint "Ancienne version retiree (code $R9)."
-  ${endIf}
 !macroend
+
+; Note : une desinstallation de secours a ete tentee ici en 1.0.0, pour rattraper les versions dont le
+; desinstalleur echouait sous --updated. Elle etait inutile (les versions CryptoAnalyzer ont un autre
+; identifiant d'application, donc une autre cle de registre : elle ne les voyait pas) et nuisible : en
+; desinstallant la version en place apres que l'installateur avait deja lu l'etat de l'installation, elle le
+; laissait attendre indefiniment. Retiree en 1.0.2. Le correctif utile est customRemoveFiles, ci-dessous.
 
 ; Suppression des fichiers pendant une mise a jour.
 ;
