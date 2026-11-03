@@ -95,4 +95,41 @@ export const COMPLEMENTS = {
   // --- Paramètres
   "587 (STARTTLS), 465 (chiffré d'emblée) ou 25 (relais interne).":
     '587 (STARTTLS), 465 (encrypted from the start) or 25 (internal relay).',
+
+  // --- Verdicts du moteur (raisons et recommandations calculées)
+  'Vulnérable à un ordinateur quantique (algorithme de Shor) : prévoir une migration post-quantique.':
+    'Vulnerable to a quantum computer (Shor\'s algorithm): plan a post-quantum migration.',
+  ['Migrer vers ML-DSA (FIPS 204) ou SLH-DSA (FIPS 205), en hybride avec l\'algorithme actuel pendant la '
+    + 'transition.']:
+    'Migrate to ML-DSA (FIPS 204) or SLH-DSA (FIPS 205), in hybrid mode with the current algorithm during the '
+    + 'transition.',
+  ['Migrer vers ML-KEM (FIPS 203), en hybride avec l\'algorithme actuel (X25519 + ML-KEM-768 par exemple) '
+    + 'pendant la transition.']:
+    'Migrate to ML-KEM (FIPS 203), in hybrid mode with the current algorithm (X25519 + ML-KEM-768 for '
+    + 'instance) during the transition.',
+  ["Migrer vers ML-KEM (FIPS 203) pour l'échange de clés et ML-DSA (FIPS 204) pour la signature, en hybride "
+    + 'pendant la transition.']:
+    'Migrate to ML-KEM (FIPS 203) for key exchange and ML-DSA (FIPS 204) for signatures, in hybrid mode '
+    + 'during the transition.',
+  "Vérifier manuellement cet usage et compléter le catalogue d'algorithmes.":
+    'Check this use by hand and complete the algorithm catalog.',
+  'Renouveler le certificat.': 'Renew the certificate.',
+  ['Retirer la clé du dépôt, la considérer comme compromise (révocation / rotation) et la stocker dans un '
+    + 'coffre-fort de secrets (Vault, KMS, secret Kubernetes).']:
+    'Remove the key from the repository, treat it as compromised (revocation / rotation) and store it in a '
+    + 'secrets vault (Vault, KMS, Kubernetes secret).',
+  'Vérifier que le keystore ne contient aucune clé privée de production ; sinon le retirer du dépôt.':
+    'Check that the keystore holds no production private key; otherwise remove it from the repository.',
+  ["Ouvrir le fichier pour l'identifier ; s'il contient une clé privée ou secrète, le retirer du dépôt et "
+    + 'considérer la clé comme compromise.']:
+    'Open the file to identify it; if it holds a private or secret key, remove it from the repository and '
+    + 'treat the key as compromised.',
+  'Clé privée chiffrée versionnée dans le dépôt (exposée à une attaque hors ligne sur le mot de passe).':
+    'Encrypted private key committed to the repository (exposed to an offline attack on the password).',
+  'Clé privée ou secrète versionnée dans le dépôt.': 'Private or secret key committed to the repository.',
+  'Keystore versionné : il peut contenir des clés privées.': 'Keystore committed: it may hold private keys.',
+  ["Fichier de clé non identifié : son contenu n'a pas pu être lu, il peut contenir une clé privée."]:
+    'Unidentified key file: its content could not be read, it may hold a private key.',
+  'Matériel public (clé publique).': 'Public material (public key).',
+  'Algorithme de signature du certificat inconnu.': 'Unknown certificate signature algorithm.',
 };

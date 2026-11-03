@@ -8,6 +8,8 @@ import com.chiffrium.domain.model.MaterialInfo;
 import com.chiffrium.domain.model.Occurrence;
 import com.chiffrium.domain.model.PolicyStatus;
 import com.chiffrium.domain.model.PolicyVerdict;
+import com.chiffrium.domain.model.Primitive;
+import com.chiffrium.domain.model.SecurityStrength;
 import com.chiffrium.domain.model.Severity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -117,6 +119,51 @@ class PolicyEvaluatorTest {
         assertThat(verdict("ML-KEM-768").reasons()).anyMatch(r -> r.startsWith("ML-KEM-768 : CNSA 2.0"));
         assertThat(verdict("ML-KEM-1024").status()).isEqualTo(PolicyStatus.RECOMMENDED);
         assertThat(verdict("ML-KEM").reasons()).anyMatch(r -> r.contains("niveau de sécurité non déterminé"));
+    }
+
+    /**
+     * Ce qui résiste au quantique : catégorie NIST 1 à 5 (AES-128 = 1, ML-KEM-768 = 3, AES-256 = 5), 0 pour ce que
+     * Shor casse quelle que soit la taille ; aucun niveau affirmé quand les paramètres manquent.
+     */
+    @ParameterizedTest(name = "{0} -> {1} bits, catégorie {2}")
+    @CsvSource(nullValues = "-", value = {
+            "ML-KEM-512, 128, 1",
+            "ML-KEM-768, 192, 3",
+            "ML-DSA-44, 128, 2",
+            "ML-DSA-87, 256, 5",
+            "SLH-DSA-SHA2-192s, 192, 3",
+            "AES-128/GCM/NoPadding, 128, 1",
+            "AES-256-GCM, 256, 5",
+            "ChaCha20-Poly1305, 256, 5",
+            "DESede/CBC/PKCS5Padding, 112, 0",
+            "SHA-256, 128, 2",
+            "SHA-384, 192, 4",
+            "RSA-2048, 112, 0",
+            "RSA-4096, 128, 0",
+            "ECDH-P-384, 192, 0",
+            "Ed25519, 128, 0",
+            "SHA256withRSA, -, 0",
+    })
+    void securityLevelsSayWhatWithstandsAQuantumComputer(String raw, Integer classicalBits, Integer level) {
+        assertThat(verdict(raw).strength()).isEqualTo(new SecurityStrength(classicalBits, level));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"AES/GCM/NoPadding", "ML-KEM", "HmacSHA256", "PBKDF2WithHmacSHA256"})
+    void noLevelIsClaimedWithoutTheParameters(String raw) {
+        assertThat(verdict(raw).strength()).isNull();
+    }
+
+    /** Un algorithme cassé par Shor reçoit toujours une cible de migration, même absente du catalogue. */
+    @Test
+    void everyQuantumVulnerableAlgorithmGetsAMigrationTarget() {
+        for (AlgorithmDefinition definition : TestSupport.CATALOG.algorithms()) {
+            if (definition.quantumVulnerable()) {
+                assertThat(verdict(definition.name()).recommendation()).as(definition.id()).isNotBlank();
+            }
+        }
+        assertThat(PolicyEvaluator.migrationTarget(Primitive.SIGNATURE)).contains("ML-DSA");
+        assertThat(PolicyEvaluator.migrationTarget(Primitive.KEY_AGREEMENT)).contains("ML-KEM");
     }
 
     @Test

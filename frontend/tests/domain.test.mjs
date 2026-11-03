@@ -8,8 +8,8 @@ import {
 } from '../public/js/domain/graph.js';
 import { statusInfo } from '../public/js/domain/labels.js';
 import {
-  distribution, facets, filterAssets, occurrencesByFile, originOf, priorities, scoreBreakdown, scoreTone, sortAssets,
-  statusDistribution,
+  assetQuantumPosture, distribution, facets, filterAssets, migrationPlan, occurrencesByFile, originOf, priorities,
+  scoreBreakdown, scoreTone, sortAssets, statusDistribution,
 } from '../public/js/domain/report.js';
 import { clearPref, readPref, writePref } from '../public/js/ui/prefs.js';
 
@@ -46,6 +46,28 @@ test('formatDuration et elapsed', () => {
   assert.equal(elapsed('2026-01-01T00:00:00Z', '2026-01-01T00:00:02Z'), 2000);
   assert.equal(elapsed(null), null);
   assert.equal(plural(2, 'actif'), '2 actifs');
+});
+
+test('chaque actif dit sa position face au quantique', () => {
+  const known = (name, primitive, status, quantum = false) => ({ ...asset(name, status, 'none', { primitive, quantum }),
+    algorithm: { primitive, rawName: name, catalogId: name.toLowerCase() } });
+  assert.equal(assetQuantumPosture(known('RSA', 'pke', 'acceptable', true)).id, 'shor');
+  assert.equal(assetQuantumPosture(known('ML-KEM', 'kem', 'recommended')).id, 'pqc');
+  assert.equal(assetQuantumPosture(known('AES', 'block-cipher', 'recommended')).id, 'grover');
+  assert.equal(assetQuantumPosture(asset('Inconnu', 'unknown', 'info')), null, 'algorithme non reconnu : rien affirmé');
+});
+
+test('le plan de migration met les échanges de clés devant les signatures', () => {
+  const at = (n) => Array.from({ length: n }, (_, i) => ({ file: `f${i % 2}.java`, line: i + 1 }));
+  const plan = migrationPlan([
+    asset('ECDSA', 'acceptable', 'low', { primitive: 'signature', quantum: true, occurrences: at(9) }),
+    asset('ECDH', 'acceptable', 'low', { primitive: 'key-agree', quantum: true, occurrences: at(1) }),
+    asset('RSA', 'acceptable', 'low', { primitive: 'pke', quantum: true, occurrences: at(4) }),
+    asset('AES-256-GCM', 'recommended', 'none', { primitive: 'ae' }),
+  ]);
+  assert.deepEqual(plan.map((p) => p.asset.name), ['RSA', 'ECDH', 'ECDSA']);
+  assert.deepEqual(plan.map((p) => p.keyExchange), [true, true, false]);
+  assert.equal(plan[0].files, 2);
 });
 
 test('le tri par défaut place les actifs les plus graves en premier', () => {

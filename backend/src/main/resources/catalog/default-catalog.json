@@ -4,7 +4,29 @@
     {
       "id": "aes", "name": "AES", "primitive": "block-cipher",
       "aliases": ["aes", "rijndael"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.1", "description": "NIST AES" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.1.1", "description": "aes128-ECB", "keySize": 128, "mode": "ecb" },
+        { "oid": "2.16.840.1.101.3.4.1.2", "description": "aes128-CBC", "keySize": 128, "mode": "cbc" },
+        { "oid": "2.16.840.1.101.3.4.1.3", "description": "aes128-OFB", "keySize": 128, "mode": "ofb" },
+        { "oid": "2.16.840.1.101.3.4.1.4", "description": "aes128-CFB", "keySize": 128, "mode": "cfb" },
+        { "oid": "2.16.840.1.101.3.4.1.5", "description": "id-aes128-wrap", "keySize": 128, "mode": "kw" },
+        { "oid": "2.16.840.1.101.3.4.1.6", "description": "id-aes128-GCM", "keySize": 128, "mode": "gcm" },
+        { "oid": "2.16.840.1.101.3.4.1.7", "description": "id-aes128-CCM", "keySize": 128, "mode": "ccm" },
+        { "oid": "2.16.840.1.101.3.4.1.21", "description": "aes192-ECB", "keySize": 192, "mode": "ecb" },
+        { "oid": "2.16.840.1.101.3.4.1.22", "description": "aes192-CBC", "keySize": 192, "mode": "cbc" },
+        { "oid": "2.16.840.1.101.3.4.1.23", "description": "aes192-OFB", "keySize": 192, "mode": "ofb" },
+        { "oid": "2.16.840.1.101.3.4.1.24", "description": "aes192-CFB", "keySize": 192, "mode": "cfb" },
+        { "oid": "2.16.840.1.101.3.4.1.25", "description": "id-aes192-wrap", "keySize": 192, "mode": "kw" },
+        { "oid": "2.16.840.1.101.3.4.1.26", "description": "id-aes192-GCM", "keySize": 192, "mode": "gcm" },
+        { "oid": "2.16.840.1.101.3.4.1.27", "description": "id-aes192-CCM", "keySize": 192, "mode": "ccm" },
+        { "oid": "2.16.840.1.101.3.4.1.41", "description": "aes256-ECB", "keySize": 256, "mode": "ecb" },
+        { "oid": "2.16.840.1.101.3.4.1.42", "description": "aes256-CBC", "keySize": 256, "mode": "cbc" },
+        { "oid": "2.16.840.1.101.3.4.1.43", "description": "aes256-OFB", "keySize": 256, "mode": "ofb" },
+        { "oid": "2.16.840.1.101.3.4.1.44", "description": "aes256-CFB", "keySize": 256, "mode": "cfb" },
+        { "oid": "2.16.840.1.101.3.4.1.45", "description": "id-aes256-wrap", "keySize": 256, "mode": "kw" },
+        { "oid": "2.16.840.1.101.3.4.1.46", "description": "id-aes256-GCM", "keySize": 256, "mode": "gcm" },
+        { "oid": "2.16.840.1.101.3.4.1.47", "description": "id-aes256-CCM", "keySize": 256, "mode": "ccm" }
+      ],
       "status": "recommended", "quantumVulnerable": false,
       "keySizeRules": [{ "below": 128, "status": "disallowed", "reason": "taille de clé inférieure à 128 bits." }],
       "note": "Standard FIPS 197. AES-128 reste sûr face au quantique (Grover réduit la sécurité à 64 bits effectifs théoriques, jugé suffisant par le NIST).",
@@ -13,7 +35,12 @@
     {
       "id": "des", "name": "DES", "primitive": "block-cipher",
       "aliases": ["des"],
-      "oids": [{ "oid": "1.3.14.3.2.7", "description": "desCBC" }],
+      "oids": [
+        { "oid": "1.3.14.3.2.6", "description": "desECB", "mode": "ecb" },
+        { "oid": "1.3.14.3.2.7", "description": "desCBC", "mode": "cbc" },
+        { "oid": "1.3.14.3.2.8", "description": "desOFB", "mode": "ofb" },
+        { "oid": "1.3.14.3.2.9", "description": "desCFB", "mode": "cfb" }
+      ],
       "status": "disallowed", "quantumVulnerable": false,
       "note": "Clé de 56 bits cassable par force brute.",
       "recommendation": "Remplacer par AES-256-GCM.",
@@ -22,7 +49,10 @@
     {
       "id": "3des", "name": "3DES", "primitive": "block-cipher",
       "aliases": ["desede", "desede3", "tripledes", "3des", "tdea", "des3", "tdes"],
-      "oids": [{ "oid": "1.2.840.113549.3.7", "description": "des-ede3-cbc" }],
+      "oids": [
+        { "oid": "1.2.840.113549.3.7", "description": "des-ede3-cbc", "mode": "cbc" },
+        { "oid": "1.2.840.113549.1.9.16.3.6", "description": "id-alg-CMS3DESwrap", "mode": "kw" }
+      ],
       "status": "disallowed", "quantumVulnerable": false,
       "note": "Blocs de 64 bits (attaque Sweet32) ; chiffrement interdit par le NIST depuis fin 2023.",
       "recommendation": "Remplacer par AES-256-GCM.",
@@ -31,7 +61,7 @@
     {
       "id": "rc2", "name": "RC2", "primitive": "block-cipher",
       "aliases": ["rc2"],
-      "oids": [{ "oid": "1.2.840.113549.3.2", "description": "rc2-cbc" }],
+      "oids": [{ "oid": "1.2.840.113549.3.2", "description": "rc2-cbc", "mode": "cbc" }],
       "status": "disallowed", "quantumVulnerable": false,
       "note": "Algorithme obsolète et faible.", "recommendation": "Remplacer par AES-256-GCM."
     },
@@ -47,47 +77,81 @@
     {
       "id": "rc5", "name": "RC5", "primitive": "block-cipher",
       "aliases": ["rc5"],
-      "oids": [{ "oid": "1.2.840.113549.3.8", "description": "rc5-CBC" }], "status": "deprecated", "quantumVulnerable": false,
+      "oids": [{ "oid": "1.2.840.113549.3.8", "description": "rc5-CBC", "mode": "cbc" }], "status": "deprecated", "quantumVulnerable": false,
       "note": "Peu analysé, non standardisé par le NIST.", "recommendation": "Remplacer par AES."
     },
     {
       "id": "blowfish", "name": "Blowfish", "primitive": "block-cipher",
       "aliases": ["blowfish"],
-      "oids": [{ "oid": "1.3.6.1.4.1.3029.1.2", "description": "blowfish-cbc" }],
+      "oids": [{ "oid": "1.3.6.1.4.1.3029.1.2", "description": "blowfish-cbc", "mode": "cbc" }],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Blocs de 64 bits (Sweet32).", "recommendation": "Remplacer par AES."
     },
     {
       "id": "idea", "name": "IDEA", "primitive": "block-cipher",
       "aliases": ["idea"],
-      "oids": [{ "oid": "1.3.6.1.4.1.188.7.1.1.2", "description": "idea-cbc" }],
+      "oids": [{ "oid": "1.3.6.1.4.1.188.7.1.1.2", "description": "idea-cbc", "mode": "cbc" }],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Blocs de 64 bits.", "recommendation": "Remplacer par AES."
     },
     {
       "id": "cast5", "name": "CAST5", "primitive": "block-cipher",
       "aliases": ["cast5", "cast128"],
-      "oids": [{ "oid": "1.2.840.113533.7.66.10", "description": "cast5-cbc" }],
+      "oids": [{ "oid": "1.2.840.113533.7.66.10", "description": "cast5-cbc", "mode": "cbc" }],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Blocs de 64 bits.", "recommendation": "Remplacer par AES."
     },
     {
       "id": "camellia", "name": "Camellia", "primitive": "block-cipher",
       "aliases": ["camellia"],
-      "oids": [{ "oid": "1.2.392.200011.61.1.1.1.2", "description": "camellia128-cbc" }],
+      "oids": [
+        { "oid": "1.2.392.200011.61.1.1.1.2", "description": "camellia128-cbc", "keySize": 128, "mode": "cbc" },
+        { "oid": "1.2.392.200011.61.1.1.1.3", "description": "camellia192-cbc", "keySize": 192, "mode": "cbc" },
+        { "oid": "1.2.392.200011.61.1.1.1.4", "description": "camellia256-cbc", "keySize": 256, "mode": "cbc" },
+        { "oid": "1.2.392.200011.61.1.1.3.2", "description": "id-camellia128-wrap", "keySize": 128, "mode": "kw" },
+        { "oid": "1.2.392.200011.61.1.1.3.3", "description": "id-camellia192-wrap", "keySize": 192, "mode": "kw" },
+        { "oid": "1.2.392.200011.61.1.1.3.4", "description": "id-camellia256-wrap", "keySize": 256, "mode": "kw" }
+      ],
       "status": "acceptable", "quantumVulnerable": false,
       "note": "Standard ISO/CRYPTREC, équivalent à AES."
     },
     {
       "id": "aria", "name": "ARIA", "primitive": "block-cipher",
       "aliases": ["aria"],
-      "oids": [{ "oid": "1.2.410.200046.1.1", "description": "ARIA" }],
+      "oids": [
+        { "oid": "1.2.410.200046.1.1.1", "description": "aria128-ecb", "keySize": 128, "mode": "ecb" },
+        { "oid": "1.2.410.200046.1.1.2", "description": "aria128-cbc", "keySize": 128, "mode": "cbc" },
+        { "oid": "1.2.410.200046.1.1.3", "description": "aria128-cfb", "keySize": 128, "mode": "cfb" },
+        { "oid": "1.2.410.200046.1.1.4", "description": "aria128-ofb", "keySize": 128, "mode": "ofb" },
+        { "oid": "1.2.410.200046.1.1.5", "description": "aria128-ctr", "keySize": 128, "mode": "ctr" },
+        { "oid": "1.2.410.200046.1.1.6", "description": "aria192-ecb", "keySize": 192, "mode": "ecb" },
+        { "oid": "1.2.410.200046.1.1.7", "description": "aria192-cbc", "keySize": 192, "mode": "cbc" },
+        { "oid": "1.2.410.200046.1.1.8", "description": "aria192-cfb", "keySize": 192, "mode": "cfb" },
+        { "oid": "1.2.410.200046.1.1.9", "description": "aria192-ofb", "keySize": 192, "mode": "ofb" },
+        { "oid": "1.2.410.200046.1.1.10", "description": "aria192-ctr", "keySize": 192, "mode": "ctr" },
+        { "oid": "1.2.410.200046.1.1.11", "description": "aria256-ecb", "keySize": 256, "mode": "ecb" },
+        { "oid": "1.2.410.200046.1.1.12", "description": "aria256-cbc", "keySize": 256, "mode": "cbc" },
+        { "oid": "1.2.410.200046.1.1.13", "description": "aria256-cfb", "keySize": 256, "mode": "cfb" },
+        { "oid": "1.2.410.200046.1.1.14", "description": "aria256-ofb", "keySize": 256, "mode": "ofb" },
+        { "oid": "1.2.410.200046.1.1.15", "description": "aria256-ctr", "keySize": 256, "mode": "ctr" },
+        { "oid": "1.2.410.200046.1.1.34", "description": "aria128-gcm", "keySize": 128, "mode": "gcm" },
+        { "oid": "1.2.410.200046.1.1.37", "description": "aria128-ccm", "keySize": 128, "mode": "ccm" },
+        { "oid": "1.2.410.200046.1.1.35", "description": "aria192-gcm", "keySize": 192, "mode": "gcm" },
+        { "oid": "1.2.410.200046.1.1.38", "description": "aria192-ccm", "keySize": 192, "mode": "ccm" },
+        { "oid": "1.2.410.200046.1.1.36", "description": "aria256-gcm", "keySize": 256, "mode": "gcm" },
+        { "oid": "1.2.410.200046.1.1.39", "description": "aria256-ccm", "keySize": 256, "mode": "ccm" }
+      ],
       "status": "acceptable", "quantumVulnerable": false, "note": "Standard coréen (KS X 1213)."
     },
     {
       "id": "seed", "name": "SEED", "primitive": "block-cipher",
       "tokens": ["seed"],
-      "oids": [{ "oid": "1.2.410.200004.1.4", "description": "seedCBC" }],
+      "oids": [
+        { "oid": "1.2.410.200004.1.3", "description": "seedECB", "mode": "ecb" },
+        { "oid": "1.2.410.200004.1.4", "description": "seedCBC", "mode": "cbc" },
+        { "oid": "1.2.410.200004.1.5", "description": "seedCFB", "mode": "cfb" },
+        { "oid": "1.2.410.200004.1.6", "description": "seedOFB", "mode": "ofb" }
+      ],
       "status": "acceptable", "quantumVulnerable": false, "note": "Standard coréen, peu répandu."
     },
     {
@@ -208,7 +272,10 @@
     {
       "id": "shake", "name": "SHAKE", "primitive": "xof",
       "aliases": ["shake128", "shake256", "shake"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.2.11", "description": "id-shake128" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.2.11", "description": "id-shake128", "variant": "128" },
+        { "oid": "2.16.840.1.101.3.4.2.12", "description": "id-shake256", "variant": "256" }
+      ],
       "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 202"]
     },
     {
@@ -220,7 +287,10 @@
     {
       "id": "blake2", "name": "BLAKE2", "primitive": "hash",
       "aliases": ["blake2b", "blake2s", "blake2"],
-      "oids": [{ "oid": "1.3.6.1.4.1.1722.12.2.1.16", "description": "id-blake2b512" }, { "oid": "1.3.6.1.4.1.1722.12.2.2.8", "description": "id-blake2s256" }], "status": "acceptable", "quantumVulnerable": false,
+      "oids": [
+        { "oid": "1.3.6.1.4.1.1722.12.2.1.16", "description": "id-blake2b512", "variant": "2b512" },
+        { "oid": "1.3.6.1.4.1.1722.12.2.2.8", "description": "id-blake2s256", "variant": "2s256" }
+      ], "status": "acceptable", "quantumVulnerable": false,
       "references": ["RFC 7693"]
     },
     {
@@ -241,7 +311,19 @@
     {
       "id": "hmac", "name": "HMAC", "primitive": "mac",
       "aliases": ["hmac"],
-      "oids": [{ "oid": "1.2.840.113549.2.7", "description": "hmacWithSHA1" }, { "oid": "1.2.840.113549.2.9", "description": "hmacWithSHA256" }, { "oid": "1.2.840.113549.2.10", "description": "hmacWithSHA384" }, { "oid": "1.2.840.113549.2.11", "description": "hmacWithSHA512" }], "status": "recommended", "quantumVulnerable": false,
+      "oids": [
+        { "oid": "1.2.840.113549.2.7", "description": "hmacWithSHA1", "component": "sha-1" },
+        { "oid": "1.2.840.113549.2.8", "description": "hmacWithSHA224", "component": "sha-224" },
+        { "oid": "1.2.840.113549.2.9", "description": "hmacWithSHA256", "component": "sha-256" },
+        { "oid": "1.2.840.113549.2.10", "description": "hmacWithSHA384", "component": "sha-384" },
+        { "oid": "1.2.840.113549.2.11", "description": "hmacWithSHA512", "component": "sha-512" },
+        { "oid": "1.2.840.113549.2.12", "description": "hmacWithSHA512-224", "component": "sha-512-224" },
+        { "oid": "1.2.840.113549.2.13", "description": "hmacWithSHA512-256", "component": "sha-512-256" },
+        { "oid": "2.16.840.1.101.3.4.2.13", "description": "id-hmacWithSHA3-224", "component": "sha3-224" },
+        { "oid": "2.16.840.1.101.3.4.2.14", "description": "id-hmacWithSHA3-256", "component": "sha3-256" },
+        { "oid": "2.16.840.1.101.3.4.2.15", "description": "id-hmacWithSHA3-384", "component": "sha3-384" },
+        { "oid": "2.16.840.1.101.3.4.2.16", "description": "id-hmacWithSHA3-512", "component": "sha3-512" }
+      ], "status": "recommended", "quantumVulnerable": false,
       "note": "La robustesse dépend de la fonction de hachage sous-jacente.",
       "references": ["FIPS 198-1", "RFC 2104"]
     },
@@ -253,7 +335,11 @@
     {
       "id": "gmac", "name": "GMAC", "primitive": "mac",
       "aliases": ["aesgmac", "gmac"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.1.9", "description": "aes128-GMAC" }, { "oid": "2.16.840.1.101.3.4.1.29", "description": "aes192-GMAC" }, { "oid": "2.16.840.1.101.3.4.1.49", "description": "aes256-GMAC" }], "status": "acceptable", "quantumVulnerable": false,
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.1.9", "description": "aes128-GMAC", "keySize": 128 },
+        { "oid": "2.16.840.1.101.3.4.1.29", "description": "aes192-GMAC", "keySize": 192 },
+        { "oid": "2.16.840.1.101.3.4.1.49", "description": "aes256-GMAC", "keySize": 256 }
+      ], "status": "acceptable", "quantumVulnerable": false,
       "note": "Nonce unique impératif."
     },
     {
@@ -263,7 +349,10 @@
     {
       "id": "kmac", "name": "KMAC", "primitive": "mac",
       "aliases": ["kmac128", "kmac256", "kmac"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.2.19", "description": "id-KMACWithSHAKE128" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.2.19", "description": "id-KMACWithSHAKE128", "variant": "128" },
+        { "oid": "2.16.840.1.101.3.4.2.20", "description": "id-KMACWithSHAKE256", "variant": "256" }
+      ],
       "status": "recommended", "quantumVulnerable": false, "references": ["NIST SP 800-185"]
     },
     {
@@ -282,7 +371,10 @@
     {
       "id": "pbe", "name": "PBES1", "primitive": "kdf",
       "aliases": ["pbewith", "pbes1", "pbkdf1"],
-      "oids": [{ "oid": "1.2.840.113549.1.5.3", "description": "pbeWithMD5AndDES-CBC" }],
+      "oids": [
+        { "oid": "1.2.840.113549.1.5.3", "description": "pbeWithMD5AndDES-CBC", "component": "md5" },
+        { "oid": "1.2.840.113549.1.5.10", "description": "pbeWithSHA1AndDES-CBC", "component": "sha-1" }
+      ],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Schémas PKCS#5 v1 reposant sur MD5/SHA-1 et DES/RC2.",
       "recommendation": "Utiliser PBES2 (PBKDF2 + AES) ou Argon2id."
@@ -305,11 +397,29 @@
     {
       "id": "hkdf", "name": "HKDF", "primitive": "kdf",
       "aliases": ["hkdf"],
-      "oids": [{ "oid": "1.2.840.113549.1.9.16.3.28", "description": "id-alg-hkdf-with-sha256" }, { "oid": "1.2.840.113549.1.9.16.3.29", "description": "id-alg-hkdf-with-sha384" }, { "oid": "1.2.840.113549.1.9.16.3.30", "description": "id-alg-hkdf-with-sha512" }], "status": "recommended", "quantumVulnerable": false, "references": ["RFC 5869"]
+      "oids": [
+        { "oid": "1.2.840.113549.1.9.16.3.28", "description": "id-alg-hkdf-with-sha256", "component": "sha-256" },
+        { "oid": "1.2.840.113549.1.9.16.3.29", "description": "id-alg-hkdf-with-sha384", "component": "sha-384" },
+        { "oid": "1.2.840.113549.1.9.16.3.30", "description": "id-alg-hkdf-with-sha512", "component": "sha-512" }
+      ], "status": "recommended", "quantumVulnerable": false, "references": ["RFC 5869"]
     },
     {
       "id": "rsa", "name": "RSA", "primitive": "pke",
-      "aliases": ["rsa"], "oids": [{ "oid": "1.2.840.113549.1.1.1", "description": "rsaEncryption" }],
+      "aliases": ["rsa"], "oids": [
+        { "oid": "1.2.840.113549.1.1.7", "description": "id-RSAES-OAEP", "padding": "oaep" },
+        { "oid": "1.2.840.113549.1.1.10", "description": "id-RSASSA-PSS", "padding": "pss" },
+        { "oid": "1.2.840.113549.1.1.4", "description": "md5WithRSAEncryption", "component": "md5" },
+        { "oid": "1.2.840.113549.1.1.5", "description": "sha1WithRSAEncryption", "component": "sha-1" },
+        { "oid": "1.2.840.113549.1.1.14", "description": "sha224WithRSAEncryption", "component": "sha-224" },
+        { "oid": "1.2.840.113549.1.1.11", "description": "sha256WithRSAEncryption", "component": "sha-256" },
+        { "oid": "1.2.840.113549.1.1.12", "description": "sha384WithRSAEncryption", "component": "sha-384" },
+        { "oid": "1.2.840.113549.1.1.13", "description": "sha512WithRSAEncryption", "component": "sha-512" },
+        { "oid": "2.16.840.1.101.3.4.3.13", "description": "id-rsassa-pkcs1-v1_5-with-sha3-224", "component": "sha3-224" },
+        { "oid": "2.16.840.1.101.3.4.3.14", "description": "id-rsassa-pkcs1-v1_5-with-sha3-256", "component": "sha3-256" },
+        { "oid": "2.16.840.1.101.3.4.3.15", "description": "id-rsassa-pkcs1-v1_5-with-sha3-384", "component": "sha3-384" },
+        { "oid": "2.16.840.1.101.3.4.3.16", "description": "id-rsassa-pkcs1-v1_5-with-sha3-512", "component": "sha3-512" },
+        { "oid": "1.2.840.113549.1.1.1", "description": "rsaEncryption" }
+      ],
       "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "keySizeRules": [
         { "below": 2048, "status": "disallowed", "reason": "moins de 112 bits de sécurité." },
@@ -321,7 +431,14 @@
     },
     {
       "id": "dsa", "name": "DSA", "primitive": "signature",
-      "aliases": ["dsa", "sshdss", "dss"], "oids": [{ "oid": "1.2.840.10040.4.1", "description": "id-dsa" }],
+      "aliases": ["dsa", "sshdss", "dss"], "oids": [
+        { "oid": "1.2.840.10040.4.3", "description": "dsa-with-sha1", "component": "sha-1" },
+        { "oid": "2.16.840.1.101.3.4.3.1", "description": "id-dsa-with-sha224", "component": "sha-224" },
+        { "oid": "2.16.840.1.101.3.4.3.2", "description": "id-dsa-with-sha256", "component": "sha-256" },
+        { "oid": "2.16.840.1.101.3.4.3.3", "description": "id-dsa-with-sha384", "component": "sha-384" },
+        { "oid": "2.16.840.1.101.3.4.3.4", "description": "id-dsa-with-sha512", "component": "sha-512" },
+        { "oid": "1.2.840.10040.4.1", "description": "id-dsa" }
+      ],
       "status": "disallowed", "quantumVulnerable": true,
       "note": "Génération de signatures DSA retirée de FIPS 186-5.",
       "recommendation": "Remplacer par ECDSA P-256+/Ed25519 à court terme, ML-DSA à terme.",
@@ -338,7 +455,17 @@
     },
     {
       "id": "ecdsa", "name": "ECDSA", "primitive": "signature",
-      "aliases": ["ecdsa"], "oids": [{ "oid": "1.2.840.10045.4.3", "description": "ecdsa-with-SHA2" }],
+      "aliases": ["ecdsa"], "oids": [
+        { "oid": "1.2.840.10045.4.1", "description": "ecdsa-with-SHA1", "component": "sha-1" },
+        { "oid": "1.2.840.10045.4.3.1", "description": "ecdsa-with-SHA224", "component": "sha-224" },
+        { "oid": "1.2.840.10045.4.3.2", "description": "ecdsa-with-SHA256", "component": "sha-256" },
+        { "oid": "1.2.840.10045.4.3.3", "description": "ecdsa-with-SHA384", "component": "sha-384" },
+        { "oid": "1.2.840.10045.4.3.4", "description": "ecdsa-with-SHA512", "component": "sha-512" },
+        { "oid": "2.16.840.1.101.3.4.3.9", "description": "id-ecdsa-with-sha3-224", "component": "sha3-224" },
+        { "oid": "2.16.840.1.101.3.4.3.10", "description": "id-ecdsa-with-sha3-256", "component": "sha3-256" },
+        { "oid": "2.16.840.1.101.3.4.3.11", "description": "id-ecdsa-with-sha3-384", "component": "sha3-384" },
+        { "oid": "2.16.840.1.101.3.4.3.12", "description": "id-ecdsa-with-sha3-512", "component": "sha3-512" }
+      ],
       "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "recommendation": "Migrer vers ML-DSA (FIPS 204) ; hybride ECDSA+ML-DSA pendant la transition.",
       "references": ["FIPS 186-5", "NIST IR 8547 (ipd)"]
@@ -374,7 +501,10 @@
     {
       "id": "eddsa", "name": "EdDSA", "primitive": "signature",
       "aliases": ["eddsa"],
-      "oids": [{ "oid": "1.3.101.112", "description": "id-Ed25519" }, { "oid": "1.3.101.113", "description": "id-Ed448" }], "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "oids": [
+        { "oid": "1.3.101.112", "description": "id-Ed25519", "variant": "25519" },
+        { "oid": "1.3.101.113", "description": "id-Ed448", "variant": "448" }
+      ], "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "recommendation": "Migrer vers ML-DSA."
     },
     {
@@ -467,6 +597,10 @@
     {
       "id": "xdh", "name": "XDH (X25519 / X448)", "primitive": "key-agree",
       "aliases": [], "tokens": ["xdh"],
+      "oids": [
+        { "oid": "1.3.101.110", "description": "id-X25519", "variant": "25519" },
+        { "oid": "1.3.101.111", "description": "id-X448", "variant": "448" }
+      ],
       "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "recommendation": "Migrer vers ML-KEM (ou hybride X25519MLKEM768)."
     },
@@ -513,12 +647,17 @@
     {
       "id": "sm2", "name": "SM2", "primitive": "signature",
       "aliases": ["sm2"], "oids": [{ "oid": "1.2.156.10197.1.301", "description": "SM2" }],
-      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-DSA (signature) et ML-KEM (échange de clés), en hybride avec SM2 pendant la transition."
     },
     {
       "id": "ml-kem", "name": "ML-KEM", "primitive": "kem",
       "aliases": ["mlkem", "kyber", "crystalskyber"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.4.2", "description": "id-alg-ml-kem-768" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.4.1", "description": "id-alg-ml-kem-512", "keySize": 512 },
+        { "oid": "2.16.840.1.101.3.4.4.2", "description": "id-alg-ml-kem-768", "keySize": 768 },
+        { "oid": "2.16.840.1.101.3.4.4.3", "description": "id-alg-ml-kem-1024", "keySize": 1024 }
+      ],
       "status": "recommended", "quantumVulnerable": false,
       "keySizeRules": [
         { "below": 768, "status": "deprecated", "reason": "niveau 1 seulement : l'ANSSI et le BSI demandent au moins ML-KEM-768." },
@@ -529,7 +668,11 @@
     {
       "id": "ml-dsa", "name": "ML-DSA", "primitive": "signature",
       "aliases": ["mldsa", "dilithium", "crystalsdilithium"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.3.18", "description": "id-ml-dsa-65" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.3.17", "description": "id-ml-dsa-44", "keySize": 44 },
+        { "oid": "2.16.840.1.101.3.4.3.18", "description": "id-ml-dsa-65", "keySize": 65 },
+        { "oid": "2.16.840.1.101.3.4.3.19", "description": "id-ml-dsa-87", "keySize": 87 }
+      ],
       "status": "recommended", "quantumVulnerable": false,
       "keySizeRules": [
         { "below": 65, "status": "deprecated", "reason": "niveau 2 seulement : l'ANSSI et le BSI demandent au moins ML-DSA-65." },
@@ -540,7 +683,20 @@
     {
       "id": "slh-dsa", "name": "SLH-DSA", "primitive": "signature",
       "aliases": ["slhdsa", "sphincsplus", "sphincs"],
-      "oids": [{ "oid": "2.16.840.1.101.3.4.3.20", "description": "id-slh-dsa-sha2-128s" }],
+      "oids": [
+        { "oid": "2.16.840.1.101.3.4.3.20", "description": "id-slh-dsa-sha2-128s", "variant": "sha2128s" },
+        { "oid": "2.16.840.1.101.3.4.3.21", "description": "id-slh-dsa-sha2-128f", "variant": "sha2128f" },
+        { "oid": "2.16.840.1.101.3.4.3.22", "description": "id-slh-dsa-sha2-192s", "variant": "sha2192s" },
+        { "oid": "2.16.840.1.101.3.4.3.23", "description": "id-slh-dsa-sha2-192f", "variant": "sha2192f" },
+        { "oid": "2.16.840.1.101.3.4.3.24", "description": "id-slh-dsa-sha2-256s", "variant": "sha2256s" },
+        { "oid": "2.16.840.1.101.3.4.3.25", "description": "id-slh-dsa-sha2-256f", "variant": "sha2256f" },
+        { "oid": "2.16.840.1.101.3.4.3.26", "description": "id-slh-dsa-shake-128s", "variant": "shake128s" },
+        { "oid": "2.16.840.1.101.3.4.3.27", "description": "id-slh-dsa-shake-128f", "variant": "shake128f" },
+        { "oid": "2.16.840.1.101.3.4.3.28", "description": "id-slh-dsa-shake-192s", "variant": "shake192s" },
+        { "oid": "2.16.840.1.101.3.4.3.29", "description": "id-slh-dsa-shake-192f", "variant": "shake192f" },
+        { "oid": "2.16.840.1.101.3.4.3.30", "description": "id-slh-dsa-shake-256s", "variant": "shake256s" },
+        { "oid": "2.16.840.1.101.3.4.3.31", "description": "id-slh-dsa-shake-256f", "variant": "shake256f" }
+      ],
       "status": "recommended", "quantumVulnerable": false,
       "note": "Signature post-quantique à base de hachage.", "references": ["FIPS 205"]
     },
@@ -671,7 +827,10 @@
     {
       "id": "gost-28147", "name": "GOST 28147-89 (Magma)", "primitive": "block-cipher",
       "aliases": ["gost2814789", "gost28147", "magma"],
-      "oids": [{ "oid": "1.2.643.2.2.21", "description": "id-Gost28147-89" }, { "oid": "1.2.643.7.1.1.5.1", "description": "id-tc26-cipher-gostr3412-2015-magma" }],
+      "oids": [
+        { "oid": "1.2.643.7.1.1.5.1", "description": "id-tc26-cipher-gostr3412-2015-magma", "variant": "magma" },
+        { "oid": "1.2.643.2.2.21", "description": "id-Gost28147-89", "variant": "28147" }
+      ],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Bloc de 64 bits : exposé aux attaques par anniversaire (Sweet32) au-delà de quelques Go par clé.",
       "recommendation": "AES-256 (ou Kuznyechik si une conformité russe est imposée).",
@@ -743,7 +902,7 @@
     {
       "id": "misty1", "name": "MISTY1", "primitive": "block-cipher",
       "aliases": ["misty1", "misty"],
-      "oids": [{ "oid": "1.2.392.200011.61.1.1.1.1", "description": "misty1-cbc" }],
+      "oids": [{ "oid": "1.2.392.200011.61.1.1.1.1", "description": "misty1-cbc", "mode": "cbc" }],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Bloc de 64 bits, cryptanalyse intégrale complète (2015).",
       "recommendation": "AES ou Camellia."
@@ -772,7 +931,7 @@
     {
       "id": "desx", "name": "DES-X", "primitive": "block-cipher",
       "aliases": ["desx"],
-      "oids": [{ "oid": "1.2.840.113549.3.6", "description": "DESX-CBC" }],
+      "oids": [{ "oid": "1.2.840.113549.3.6", "description": "DESX-CBC", "mode": "cbc" }],
       "status": "disallowed", "quantumVulnerable": false,
       "note": "Renforcement de DES par blanchiment : bloc de 64 bits et sécurité insuffisante.",
       "recommendation": "AES."
@@ -852,7 +1011,10 @@
     {
       "id": "ripemd-128", "name": "RIPEMD-128 / RIPEMD-256", "primitive": "hash",
       "aliases": ["ripemd128", "rmd128", "ripemd256", "rmd256"],
-      "oids": [{ "oid": "1.3.36.3.2.2", "description": "ripemd128" }, { "oid": "1.3.36.3.2.3", "description": "ripemd256" }],
+      "oids": [
+        { "oid": "1.3.36.3.2.2", "description": "ripemd128", "variant": "128" },
+        { "oid": "1.3.36.3.2.3", "description": "ripemd256", "variant": "256" }
+      ],
       "status": "deprecated", "quantumVulnerable": false,
       "note": "Sécurité de 64 bits contre les collisions (RIPEMD-256 n'est pas plus sûr que RIPEMD-128).",
       "recommendation": "SHA-256 ou SHA-3."
@@ -891,7 +1053,10 @@
     {
       "id": "streebog", "name": "Streebog (GOST R 34.11-2012)", "primitive": "hash",
       "aliases": ["gostr34112012", "gost34112012", "streebog256", "streebog512", "streebog"],
-      "oids": [{ "oid": "1.2.643.7.1.1.2.2", "description": "id-tc26-gost3411-12-256" }, { "oid": "1.2.643.7.1.1.2.3", "description": "id-tc26-gost3411-12-512" }],
+      "oids": [
+        { "oid": "1.2.643.7.1.1.2.2", "description": "id-tc26-gost3411-12-256", "variant": "256" },
+        { "oid": "1.2.643.7.1.1.2.3", "description": "id-tc26-gost3411-12-512", "variant": "512" }
+      ],
       "status": "acceptable", "quantumVulnerable": false,
       "note": "Hachage russe actuel ; conception de la boîte S contestée, usage réglementaire.",
       "recommendation": "SHA-256 / SHA-3 hors contexte réglementaire.",
@@ -1017,7 +1182,11 @@
     {
       "id": "gost-34.10", "name": "GOST R 34.10 (signature)", "primitive": "signature",
       "aliases": ["gostr34102012", "gostr34102001", "gostr341012", "gostr341001", "gost341012", "gost3410", "ecgost"],
-      "oids": [{ "oid": "1.2.643.2.2.19", "description": "id-GostR3410-2001" }, { "oid": "1.2.643.7.1.1.1.1", "description": "id-tc26-gost3410-12-256" }, { "oid": "1.2.643.7.1.1.1.2", "description": "id-tc26-gost3410-12-512" }],
+      "oids": [
+        { "oid": "1.2.643.2.2.19", "description": "id-GostR3410-2001", "variant": "2001" },
+        { "oid": "1.2.643.7.1.1.1.1", "description": "id-tc26-gost3410-12-256", "variant": "2012256" },
+        { "oid": "1.2.643.7.1.1.1.2", "description": "id-tc26-gost3410-12-512", "variant": "2012512" }
+      ],
       "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "note": "Signature sur courbes elliptiques russe ; cassable par l'algorithme de Shor.",
       "recommendation": "Usage réglementaire uniquement ; prévoir la migration post-quantique.",
@@ -1124,6 +1293,7 @@
       "aliases": ["spake2plus", "spake2", "cpace"],
       "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
       "note": "Échanges de clés authentifiés par mot de passe (PAKE) ; cassables par Shor.",
+      "recommendation": "Pas encore d'équivalent post-quantique normalisé : suivre les travaux de l'IETF sur les PAKE post-quantiques et protéger le canal par TLS 1.3 avec un échange hybride ML-KEM.",
       "references": ["RFC 9382"]
     },
     {
@@ -1388,35 +1558,57 @@
   ],
   "curves": [
     { "id": "p-192", "name": "P-192", "aliases": ["secp192r1", "prime192v1", "nistp192", "p192"], "status": "disallowed",
-      "note": "moins de 112 bits de sécurité." },
+      "note": "moins de 112 bits de sécurité.",
+      "oids": [{ "oid": "1.2.840.10045.3.1.1", "description": "prime192v1" }] },
     { "id": "p-224", "name": "P-224", "aliases": ["secp224r1", "nistp224", "p224"], "status": "deprecated",
-      "note": "112 bits de sécurité seulement." },
-    { "id": "p-256", "name": "P-256", "aliases": ["secp256r1", "prime256v1", "nistp256", "p256"], "status": "acceptable" },
-    { "id": "p-384", "name": "P-384", "aliases": ["secp384r1", "nistp384", "p384"], "status": "recommended" },
-    { "id": "p-521", "name": "P-521", "aliases": ["secp521r1", "nistp521", "p521"], "status": "recommended" },
+      "note": "112 bits de sécurité seulement.",
+      "oids": [{ "oid": "1.3.132.0.33", "description": "secp224r1" }] },
+    { "id": "p-256", "name": "P-256", "aliases": ["secp256r1", "prime256v1", "nistp256", "p256"], "status": "acceptable",
+      "oids": [{ "oid": "1.2.840.10045.3.1.7", "description": "prime256v1" }] },
+    { "id": "p-384", "name": "P-384", "aliases": ["secp384r1", "nistp384", "p384"], "status": "recommended",
+      "oids": [{ "oid": "1.3.132.0.34", "description": "secp384r1" }] },
+    { "id": "p-521", "name": "P-521", "aliases": ["secp521r1", "nistp521", "p521"], "status": "recommended",
+      "oids": [{ "oid": "1.3.132.0.35", "description": "secp521r1" }] },
     { "id": "secp256k1", "name": "secp256k1", "aliases": ["secp256k1"], "status": "acceptable",
-      "note": "courbe Koblitz (Bitcoin), non recommandée hors blockchain." },
+      "note": "courbe Koblitz (Bitcoin), non recommandée hors blockchain.",
+      "oids": [{ "oid": "1.3.132.0.10", "description": "secp256k1" }] },
     { "id": "brainpool", "name": "brainpool",
       "aliases": ["brainpoolp256r1", "brainpoolp384r1", "brainpoolp512r1", "brainpoolp256t1", "brainpoolp384t1", "brainpoolp512t1", "brainpool"],
-      "status": "acceptable", "note": "recommandée par le BSI." },
+      "status": "acceptable", "note": "recommandée par le BSI.",
+      "oids": [
+        { "oid": "1.3.36.3.3.2.8.1.1.7", "description": "brainpoolP256r1" },
+        { "oid": "1.3.36.3.3.2.8.1.1.11", "description": "brainpoolP384r1" },
+        { "oid": "1.3.36.3.3.2.8.1.1.13", "description": "brainpoolP512r1" }
+      ] },
     { "id": "frp256v1", "name": "FRP256v1", "aliases": ["frp256v1"], "status": "acceptable",
-      "note": "courbe publiée par l'ANSSI." },
+      "note": "courbe publiée par l'ANSSI.",
+      "oids": [{ "oid": "1.2.250.1.223.101.256.1", "description": "FRP256v1" }] },
     { "id": "binary", "name": "courbe binaire",
       "aliases": ["sect163k1", "sect163r2", "sect233k1", "sect233r1", "sect283k1", "sect283r1", "sect409k1", "sect409r1", "sect571k1", "sect571r1"],
       "status": "deprecated", "note": "courbes binaires retirées de SP 800-186." },
     { "id": "small-curves", "name": "Courbes de moins de 192 bits",
       "status": "disallowed", "aliases": ["secp112r1", "secp112r2", "secp128r1", "secp128r2", "secp160k1", "secp160r1", "secp160r2", "secp192k1", "brainpoolp160r1", "brainpoolp160t1", "brainpoolp192r1", "brainpoolp192t1"], "note": "moins de 112 bits de sécurité." },
     { "id": "secp224k1", "name": "secp224k1 / brainpoolP224",
-      "status": "deprecated", "aliases": ["secp224k1", "brainpoolp224r1", "brainpoolp224t1"], "note": "112 bits de sécurité seulement." },
+      "status": "deprecated", "aliases": ["secp224k1", "brainpoolp224r1", "brainpoolp224t1"], "note": "112 bits de sécurité seulement.",
+      "oids": [{ "oid": "1.3.132.0.32", "description": "secp224k1" }] },
     { "id": "bn254", "name": "BN254 (alt_bn128)",
       "status": "deprecated", "aliases": ["altbn128", "bn254", "bn256", "bn128"], "note": "environ 100 bits de sécurité depuis les attaques exTNFS : préférer BLS12-381." },
     { "id": "bls12-381", "name": "BLS12-381",
       "status": "acceptable", "aliases": ["bls12381"], "note": "courbe à couplage d'environ 120 bits de sécurité (Ethereum, Zcash)." },
     { "id": "sm2p256v1", "name": "SM2 P-256",
-      "status": "acceptable", "aliases": ["sm2p256v1", "sm2curve"], "note": "courbe chinoise normalisée (GB/T 32918)." },
+      "status": "acceptable", "aliases": ["sm2p256v1", "sm2curve"], "note": "courbe chinoise normalisée (GB/T 32918).",
+      "oids": [{ "oid": "1.2.156.10197.1.301", "description": "sm2p256v1" }] },
     { "id": "curve25519", "name": "Curve25519 / Edwards25519",
-      "status": "recommended", "aliases": ["edwards25519", "curve25519"], "note": "courbe moderne sans pièges d'implémentation (RFC 7748)." },
+      "status": "recommended", "aliases": ["edwards25519", "curve25519"], "note": "courbe moderne sans pièges d'implémentation (RFC 7748).",
+      "oids": [
+        { "oid": "1.3.101.110", "description": "id-X25519" },
+        { "oid": "1.3.101.112", "description": "id-Ed25519" }
+      ] },
     { "id": "curve448", "name": "Curve448 / Edwards448",
-      "status": "recommended", "aliases": ["edwards448", "goldilocks", "curve448"], "note": "224 bits de sécurité (RFC 7748)." }
+      "status": "recommended", "aliases": ["edwards448", "goldilocks", "curve448"], "note": "224 bits de sécurité (RFC 7748).",
+      "oids": [
+        { "oid": "1.3.101.111", "description": "id-X448" },
+        { "oid": "1.3.101.113", "description": "id-Ed448" }
+      ] }
   ]
 }

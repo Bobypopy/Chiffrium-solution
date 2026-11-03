@@ -253,4 +253,32 @@ export const PATTERNS_EN = [
   [/^Algorithme absent du catalogue : (.+)$/, 'Algorithm missing from the catalog: $1'],
   [/^(\d+) vulnérabilité\(s\)$/, (n) => `${n} ${pluriel(n, 'vulnerability', 'vulnerabilities')}`],
   [/^EPSS (.+) %$/, 'EPSS $1%'],
+  // --- Migration post-quantique
+  [/^(\d) sur 5$/, '$1 of 5'],
+  [/^catégorie NIST (\d)$/, 'NIST category $1'],
+  [/^(\d+) bits$/, '$1 bits'],
+  [/^(\d+) fichiers?$/, (n) => `${n} ${pluriel(n, 'file')}`],
+  [/^(\d+) emplacements?, (\d+) fichiers?$/,
+    (n, f) => `${n} ${pluriel(n, 'location')}, ${f} ${pluriel(f, 'file')}`],
+  // --- Verdicts du moteur : "<algorithme ou paramètre> : <motif>", le motif venant du catalogue
+  [/^Algorithme "(.*)" absent du catalogue ou non résolu statiquement\.$/,
+    'Algorithm "$1" missing from the catalog or not resolved statically.'],
+  [/^Entrée de catalogue "(.*)" introuvable\.$/, 'Catalog entry "$1" not found.'],
+  [/^Certificat expiré depuis le (\d{4}-\d{2}-\d{2})\.$/, 'Certificate expired since $1.'],
+  [/^(.+) : niveau de sécurité non déterminé statiquement, à vérifier\.$/,
+    '$1: security level not determined statically, to be checked.'],
+  [/^(.+) : taille de clé non déterminée statiquement, à vérifier\.$/,
+    '$1: key size not determined statically, to be checked.'],
+  [/^(.+) : interdit après (\d{4})\.$/, '$1: disallowed after $2.'],
+  [/^(.+) : déprécié après (\d{4})\.$/, '$1: deprecated after $2.'],
+  [/^(.+) : statut ([a-z]+)$/, '$1: status $2'],
+  [/^(mode|bourrage|courbe|composant) (.+?) : (.+)$/, (genre, nom, motif, traduire) => {
+    const traduit = traduire(motif);
+    return traduit === motif ? undefined
+      : `${{ mode: 'mode', bourrage: 'padding', courbe: 'curve', composant: 'component' }[genre]} ${nom}: ${traduit}`;
+  }],
+  [/^(.+?) : (.+)$/, (sujet, motif, traduire) => {
+    const traduit = traduire(motif);
+    return traduit === motif ? undefined : `${sujet}: ${traduit}`;
+  }],
 ];

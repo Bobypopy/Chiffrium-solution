@@ -11,6 +11,7 @@ import java.util.List;
  * @param reasons           justifications lisibles, une par critère non satisfait
  * @param recommendation    action conseillée
  * @param validUntil        dernière année d'utilisation acceptable si connue
+ * @param strength          niveau de sécurité classique et post-quantique, null s'il n'est pas établi
  */
 public record PolicyVerdict(
         PolicyStatus status,
@@ -18,10 +19,17 @@ public record PolicyVerdict(
         boolean quantumVulnerable,
         List<String> reasons,
         String recommendation,
-        Integer validUntil) {
+        Integer validUntil,
+        SecurityStrength strength) {
 
     public PolicyVerdict {
         reasons = reasons == null ? List.of() : List.copyOf(reasons);
+    }
+
+    /** Verdict sans niveau de sécurité établi (matériel de clé, certificat expiré sans algorithme connu...). */
+    public PolicyVerdict(PolicyStatus status, Severity severity, boolean quantumVulnerable, List<String> reasons,
+                         String recommendation, Integer validUntil) {
+        this(status, severity, quantumVulnerable, reasons, recommendation, validUntil, null);
     }
 
     public static PolicyVerdict unknown(String reason) {

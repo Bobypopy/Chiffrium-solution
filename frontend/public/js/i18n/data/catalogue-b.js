@@ -166,4 +166,11 @@ export const CATALOGUE_B = {
     'UDP equivalent of TLS 1.1, deprecated by RFC 8996.',
   'Évolution post-quantique hybride de X3DH (Signal, 2023).':
     'Hybrid post-quantum successor to X3DH (Signal, 2023).',
+
+  'Migrer vers ML-DSA (signature) et ML-KEM (échange de clés), en hybride avec SM2 pendant la transition.':
+    'Migrate to ML-DSA (signature) and ML-KEM (key exchange), in hybrid mode with SM2 during the transition.',
+  ["Pas encore d'équivalent post-quantique normalisé : suivre les travaux de l'IETF sur les PAKE "
+    + 'post-quantiques et protéger le canal par TLS 1.3 avec un échange hybride ML-KEM.']:
+    'No standardised post-quantum equivalent yet: follow the IETF work on post-quantum PAKEs and protect the '
+    + 'channel with TLS 1.3 and a hybrid ML-KEM exchange.',
 };

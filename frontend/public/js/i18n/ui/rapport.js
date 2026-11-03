@@ -301,4 +301,28 @@ export const RAPPORT = {
   'Aucun constat corrigé.': 'No finding fixed.',
   'Aucun.': 'None.',
   'Aucune.': 'None.',
+
+  // --- Migration post-quantique (onglet, fiche d'un actif, feuille imprimable)
+  'Migration post-quantique': 'Post-quantum migration',
+  'Plan de migration post-quantique': 'Post-quantum migration plan',
+  'Voir le plan de migration': 'See the migration plan',
+  'Face au quantique': 'Against a quantum computer',
+  'Catégorie NIST post-quantique': 'NIST post-quantum category',
+  'Sécurité classique': 'Classical security',
+  '0 : aucune (cassé par un ordinateur quantique ou clé trop courte)':
+    '0: none (broken by a quantum computer, or key too short)',
+  ["Chaque ligne est un usage qu'un ordinateur quantique casserait (algorithme de Shor), avec son remplaçant. "
+    + "Les échanges de clés viennent d'abord : ce qui est chiffré aujourd'hui peut être enregistré puis "
+    + 'déchiffré plus tard.']:
+    'Each row is a use that a quantum computer would break (Shor\'s algorithm), with its replacement. Key '
+    + 'exchanges come first: what is encrypted today can be recorded and decrypted later.',
+  'Usages cassés par un ordinateur quantique (algorithme de Shor), échanges de clés en premier.':
+    'Uses broken by a quantum computer (Shor\'s algorithm), key exchanges first.',
+  'Déjà post-quantique': 'Already post-quantum',
+  'Rien à migrer : la cryptographie asymétrique détectée est déjà post-quantique.':
+    'Nothing to migrate: the asymmetric cryptography found is already post-quantum.',
+  'Aucun usage cassé par un ordinateur quantique détecté.': 'No use broken by a quantum computer found.',
+  Usage: 'Use',
+  'Remplacer par': 'Replace with',
+  'échange de clés : en premier': 'key exchange: first',
 };

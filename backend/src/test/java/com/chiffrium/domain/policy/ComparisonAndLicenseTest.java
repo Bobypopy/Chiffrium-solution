@@ -44,6 +44,22 @@ class ComparisonAndLicenseTest {
                 null, null);
     }
 
+    /** Un OID corrigé par une version plus récente du catalogue ne fait ni apparaître ni disparaître l'actif. */
+    @Test
+    void anOidCorrectedByTheCatalogIsNotADrift() {
+        AnalysisReport before = report("a", List.of(asset("crypto/algorithm/ML-KEM-1024@2.16.840.1.101.3.4.4.2",
+                PolicyStatus.RECOMMENDED)), List.of(), List.of());
+        AnalysisReport after = report("b", List.of(asset("crypto/algorithm/ML-KEM-1024@2.16.840.1.101.3.4.4.3",
+                PolicyStatus.ACCEPTABLE)), List.of(), List.of());
+
+        ReportComparator.Comparison diff = new ReportComparator().compare(before, after);
+
+        assertThat(diff.assetsAdded()).isEmpty();
+        assertThat(diff.assetsRemoved()).isEmpty();
+        assertThat(diff.statusChanges()).singleElement().extracting(ReportComparator.StatusChange::bomRef)
+                .isEqualTo("crypto/algorithm/ML-KEM-1024@2.16.840.1.101.3.4.4.3");
+    }
+
     @Test
     void comparisonReportsDriftAndIgnoresShiftedLines() {
         AnalysisReport before = report("a", List.of(asset("md5", PolicyStatus.DISALLOWED), asset("rsa", PolicyStatus.ACCEPTABLE)),

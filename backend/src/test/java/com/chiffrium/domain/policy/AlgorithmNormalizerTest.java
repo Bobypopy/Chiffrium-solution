@@ -6,6 +6,7 @@ import com.chiffrium.domain.model.Primitive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -102,10 +103,51 @@ class AlgorithmNormalizerTest {
         assertThat(normalizer.normalize("transformation").isRecognized()).isFalse();
     }
 
+    /** L'OID désigne l'usage exact : taille, mode, bourrage et hachage associé comptent. */
+    @ParameterizedTest(name = "{0} -> {1}")
+    @CsvSource(delimiter = '|', value = {
+            "MD5                                  | 1.2.840.113549.2.5",
+            "AES-256-GCM                          | 2.16.840.1.101.3.4.1.46",
+            "AES_128/CBC/PKCS5Padding             | 2.16.840.1.101.3.4.1.2",
+            "Camellia-256/CBC                     | 1.2.392.200011.61.1.1.1.4",
+            "ML-KEM-512                           | 2.16.840.1.101.3.4.4.1",
+            "ML-KEM-1024                          | 2.16.840.1.101.3.4.4.3",
+            "ML-DSA-87                            | 2.16.840.1.101.3.4.3.19",
+            "SLH-DSA-SHAKE-256f                   | 2.16.840.1.101.3.4.3.31",
+            "HmacSHA256                           | 1.2.840.113549.2.9",
+            "HmacSHA3-512                         | 2.16.840.1.101.3.4.2.16",
+            "SHA256withRSA                        | 1.2.840.113549.1.1.11",
+            "SHA384withECDSA                      | 1.2.840.10045.4.3.3",
+            "RSA/ECB/OAEPWithSHA-256AndMGF1Padding | 1.2.840.113549.1.1.7",
+            "SHA256withRSA/PSS                    | 1.2.840.113549.1.1.10",
+            "RSA                                  | 1.2.840.113549.1.1.1",
+            "Ed448                                | 1.3.101.113",
+            "SHAKE256                             | 2.16.840.1.101.3.4.2.12",
+    })
+    void assignsTheOidOfTheExactUsage(String raw, String oid) {
+        assertThat(normalizer.normalize(raw).oid()).isEqualTo(oid);
+    }
+
+    /** Sans taille ni mode, aucun OID plutôt qu'un OID approchant (celui d'AES-128-CBC pour un AES quelconque). */
+    @ParameterizedTest
+    @ValueSource(strings = {"AES", "AES/GCM/NoPadding", "ML-KEM", "HMAC", "ECDSA", "SLH-DSA", "Blowfish"})
+    void giveNoOidWhenTheUsageIsAmbiguous(String raw) {
+        assertThat(normalizer.normalize(raw).oid()).isNull();
+    }
+
+    /** Chaque OID du catalogue se relit en l'algorithme qu'il désigne, avec ses paramètres. */
     @Test
-    void assignsOidForSimpleAlgorithms() {
-        assertThat(normalizer.normalize("MD5").oid()).isEqualTo("1.2.840.113549.2.5");
-        assertThat(normalizer.normalize("HmacSHA256").oid()).isNull();
+    void everyCatalogOidReadsBackAsItsAlgorithm() {
+        for (AlgorithmDefinition definition : normalizer.catalog().algorithms()) {
+            for (AlgorithmDefinition.OidRef ref : definition.oids()) {
+                AlgorithmSpec spec = normalizer.fromOid(ref.oid()).orElseThrow();
+                AlgorithmDefinition owner = normalizer.catalog().findByOid(ref.oid()).orElseThrow();
+                assertThat(spec.catalogId()).as(ref.oid()).isEqualTo(owner.id());
+                if (owner == definition && ref.conditional()) {
+                    assertThat(spec.oid()).as(ref.description()).isEqualTo(ref.oid());
+                }
+            }
+        }
     }
 
     /** Entrées ajoutées au catalogue : reconnues, sans voler les noms déjà couverts par une entrée plus précise. */

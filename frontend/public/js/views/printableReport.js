@@ -6,7 +6,7 @@
 import { PQC_STAGES, severityCounts, sortFindings } from '../domain/findings.js';
 import { formatDate, plural, shortTarget } from '../domain/format.js';
 import { SEVERITY_LABELS, label, statusInfo } from '../domain/labels.js';
-import { priorities, scoreBreakdown, statusDistribution, statusOf } from '../domain/report.js';
+import { migrationPlan, priorities, scoreBreakdown, statusDistribution, statusOf } from '../domain/report.js';
 import { h, mount } from '../ui/dom.js';
 
 /** Bornes : une revue lit les cas les plus graves, pas 1 000 lignes sur papier. */
@@ -100,6 +100,21 @@ function pqcSection(summary) {
     ].map(([cle, valeur]) => h('tr', {}, h('th', { scope: 'row' }, cle), h('td', {}, String(valeur ?? 0))))));
 }
 
+/** Ce qu'un ordinateur quantique casserait, par quoi le remplacer : la feuille de route d'un comité. */
+function migrationSection(report) {
+  const plan = migrationPlan(report.assets ?? []);
+  if (!plan.length) return null;
+  const rows = plan.slice(0, MAX_PRIORITIES);
+  return section('Plan de migration post-quantique',
+    h('p', {}, 'Usages cassés par un ordinateur quantique (algorithme de Shor), échanges de clés en premier.'),
+    table(['Actif', 'Remplacer par', 'Emplacements'], rows.map(({ asset, keyExchange, files }) => h('tr', {},
+      h('td', {}, h('strong', {}, asset.name),
+        keyExchange ? h('div', { class: 'print-note' }, 'échange de clés : en premier') : null),
+      h('td', {}, asset.verdict?.recommendation ?? '-'),
+      h('td', {}, `${plural(asset.occurrences?.length ?? 0, 'emplacement')}, ${plural(files, 'fichier')}`)))),
+    more(plan.length, rows.length, 'actifs'));
+}
+
 function statusSection(summary) {
   const rows = statusDistribution(summary).map((part) => h('tr', {},
     h('th', { scope: 'row' }, statusInfo(part.key).label),
@@ -180,6 +195,7 @@ export function printableReport(job, report) {
     scoreSection(report),
     section('Indicateurs', indicators(report.summary)),
     pqcSection(report.summary),
+    migrationSection(report),
     statusSection(report.summary),
     prioritySection(report),
     findingsSection(report),

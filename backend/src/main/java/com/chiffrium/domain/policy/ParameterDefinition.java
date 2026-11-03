@@ -13,6 +13,7 @@ import java.util.List;
  * @param tokens  formes reconnues uniquement comme mot entier
  * @param status  statut de politique
  * @param note    justification
+ * @param oids    OID connus (ceux des courbes nommées : 1.2.840.10045.3.1.7 pour P-256)
  */
 public record ParameterDefinition(
         String id,
@@ -20,11 +21,13 @@ public record ParameterDefinition(
         List<String> aliases,
         List<String> tokens,
         PolicyStatus status,
-        String note) {
+        String note,
+        List<AlgorithmDefinition.OidRef> oids) {
 
     public ParameterDefinition {
         aliases = aliases == null ? List.of() : List.copyOf(aliases);
         tokens = tokens == null ? List.of() : List.copyOf(tokens);
         status = status == null ? PolicyStatus.UNKNOWN : status;
+        oids = oids == null ? List.of() : List.copyOf(oids);
     }
 }

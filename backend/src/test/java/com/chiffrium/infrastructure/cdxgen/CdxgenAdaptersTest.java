@@ -151,6 +151,39 @@ class CdxgenAdaptersTest {
         assertThat(props.path("algorithmRef").asText()).isEqualTo(rsa.bomRef());
     }
 
+    /** Le CBOM dit ce qui résiste au quantique : catégorie NIST 1 à 5, 0 pour ce que Shor casse. */
+    @Test
+    void cbomGivesSecurityLevelsAndTheExactOid(@TempDir Path dir) throws Exception {
+        PolicyEvaluator evaluator = new PolicyEvaluator(TestSupport.CATALOG, TestSupport.clockAt(2026));
+        Occurrence at = new Occurrence("src/K.java", 1, 1, null, null, Language.JAVA, DetectionSource.RULES,
+                "java.jca.get-instance", Set.of());
+        List<CryptoAsset> assets = List.of("ML-KEM-768", "AES-256-GCM", "RSA-2048", "SHA256withECDSA").stream()
+                .map(name -> evaluator.evaluate(TestSupport.ASSETS.fromAlgorithmName(name, at, Set.of(),
+                        DetectionSource.RULES, null)))
+                .toList();
+        SourceInfo source = new SourceInfo("demo", "local", null, null, Set.of(Language.JAVA), List.of());
+
+        Path target = dir.resolve("cbom.json");
+        new CycloneDxCbomWriter(TestSupport.MAPPER, TestSupport.clockAt(2026), "test").write(target, SBOM, source,
+                assets, List.of());
+
+        JsonNode bom = TestSupport.MAPPER.readTree(target.toFile());
+        JsonNode mlKem = findCrypto(bom, assets.get(0).bomRef()).path("cryptoProperties");
+        assertThat(mlKem.path("oid").asText()).isEqualTo("2.16.840.1.101.3.4.4.2");
+        assertThat(mlKem.path("algorithmProperties").path("nistQuantumSecurityLevel").asInt()).isEqualTo(3);
+        assertThat(mlKem.path("algorithmProperties").path("classicalSecurityLevel").asInt()).isEqualTo(192);
+        JsonNode aes = findCrypto(bom, assets.get(1).bomRef()).path("cryptoProperties");
+        assertThat(aes.path("oid").asText()).isEqualTo("2.16.840.1.101.3.4.1.46");
+        assertThat(aes.path("algorithmProperties").path("nistQuantumSecurityLevel").asInt()).isEqualTo(5);
+        JsonNode rsa = findCrypto(bom, assets.get(2).bomRef()).path("cryptoProperties").path("algorithmProperties");
+        assertThat(rsa.path("nistQuantumSecurityLevel").asInt()).isZero();
+        assertThat(rsa.path("classicalSecurityLevel").asInt()).isEqualTo(112);
+        JsonNode ecdsa = findCrypto(bom, assets.get(3).bomRef()).path("cryptoProperties");
+        assertThat(ecdsa.path("oid").asText()).isEqualTo("1.2.840.10045.4.3.2");
+        assertThat(ecdsa.path("algorithmProperties").path("nistQuantumSecurityLevel").asInt()).isZero();
+        assertThat(ecdsa.path("algorithmProperties").has("classicalSecurityLevel")).as("courbe inconnue").isFalse();
+    }
+
     private static JsonNode findCrypto(JsonNode bom, String ref) {
         for (JsonNode component : bom.path("components")) {
             if (ref.equals(component.path("bom-ref").asText())) {

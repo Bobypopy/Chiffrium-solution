@@ -1,5 +1,6 @@
 // Logique d'exploitation du rapport : filtres, tris, agrégats. Aucune dépendance au DOM.
 
+import { quantumPosture } from './catalog.js';
 import { SEVERITIES, STATUSES } from './labels.js';
 
 const STATUS_ORDER = STATUSES.map((s) => s.id);
@@ -69,6 +70,35 @@ export function distribution(counts = {}, order = null) {
 
 export function statusDistribution(summary) {
   return distribution(summary?.byStatus ?? {}, STATUS_ORDER);
+}
+
+/**
+ * Position d'un actif face à un ordinateur quantique, avec les mêmes libellés que le catalogue : cassé par Shor,
+ * résistant (post-quantique), marge réduite (Grover)... Null pour un algorithme que le catalogue ne connaît pas.
+ */
+export function assetQuantumPosture(asset) {
+  const verdict = asset?.verdict;
+  if (!verdict?.quantumVulnerable && !asset?.algorithm?.catalogId) return null;
+  return quantumPosture({ status: verdict?.status, quantumVulnerable: verdict?.quantumVulnerable,
+    primitive: asset.algorithm?.primitive });
+}
+
+/** Échanges de clés : à migrer en premier (données enregistrées aujourd'hui, déchiffrées demain). */
+const KEY_EXCHANGE = new Set(['pke', 'key-agree', 'kem']);
+
+/**
+ * Plan de migration post-quantique : chaque actif cassé par Shor, son remplaçant et son étendue. Les échanges
+ * de clés passent devant les signatures ("récolter maintenant, déchiffrer plus tard"), puis les plus répandus.
+ *
+ * @returns {{ asset: object, keyExchange: boolean, files: number }[]}
+ */
+export function migrationPlan(assets = []) {
+  return assets.filter((asset) => asset.verdict?.quantumVulnerable)
+    .map((asset) => ({ asset, keyExchange: KEY_EXCHANGE.has(asset.algorithm?.primitive),
+      files: new Set((asset.occurrences ?? []).map((o) => o.file)).size }))
+    .sort((a, b) => Number(b.keyExchange) - Number(a.keyExchange)
+      || (b.asset.occurrences?.length ?? 0) - (a.asset.occurrences?.length ?? 0)
+      || String(a.asset.name).localeCompare(String(b.asset.name), 'fr'));
 }
 
 /** Actifs à traiter en priorité (interdits puis dépréciés), limités à `limit`. */

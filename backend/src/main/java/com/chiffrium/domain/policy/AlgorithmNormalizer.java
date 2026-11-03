@@ -4,6 +4,7 @@ import com.chiffrium.domain.model.AlgorithmSpec;
 import com.chiffrium.domain.model.Primitive;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Transforme un nom d'algorithme brut, quelle que soit sa syntaxe (JCA, OpenSSL, Go, Python...),
@@ -44,6 +46,12 @@ public final class AlgorithmNormalizer {
     /** Les modes d'opération n'ont de sens que pour ces primitives ("RSA/ECB" en Java n'est pas de l'ECB). */
     private static final List<Primitive> MODE_BEARING_PRIMITIVES = List.of(
             Primitive.BLOCK_CIPHER, Primitive.AUTHENTICATED_ENCRYPTION);
+
+    /** Algorithmes à clé publique dont le hachage s'écrit devant ("SHA256withRSA"), comme en Java. */
+    private static final List<Primitive> SIGNATURE_STYLE = List.of(
+            Primitive.SIGNATURE, Primitive.PUBLIC_KEY_ENCRYPTION, Primitive.OTHER);
+
+    private static final Pattern PARENTHESIS = Pattern.compile("\\s*\\([^)]*\\)");
 
     private static final String GENERIC_EC_ID = "ec";
     /**
@@ -122,19 +130,27 @@ public final class AlgorithmNormalizer {
                     .orElse(null);
         }
         String mode = MODE_BEARING_PRIMITIVES.contains(primitive) ? first(modes) : null;
+        String padding = first(paddings);
+        List<String> components = secondary.stream().map(AlgorithmDefinition::id).toList();
+        String oid = primary.oidFor(keySize, idOf(catalog.findMode(mode)), idOf(catalog.findPadding(padding)),
+                components, raw);
 
         return new AlgorithmSpec(
                 raw,
                 primary.id(),
                 primary.name(),
-                secondary.stream().map(AlgorithmDefinition::id).toList(),
+                components,
                 secondary.stream().map(AlgorithmDefinition::name).toList(),
                 primitive,
                 mode,
-                first(paddings),
+                padding,
                 keySize,
                 first(curves),
-                secondary.isEmpty() ? primary.primaryOid() : null);
+                oid);
+    }
+
+    private static String idOf(Optional<ParameterDefinition> parameter) {
+        return parameter.map(ParameterDefinition::id).orElse(null);
     }
 
     /**
@@ -159,10 +175,46 @@ public final class AlgorithmNormalizer {
     }
 
     /**
-     * Recherche une entrée par OID (utile quand cdxgen fournit l'OID mais un nom ambigu).
+     * Spec désignée par un OID (cdxgen fournit parfois l'OID avec un nom ambigu) : l'algorithme et, si l'OID est
+     * réservé à un usage, sa taille, son mode, son bourrage et l'algorithme associé
+     * (2.16.840.1.101.3.4.1.46 donne AES-256-GCM, 1.2.840.113549.1.1.11 SHA-256withRSA).
      */
-    public Optional<AlgorithmDefinition> byOid(String oid) {
-        return catalog.findByOid(oid);
+    public Optional<AlgorithmSpec> fromOid(String oid) {
+        return catalog.findByOid(oid).map(definition -> normalize(definition.oids().stream()
+                .filter(ref -> ref.oid().equals(oid.trim()))
+                .findFirst()
+                .map(ref -> nameOf(definition, ref))
+                .orElse(definition.name())));
+    }
+
+    /** Nom écrit comme dans le code ("SHA-256withRSA", "AES-256/GCM"), relu ensuite par {@link #normalize}. */
+    private String nameOf(AlgorithmDefinition definition, AlgorithmDefinition.OidRef ref) {
+        // Sans sa précision entre parenthèses ("GOST 28147-89 (Magma)") et, pour une entrée qui regroupe des
+        // variantes ("RIPEMD-128 / RIPEMD-256"), la seule que l'OID désigne : sinon le nom les nommerait toutes.
+        String name = PARENTHESIS.matcher(definition.name()).replaceAll("").trim();
+        if (ref.variant() != null) {
+            name = Arrays.stream(name.split("\\s+/\\s+"))
+                    .filter(part -> Text.of(part).compact.contains(ref.variant()))
+                    .findFirst()
+                    .orElse(name);
+        }
+        String component = ref.component() == null ? null
+                : catalog.findAlgorithm(ref.component()).map(AlgorithmDefinition::name).orElse(null);
+        if (component != null) {
+            name = SIGNATURE_STYLE.contains(definition.primitive()) ? component + "with" + name
+                    : name + "-" + component;
+        }
+        if (ref.variant() != null) {
+            name += "-" + ref.variant();
+        }
+        if (ref.keySize() != null) {
+            name += "-" + ref.keySize();
+        }
+        for (Optional<ParameterDefinition> parameter : List.of(catalog.findMode(ref.mode()),
+                catalog.findPadding(ref.padding()))) {
+            name += parameter.map(p -> "/" + p.name()).orElse("");
+        }
+        return name;
     }
 
     private static String first(List<Hit<ParameterDefinition>> hits) {

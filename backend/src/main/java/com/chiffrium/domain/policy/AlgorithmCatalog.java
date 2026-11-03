@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Catalogue des algorithmes et paramètres connus, avec leur politique. Source de vérité unique
@@ -155,16 +156,37 @@ public record AlgorithmCatalog(
                 errors.add(where + " : au moins un alias ou token est requis pour la détection");
             }
             validateAliases(where, def.aliases(), def.tokens(), errors);
-            def.oids().stream()
-                    .filter(ref -> ref.oid() == null || !OID_PATTERN.matcher(ref.oid()).matches())
-                    .forEach(ref -> errors.add(where + " : OID invalide '" + ref.oid() + "'"));
+            validateOids(where, def.oids(), errors);
+            for (AlgorithmDefinition.OidRef ref : def.oids()) {
+                requireKnown(where, ref, "mode", ref.mode(), modes.stream().map(ParameterDefinition::id), errors);
+                requireKnown(where, ref, "bourrage", ref.padding(), paddings.stream().map(ParameterDefinition::id),
+                        errors);
+                requireKnown(where, ref, "algorithme associé", ref.component(),
+                        algorithms.stream().map(AlgorithmDefinition::id), errors);
+            }
         }
         for (List<ParameterDefinition> group : List.of(modes, paddings, curves)) {
             for (ParameterDefinition param : group) {
-                validateAliases("paramètre '" + param.id() + "'", param.aliases(), param.tokens(), errors);
+                String where = "paramètre '" + param.id() + "'";
+                validateAliases(where, param.aliases(), param.tokens(), errors);
+                validateOids(where, param.oids(), errors);
             }
         }
         return errors;
+    }
+
+    private static void validateOids(String where, List<AlgorithmDefinition.OidRef> oids, List<String> errors) {
+        oids.stream()
+                .filter(ref -> ref.oid() == null || !OID_PATTERN.matcher(ref.oid()).matches())
+                .forEach(ref -> errors.add(where + " : OID invalide '" + ref.oid() + "'"));
+    }
+
+    /** Une condition d'OID qui nomme un mode ou un algorithme absent ne serait jamais remplie. */
+    private static void requireKnown(String where, AlgorithmDefinition.OidRef ref, String kind, String id,
+                                     Stream<String> known, List<String> errors) {
+        if (id != null && known.noneMatch(id::equals)) {
+            errors.add(where + " : OID " + ref.oid() + " réservé à un " + kind + " inconnu '" + id + "'");
+        }
     }
 
     private static void validateAliases(String where, List<String> aliases, List<String> tokens, List<String> errors) {

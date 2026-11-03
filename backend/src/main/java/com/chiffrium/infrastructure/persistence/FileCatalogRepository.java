@@ -45,6 +45,14 @@ public final class FileCatalogRepository implements CatalogRepository {
      * 2.0 de ML-KEM et ML-DSA) : ces règles sont reprises une seule fois, si l'organisation n'en a pas défini.
      */
     private static final Set<String> KEY_SIZE_RULES_ADDED = Set.of("ml-kem", "ml-dsa");
+    /**
+     * OID revus en 1.2.1 (un OID par jeu de paramètres, OID des courbes) : repris une seule fois par entrée, si
+     * l'organisation n'y a pas ajouté les siens.
+     */
+    private static final String OID_REFS = "oids:";
+    /** Racines de famille retirées du catalogue par défaut : elles ne désignent aucun algorithme précis. */
+    private static final Set<String> RETIRED_OIDS = Set.of("2.16.840.1.101.3.4.1", "1.2.840.10045.4.3",
+            "1.2.410.200046.1.1");
 
     private final Path file;
     private final ObjectMapper mapper;
@@ -106,7 +114,7 @@ public final class FileCatalogRepository implements CatalogRepository {
         if (!Files.exists(file)) {
             LOG.info("Initialisation du catalogue d'algorithmes dans {}", file);
             AtomicFiles.writeJson(mapper, file, defaults);
-            writeKnownDefaults(withKeySizeMigrations(idsOf(defaults)));
+            writeKnownDefaults(withMigrations(idsOf(defaults), defaults));
             return;
         }
         AlgorithmCatalog current = load();
@@ -121,13 +129,14 @@ public final class FileCatalogRepository implements CatalogRepository {
                 + addNew(defaults.modes(), ParameterDefinition::id, MODE, present, known, modes)
                 + addNew(defaults.paddings(), ParameterDefinition::id, PADDING, present, known, paddings)
                 + addNew(defaults.curves(), ParameterDefinition::id, CURVE, present, known, curves);
-        int completed = completeKeySizeRules(defaults, known, algorithms);
+        int completed = completeKeySizeRules(defaults, known, algorithms)
+                + refreshOids(defaults, known, algorithms, curves);
         if (added + completed > 0) {
             save(new AlgorithmCatalog(current.schemaVersion(), algorithms, modes, paddings, curves));
             LOG.info("Catalogue mis à niveau : {} entrée(s) ajoutée(s), {} complétée(s) depuis le catalogue par défaut",
                     added, completed);
         }
-        Set<String> updated = withKeySizeMigrations(new HashSet<>(known));
+        Set<String> updated = withMigrations(new HashSet<>(known), defaults);
         updated.addAll(idsOf(defaults));
         if (!updated.equals(known)) {
             writeKnownDefaults(updated);
@@ -169,8 +178,51 @@ public final class FileCatalogRepository implements CatalogRepository {
         return completed;
     }
 
-    private static Set<String> withKeySizeMigrations(Set<String> ids) {
+    /**
+     * Reprend une seule fois les OID par défaut d'une entrée dont les OID locaux sont tous connus du catalogue par
+     * défaut (ou retirés) : un OID ajouté par l'organisation empêche la reprise.
+     */
+    private static int refreshOids(AlgorithmCatalog defaults, Set<String> known, List<AlgorithmDefinition> algorithms,
+                                   List<ParameterDefinition> curves) {
+        int refreshed = 0;
+        for (int i = 0; i < algorithms.size(); i++) {
+            AlgorithmDefinition local = algorithms.get(i);
+            Optional<AlgorithmDefinition> reference = defaults.findAlgorithm(local.id());
+            if (reference.isPresent() && shouldRefresh(known, local.id(), local.oids(), reference.get().oids())) {
+                algorithms.set(i, new AlgorithmDefinition(local.id(), local.name(), local.primitive(),
+                        local.assetType(), local.aliases(), local.tokens(), reference.get().oids(), local.status(),
+                        local.quantumVulnerable(), local.keySizeRules(), local.deprecatedAfter(),
+                        local.disallowedAfter(), local.note(), local.recommendation(), local.references()));
+                refreshed++;
+            }
+        }
+        for (int i = 0; i < curves.size(); i++) {
+            ParameterDefinition local = curves.get(i);
+            Optional<ParameterDefinition> reference = defaults.curves().stream()
+                    .filter(c -> c.id().equals(local.id())).findFirst();
+            if (reference.isPresent() && shouldRefresh(known, CURVE + local.id(), local.oids(), reference.get().oids())) {
+                curves.set(i, new ParameterDefinition(local.id(), local.name(), local.aliases(), local.tokens(),
+                        local.status(), local.note(), reference.get().oids()));
+                refreshed++;
+            }
+        }
+        return refreshed;
+    }
+
+    private static boolean shouldRefresh(Set<String> known, String id, List<AlgorithmDefinition.OidRef> local,
+                                         List<AlgorithmDefinition.OidRef> reference) {
+        if (known.contains(OID_REFS + id) || local.equals(reference)) {
+            return false;
+        }
+        Set<String> offered = new HashSet<>(RETIRED_OIDS);
+        reference.forEach(ref -> offered.add(ref.oid()));
+        return local.stream().allMatch(ref -> offered.contains(ref.oid()));
+    }
+
+    private static Set<String> withMigrations(Set<String> ids, AlgorithmCatalog defaults) {
         KEY_SIZE_RULES_ADDED.forEach(id -> ids.add(KEY_SIZES + id));
+        defaults.algorithms().forEach(a -> ids.add(OID_REFS + a.id()));
+        defaults.curves().forEach(c -> ids.add(OID_REFS + CURVE + c.id()));
         return ids;
     }
 

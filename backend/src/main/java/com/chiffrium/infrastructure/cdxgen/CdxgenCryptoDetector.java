@@ -9,7 +9,6 @@ import com.chiffrium.domain.model.CryptoFunction;
 import com.chiffrium.domain.model.DetectionSource;
 import com.chiffrium.domain.model.Language;
 import com.chiffrium.domain.model.Occurrence;
-import com.chiffrium.domain.policy.AlgorithmDefinition;
 import com.chiffrium.infrastructure.json.JsonNodes;
 import com.chiffrium.infrastructure.scan.FileClassifier;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -111,10 +110,7 @@ public final class CdxgenCryptoDetector implements CryptoDetector {
         String oid = JsonNodes.text(crypto, "oid");
         AlgorithmSpec spec = assetFactory.normalizer().normalize(name);
         if (!spec.isRecognized() && oid != null) {
-            spec = assetFactory.normalizer().byOid(oid)
-                    .map(AlgorithmDefinition::name)
-                    .map(assetFactory.normalizer()::normalize)
-                    .orElse(spec);
+            spec = assetFactory.normalizer().fromOid(oid).orElse(spec);
         }
         JsonNode algorithmProperties = crypto.path("algorithmProperties");
         Integer parameterSet = parseInteger(JsonNodes.text(algorithmProperties, "parameterSetIdentifier"));

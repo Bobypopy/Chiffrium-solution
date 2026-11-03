@@ -12,6 +12,7 @@ import com.chiffrium.domain.model.AnalysisStatus;
 import com.chiffrium.domain.model.PolicyStatus;
 import com.chiffrium.domain.policy.AlgorithmCatalog;
 import com.chiffrium.domain.policy.AlgorithmDefinition;
+import com.chiffrium.domain.policy.ParameterDefinition;
 import com.chiffrium.domain.security.Role;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -172,6 +174,47 @@ class PersistenceTest {
                 upgraded.curves()));
         assertThat(new FileCatalogRepository(file, TestSupport.MAPPER).load().findAlgorithm("ml-dsa").orElseThrow()
                 .keySizeRules()).isEmpty();
+    }
+
+    @Test
+    void outdatedOidsAreReplacedOnceUnlessTheOrganisationAddedItsOwn(@TempDir Path dir) {
+        Path file = dir.resolve("catalog/algorithms.json");
+        AlgorithmCatalog defaults = FileCatalogRepository.loadDefault(TestSupport.MAPPER);
+        // Catalogue de la 1.2.0 : racine de famille pour AES, un seul OID pour ML-KEM, courbes sans OID, et un OID
+        // ajouté par l'organisation à RC4.
+        Map<String, List<AlgorithmDefinition.OidRef>> before = Map.of(
+                "aes", List.of(new AlgorithmDefinition.OidRef("2.16.840.1.101.3.4.1", "NIST AES")),
+                "ml-kem", List.of(new AlgorithmDefinition.OidRef("2.16.840.1.101.3.4.4.2", "id-alg-ml-kem-768")),
+                "rc4", List.of(new AlgorithmDefinition.OidRef("1.2.840.113549.3.4", "rc4"),
+                        new AlgorithmDefinition.OidRef("1.3.6.1.4.1.99999.1", "OID interne")));
+        List<AlgorithmDefinition> old = defaults.algorithms().stream()
+                .map(a -> !before.containsKey(a.id()) ? a : new AlgorithmDefinition(a.id(), a.name(), a.primitive(),
+                        a.assetType(), a.aliases(), a.tokens(), before.get(a.id()), a.status(), a.quantumVulnerable(),
+                        a.keySizeRules(), a.deprecatedAfter(), a.disallowedAfter(), "Note de l'organisation",
+                        a.recommendation(), a.references()))
+                .toList();
+        List<ParameterDefinition> curves = defaults.curves().stream()
+                .map(c -> new ParameterDefinition(c.id(), c.name(), c.aliases(), c.tokens(), c.status(), c.note(), null))
+                .toList();
+        AtomicFiles.writeJson(TestSupport.MAPPER, file,
+                new AlgorithmCatalog(defaults.schemaVersion(), old, defaults.modes(), defaults.paddings(), curves));
+
+        FileCatalogRepository repository = new FileCatalogRepository(file, TestSupport.MAPPER);
+        AlgorithmCatalog upgraded = repository.load();
+        AlgorithmDefinition aes = upgraded.findAlgorithm("aes").orElseThrow();
+        assertThat(aes.oids()).isEqualTo(defaults.findAlgorithm("aes").orElseThrow().oids());
+        assertThat(aes.note()).as("le reste de l'entrée ne change pas").isEqualTo("Note de l'organisation");
+        assertThat(upgraded.findAlgorithm("ml-kem").orElseThrow().oids()).hasSize(3);
+        assertThat(upgraded.findAlgorithm("rc4").orElseThrow().oids()).as("OID de l'organisation conservé")
+                .isEqualTo(before.get("rc4"));
+        assertThat(upgraded.findCurve("P-256").orElseThrow().oids()).extracting(AlgorithmDefinition.OidRef::oid)
+                .containsExactly("1.2.840.10045.3.1.7");
+
+        // Retirés ensuite par l'organisation, ils ne reviennent pas.
+        repository.save(new AlgorithmCatalog(upgraded.schemaVersion(), old, upgraded.modes(), upgraded.paddings(),
+                upgraded.curves()));
+        assertThat(new FileCatalogRepository(file, TestSupport.MAPPER).load().findAlgorithm("aes").orElseThrow()
+                .oids()).isEqualTo(before.get("aes"));
     }
 
     @Test

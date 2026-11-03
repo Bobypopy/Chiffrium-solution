@@ -6,6 +6,7 @@ import com.chiffrium.domain.model.CryptoAsset;
 import com.chiffrium.domain.model.MaterialInfo;
 import com.chiffrium.domain.model.PolicyStatus;
 import com.chiffrium.domain.model.PolicyVerdict;
+import com.chiffrium.domain.model.SecurityStrength;
 import com.chiffrium.domain.model.Primitive;
 import com.chiffrium.domain.model.Severity;
 
@@ -36,6 +37,12 @@ public final class PolicyEvaluator {
     private static final String CERTIFICATE_RENEW_RECOMMENDATION = "Renouveler le certificat.";
     private static final String UNIDENTIFIED_KEY_RECOMMENDATION = "Ouvrir le fichier pour l'identifier ; s'il "
             + "contient une clé privée ou secrète, le retirer du dépôt et considérer la clé comme compromise.";
+    private static final String SIGNATURE_MIGRATION = "Migrer vers ML-DSA (FIPS 204) ou SLH-DSA (FIPS 205), en "
+            + "hybride avec l'algorithme actuel pendant la transition.";
+    private static final String KEY_EXCHANGE_MIGRATION = "Migrer vers ML-KEM (FIPS 203), en hybride avec "
+            + "l'algorithme actuel (X25519 + ML-KEM-768 par exemple) pendant la transition.";
+    private static final String GENERIC_MIGRATION = "Migrer vers ML-KEM (FIPS 203) pour l'échange de clés et ML-DSA "
+            + "(FIPS 204) pour la signature, en hybride pendant la transition.";
     private static final String ENCRYPTED_FORMAT_MARKER = "ENCRYPTED";
     private static final Set<Primitive> ASYMMETRIC = EnumSet.of(Primitive.PUBLIC_KEY_ENCRYPTION, Primitive.SIGNATURE,
             Primitive.KEY_AGREEMENT, Primitive.OTHER, Primitive.KEM);
@@ -86,9 +93,13 @@ public final class PolicyEvaluator {
         acc.applyParameter(spec.curve(), catalog::findCurve, "courbe");
 
         if (acc.recommendation == null && acc.quantumVulnerable) {
-            acc.recommendation = primary.recommendation();
+            acc.recommendation = primary.recommendation() != null ? primary.recommendation()
+                    : migrationTarget(spec.primitive());
         }
-        return acc.toVerdict();
+        String curveId = catalog.findCurve(spec.curve()).map(ParameterDefinition::id).orElse(null);
+        return acc.toVerdict(SecurityStrengths.of(primary, spec.rawName(), spec.keySize(), curveId,
+                        acc.quantumVulnerable)
+                .orElse(null));
     }
 
     private PolicyVerdict evaluateMaterial(CryptoAsset asset) {
@@ -136,12 +147,24 @@ public final class PolicyEvaluator {
                 reasons.add("Certificat expiré depuis le " + material.notValidAfter().substring(0, "yyyy-MM-dd".length()) + ".");
                 return new PolicyVerdict(PolicyStatus.DISALLOWED, Severity.worst(algorithmVerdict.severity(), Severity.HIGH),
                         algorithmVerdict.quantumVulnerable(), reasons, CERTIFICATE_RENEW_RECOMMENDATION,
-                        algorithmVerdict.validUntil());
+                        algorithmVerdict.validUntil(), algorithmVerdict.strength());
             }
         } catch (DateTimeParseException ignored) {
             // Date non standard : on conserve le verdict de l'algorithme.
         }
         return algorithmVerdict;
+    }
+
+    /**
+     * Remplaçant post-quantique d'un algorithme cassé par Shor que le catalogue ne précise pas (entrée ajoutée
+     * par l'organisation, catalogue d'une version antérieure).
+     */
+    static String migrationTarget(Primitive primitive) {
+        return switch (primitive) {
+            case SIGNATURE -> SIGNATURE_MIGRATION;
+            case KEY_AGREEMENT, KEM, PUBLIC_KEY_ENCRYPTION -> KEY_EXCHANGE_MIGRATION;
+            default -> GENERIC_MIGRATION;
+        };
     }
 
     private int currentYear() {
@@ -249,12 +272,12 @@ public final class PolicyEvaluator {
             }
         }
 
-        PolicyVerdict toVerdict() {
+        PolicyVerdict toVerdict(SecurityStrength strength) {
             if (quantumVulnerable) {
                 reasons.add("Vulnérable à un ordinateur quantique (algorithme de Shor) : prévoir une migration post-quantique.");
             }
             return new PolicyVerdict(status, severityOf(status, quantumVulnerable), quantumVulnerable, reasons,
-                    recommendation, validUntil);
+                    recommendation, validUntil, strength);
         }
     }
 }

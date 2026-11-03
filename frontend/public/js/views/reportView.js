@@ -10,8 +10,8 @@ import {
   SEVERITY_LABELS, SOURCE_LABELS, STATUSES, isActiveJob, label, licenseInfo, statusInfo,
 } from '../domain/labels.js';
 import {
-  ORIGINS, distribution, facets, filterAssets, occurrencesByFile, originOf, priorities, scoreBreakdown,
-  scoreTone, sortAssets, statusDistribution, statusOf,
+  ORIGINS, assetQuantumPosture, distribution, facets, filterAssets, migrationPlan, occurrencesByFile, originOf,
+  priorities, scoreBreakdown, scoreTone, sortAssets, statusDistribution, statusOf,
 } from '../domain/report.js';
 import { barList, scoreMeter, statTile } from '../ui/charts.js';
 import { readPref, writePref } from '../ui/prefs.js';
@@ -22,6 +22,7 @@ import { printReport } from './printableReport.js';
 const TABS = [
   { id: 'dashboard', label: 'Tableau de bord' },
   { id: 'assets', label: 'Actifs' },
+  { id: 'migration', label: 'Migration post-quantique' },
   { id: 'findings', label: 'Constats sécurité' },
   { id: 'graph', label: 'Graphe' },
   { id: 'libraries', label: 'Dépendances' },
@@ -148,11 +149,12 @@ export async function renderReport(container, { id, tab = 'dashboard', selection
       state.findings.severity = severity;
       state.persist();
       go('findings');
-    }),
+    }, () => go('migration')),
     findings: () => findingsTab(report, state.findings, (target) => go('graph', target),
       { reset: resetFindings, persist: state.persist }),
     assets: () => assetsTab(report, state, selection, (ref) => go('assets', ref), (ref) => go('graph', ref),
       { reset: resetAssets, persist: state.persist }),
+    migration: () => migrationTab(report, (ref) => go('assets', ref)),
     graph: () => graphTab(report, selection, (ref) => go('assets', ref)),
     libraries: () => librariesTab(report),
     steps: () => stepsTab(job, report),
@@ -344,7 +346,7 @@ function severityBadge(severity) {
     tone: SEVERITY_TONES[severity] ?? 'muted' });
 }
 
-function dashboard(report, onFilter, onFindings) {
+function dashboard(report, onFilter, onFindings, onMigration) {
   const { summary } = report;
   const tone = scoreTone(summary.score);
   const disallowed = summary.byStatus.disallowed ?? 0;
@@ -366,7 +368,7 @@ function dashboard(report, onFilter, onFindings) {
         statTile(summary.knownExploited ?? 0, 'CVE exploitées (KEV)', summary.knownExploited ? 'critical' : null),
         statTile(summary.findings ?? 0, 'constats de sécurité', summary.findings ? 'serious' : null))),
     h('div', { class: 'grid-2' },
-      pqcCard(summary.pqc),
+      pqcCard(summary.pqc, onMigration),
       h('section', { class: 'card' }, h('h2', {}, 'Constats de sécurité'),
         report.findings?.length
           ? barList(severityCounts(report.findings), {
@@ -447,7 +449,7 @@ function scoreWhy(assets, onFilter) {
       + 'le fait remonter le plus vite.'));
 }
 
-function pqcCard(pqc) {
+function pqcCard(pqc, onMigration) {
   if (!pqc) return h('section', { class: 'card' }, h('h2', {}, 'Post-quantique'), emptyState('Non calculé.'));
   const stage = PQC_STAGES[pqc.stage] ?? PQC_STAGES['not-started'];
   return h('section', { class: 'card' },
@@ -457,7 +459,65 @@ function pqcCard(pqc) {
       h('dt', {}, 'Asymétrique vulnérable (Shor)'), h('dd', {}, String(pqc.quantumVulnerable)),
       h('dt', {}, 'Post-quantique ou hybride'), h('dd', {}, String(pqc.postQuantum)),
       h('dt', {}, 'Symétrique < 256 bits'), h('dd', {}, `${pqc.symmetricBelow256Bits} (acceptable, hors CNSA 2.0)`)),
-    h('p', { class: 'hint' }, stage.advice));
+    h('p', { class: 'hint' }, stage.advice),
+    pqc.quantumVulnerable ? h('button', { type: 'button', class: 'button small', onclick: onMigration },
+      'Voir le plan de migration') : null);
+}
+
+/** Catégorie NIST face à un ordinateur quantique : 1 (comme AES-128) à 5 (comme AES-256), 0 si aucune. */
+function quantumLevel(strength) {
+  if (strength?.nistQuantumLevel == null) return null;
+  return strength.nistQuantumLevel === 0 ? '0 : aucune (cassé par un ordinateur quantique ou clé trop courte)'
+    : `${strength.nistQuantumLevel} sur 5`;
+}
+
+function quantumTag(asset) {
+  const posture = assetQuantumPosture(asset);
+  return posture ? h('span', { class: `tag tone-${posture.tone}`, title: posture.hint }, posture.label) : null;
+}
+
+/**
+ * Plan de migration post-quantique : ce qu'un ordinateur quantique casserait, par quoi le remplacer, et où.
+ * Un clic sur une ligne ouvre l'actif (emplacements, extraits de code).
+ */
+function migrationTab(report, onSelect) {
+  const plan = migrationPlan(report.assets);
+  const pqc = report.summary.pqc;
+  const stage = PQC_STAGES[pqc?.stage] ?? PQC_STAGES['not-started'];
+  const resistant = report.assets.filter((a) => assetQuantumPosture(a)?.id === 'pqc');
+  const intro = h('section', { class: 'card' },
+    h('h2', {}, 'Migration post-quantique'),
+    pqc ? badge({ label: stage.label, icon: stage.tone === 'good' ? '✓' : '!', tone: stage.tone }) : null,
+    h('p', { class: 'hint' }, 'Chaque ligne est un usage qu\'un ordinateur quantique casserait (algorithme de '
+      + 'Shor), avec son remplaçant. Les échanges de clés viennent d\'abord : ce qui est chiffré aujourd\'hui peut '
+      + 'être enregistré puis déchiffré plus tard.'));
+  const done = resistant.length ? h('section', { class: 'card' }, h('h2', {}, 'Déjà post-quantique'),
+    h('ul', {}, resistant.map((asset) => h('li', {},
+      h('a', { href: `#/report/${report.analysisId}/assets/${encodeURIComponent(asset.bomRef)}` }, asset.name),
+      asset.verdict?.strength?.nistQuantumLevel
+        ? h('span', { class: 'muted small' }, ` - catégorie NIST ${asset.verdict.strength.nistQuantumLevel}`)
+        : null)))) : null;
+  if (!plan.length) {
+    return h('div', {}, intro, h('section', { class: 'card' }, emptyState(resistant.length
+      ? 'Rien à migrer : la cryptographie asymétrique détectée est déjà post-quantique.'
+      : 'Aucun usage cassé par un ordinateur quantique détecté.')), done);
+  }
+  return h('div', {}, intro,
+    h('section', { class: 'card table-wrap' }, h('table', { class: 'table selectable' },
+      h('thead', {}, h('tr', {}, ['Actif', 'Usage', 'Remplacer par', 'Emplacements']
+        .map((t) => h('th', { scope: 'col' }, t)))),
+      h('tbody', {}, plan.map(({ asset, keyExchange, files }) => h('tr', {
+        tabindex: 0, onclick: () => onSelect(asset.bomRef),
+        onkeydown: (e) => { if (e.key === 'Enter') onSelect(asset.bomRef); },
+      },
+      h('td', {}, h('strong', {}, asset.name), h('div', {}, badge(statusInfo(statusOf(asset))))),
+      h('td', {}, asset.algorithm?.primitive ? label(PRIMITIVE_LABELS, asset.algorithm.primitive)
+        : label(ASSET_TYPE_LABELS, asset.assetType),
+      keyExchange ? h('div', { class: 'muted small' }, 'échange de clés : en premier') : null),
+      h('td', {}, asset.verdict?.recommendation ?? '-'),
+      h('td', {}, plural(asset.occurrences.length, 'emplacement'),
+        h('div', { class: 'muted small' }, plural(files, 'fichier')))))))),
+    done);
 }
 
 function findingsTab(report, state, onShowInGraph, { reset, persist } = {}) {
@@ -558,7 +618,7 @@ function assetsTab(report, state, selection, onSelect, onShowGraph, { reset, per
     resetButton.hidden = !isFiltered(state.filters, DEFAULT_FILTERS()) && state.sort === 'risk';
     persist?.();
     mount(tableBody, assets.length ? assets.map((asset) => assetRow(asset, asset.bomRef === selection, onSelect))
-      : h('tr', {}, h('td', { colspan: 5 }, emptyState('Aucun actif ne correspond aux filtres.'))));
+      : h('tr', {}, h('td', { colspan: 6 }, emptyState('Aucun actif ne correspond aux filtres.'))));
   };
   const selected = report.assets.find((a) => a.bomRef === selection);
   mount(detail, selected ? assetDetail(selected, onShowGraph, report.source?.modules ?? [])
@@ -594,7 +654,7 @@ function assetsTab(report, state, selection, onSelect, onShowGraph, { reset, per
   update();
   return h('div', {}, filters, h('div', { class: 'assets-layout' },
     h('div', { class: 'card table-wrap' }, h('table', { class: 'table selectable' },
-      h('thead', {}, h('tr', {}, ['Statut', 'Actif', 'Type / primitive', 'Emplacements', 'Sources']
+      h('thead', {}, h('tr', {}, ['Statut', 'Actif', 'Quantique', 'Type / primitive', 'Emplacements', 'Sources']
         .map((t) => h('th', { scope: 'col' }, t)))),
       tableBody)),
     detail));
@@ -607,8 +667,8 @@ function assetRow(asset, selected, onSelect) {
     onkeydown: (e) => { if (e.key === 'Enter') onSelect(asset.bomRef); },
   },
   h('td', {}, badge(statusInfo(statusOf(asset)))),
-  h('td', {}, h('strong', {}, asset.name),
-    asset.verdict?.quantumVulnerable ? h('span', { class: 'tag', title: 'Vulnérable au quantique' }, 'Q') : null),
+  h('td', {}, h('strong', {}, asset.name)),
+  h('td', {}, quantumTag(asset)),
   h('td', {}, label(ASSET_TYPE_LABELS, asset.assetType),
     asset.algorithm?.primitive ? h('div', { class: 'muted small' }, label(PRIMITIVE_LABELS, asset.algorithm.primitive)) : null),
   h('td', {}, String(asset.occurrences.length)),
@@ -626,6 +686,9 @@ function assetDetail(asset, onShowGraph, modules = []) {
     ['Taille de clé', spec?.keySize ? `${spec.keySize} bits` : null],
     ['Mode', spec?.mode], ['Bourrage', spec?.padding], ['Courbe', spec?.curve], ['OID', spec?.oid],
     ['Sévérité', label(SEVERITY_LABELS, verdict.severity)],
+    ['Face au quantique', assetQuantumPosture(asset)?.label],
+    ['Catégorie NIST post-quantique', quantumLevel(verdict.strength)],
+    ['Sécurité classique', verdict.strength?.classicalBits ? `${verdict.strength.classicalBits} bits` : null],
     ['Valide jusqu\'en', verdict.validUntil],
     ['Opérations', asset.functions.map((f) => label(FUNCTION_LABELS, f)).join(', ') || null],
     ['Sujet', material?.subject], ['Émetteur', material?.issuer],

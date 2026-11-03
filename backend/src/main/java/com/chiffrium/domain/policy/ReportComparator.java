@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Dérive entre deux analyses (en général le même dépôt à deux dates) : actifs apparus ou disparus,
@@ -24,6 +25,8 @@ import java.util.function.Function;
  * qu'un simple décalage de code ne les fasse pas passer pour "corrigés puis nouveaux".
  */
 public final class ReportComparator {
+
+    private static final Pattern OID_SUFFIX = Pattern.compile("@[0-2](\\.\\d+)+$");
 
     /**
      * @param bomRef identifiant stable de l'actif
@@ -61,8 +64,8 @@ public final class ReportComparator {
     }
 
     public Comparison compare(AnalysisReport base, AnalysisReport target) {
-        Map<String, CryptoAsset> before = index(base.assets(), CryptoAsset::bomRef);
-        Map<String, CryptoAsset> after = index(target.assets(), CryptoAsset::bomRef);
+        Map<String, CryptoAsset> before = index(base.assets(), ReportComparator::assetKey);
+        Map<String, CryptoAsset> after = index(target.assets(), ReportComparator::assetKey);
         List<AssetRef> added = new ArrayList<>();
         List<AssetRef> removed = new ArrayList<>();
         List<StatusChange> changes = new ArrayList<>();
@@ -71,7 +74,7 @@ public final class ReportComparator {
             if (previous == null) {
                 added.add(ref(asset));
             } else if (status(previous) != status(asset)) {
-                changes.add(new StatusChange(ref, asset.name(), status(previous), status(asset)));
+                changes.add(new StatusChange(asset.bomRef(), asset.name(), status(previous), status(asset)));
             }
         });
         before.forEach((ref, asset) -> {
@@ -90,6 +93,14 @@ public final class ReportComparator {
                 changes, missingFrom(findingsAfter, findingsBefore), missingFrom(findingsBefore, findingsAfter),
                 missingFrom(vulnerabilitiesAfter, vulnerabilitiesBefore),
                 missingFrom(vulnerabilitiesBefore, vulnerabilitiesAfter));
+    }
+
+    /**
+     * Clé de rapprochement d'un actif : son bom-ref sans l'OID final ("crypto/algorithm/AES-256-GCM@2.16..."), pour
+     * qu'un OID corrigé par une version plus récente du catalogue ne fasse pas apparaître un nouvel actif.
+     */
+    static String assetKey(CryptoAsset asset) {
+        return OID_SUFFIX.matcher(asset.bomRef()).replaceFirst("");
     }
 
     /** Clé de rapprochement d'un constat, indépendante du numéro de ligne. */

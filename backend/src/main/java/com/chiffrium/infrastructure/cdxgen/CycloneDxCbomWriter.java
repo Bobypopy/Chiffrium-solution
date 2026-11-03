@@ -11,6 +11,7 @@ import com.chiffrium.domain.model.Library;
 import com.chiffrium.domain.model.MaterialInfo;
 import com.chiffrium.domain.model.Occurrence;
 import com.chiffrium.domain.model.PolicyVerdict;
+import com.chiffrium.domain.model.SecurityStrength;
 import com.chiffrium.domain.model.SourceInfo;
 import com.chiffrium.domain.model.Vulnerability;
 import com.chiffrium.infrastructure.json.JsonNodes;
@@ -204,7 +205,13 @@ public final class CycloneDxCbomWriter implements CbomWriter {
             ArrayNode functions = props.putArray("cryptoFunctions");
             asset.functions().stream().map(CryptoFunction::cycloneDxValue).sorted().forEach(functions::add);
         }
-        if (asset.verdict() != null && asset.verdict().quantumVulnerable()) {
+        SecurityStrength strength = asset.verdict() == null ? null : asset.verdict().strength();
+        if (strength != null && strength.classicalBits() != null) {
+            props.put("classicalSecurityLevel", strength.classicalBits());
+        }
+        if (strength != null && strength.nistQuantumLevel() != null) {
+            props.put("nistQuantumSecurityLevel", strength.nistQuantumLevel());
+        } else if (asset.verdict() != null && asset.verdict().quantumVulnerable()) {
             props.put("nistQuantumSecurityLevel", QUANTUM_VULNERABLE_LEVEL);
         }
         return props;

@@ -55,6 +55,20 @@ class AlgorithmCatalogTest {
                 .anyMatch(e -> e.contains("OID invalide"));
     }
 
+    /** Une condition d'OID qui nomme un mode ou un hachage absent du catalogue ne serait jamais remplie. */
+    @Test
+    void validationRejectsOidConditionsOnUnknownParameters() {
+        AlgorithmDefinition aes = catalog.findAlgorithm("aes").orElseThrow();
+        AlgorithmDefinition typo = new AlgorithmDefinition(aes.id(), aes.name(), aes.primitive(), aes.assetType(),
+                aes.aliases(), aes.tokens(), List.of(new AlgorithmDefinition.OidRef("2.16.840.1.101.3.4.1.46",
+                "id-aes256-GCM", 256, "gcmm", null, "sha-2560", null)), aes.status(), false, null, null, null,
+                null, null, null);
+        assertThat(catalog.withAlgorithm(typo).validate())
+                .anyMatch(e -> e.contains("mode inconnu 'gcmm'"))
+                .anyMatch(e -> e.contains("algorithme associé inconnu 'sha-2560'"));
+        assertThat(catalog.validate()).isEmpty();
+    }
+
     @Test
     void withAlgorithmReplacesExistingEntry() {
         AlgorithmDefinition md5 = catalog.findAlgorithm("md5").orElseThrow();
