@@ -1,0 +1,35 @@
+# Déploiement sur un cluster local (Docker Desktop, kind, minikube) avec les images construites localement :
+#   docker compose build
+#   kubectl apply -k deploy/k8s/overlays/local
+#   kubectl -n chiffrium port-forward svc/frontend 8080:80
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: chiffrium-backend
+    newTag: local
+  - name: chiffrium-frontend
+    newTag: local
+patches:
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi

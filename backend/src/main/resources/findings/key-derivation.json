@@ -1,0 +1,142 @@
+{
+  "rules": [
+    {
+      "id": "kdf-java-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+PBEKeySpec\\s*\\([^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-python-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "python"
+      ],
+      "pattern": "pbkdf2_hmac\\s*\\([^,]+,[^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-python-pbkdf2hmac-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "python"
+      ],
+      "pattern": "(?s)PBKDF2HMAC\\s*\\((?:(?!\\)).){0,300}?iterations\\s*=\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-js-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "pbkdf2(?:Sync)?\\s*\\([^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-go-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "go"
+      ],
+      "pattern": "pbkdf2\\.Key\\s*\\([^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-csharp-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "Rfc2898DeriveBytes(?:\\.Pbkdf2)?\\s*\\([^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-php-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "php"
+      ],
+      "pattern": "hash_pbkdf2\\s*\\([^,]+,[^,]+,[^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-bcrypt-low-cost",
+      "category": "weak-key-derivation",
+      "severity": "low",
+      "cwe": "CWE-916",
+      "ignoreCase": true,
+      "pattern": "gen_?salt\\s*\\(\\s*(?:(?:log_)?rounds\\s*=\\s*)?(?<cost>\\d{1,2})\\s*\\)",
+      "numberGroup": "cost",
+      "below": 10,
+      "title": "bcrypt : coût trop faible",
+      "description": "Facteur de coût bcrypt inférieur à 10.",
+      "recommendation": "Utiliser un coût d'au moins 10 (12 recommandé), ou Argon2id."
+    },
+    {
+      "id": "kdf-config-pbkdf2-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "config"
+      ],
+      "ignoreCase": true,
+      "pattern": "(?:pbkdf2|argon2|scrypt|bcrypt|password|passwd|hash)[\\w.$\\[\\]-]{0,24}(?:iterations?|rounds|cost|work[_.]?factor)\\s*[:=]\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "Dérivation de clé : paramètre trop faible dans la configuration",
+      "description": "Le nombre d'itérations configuré est trop bas face aux attaques par force brute sur GPU ; un mot de passe dérivé avec ce réglage se retrouve vite.",
+      "recommendation": "Argon2id de préférence ; sinon PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) ou 210 000 (HMAC-SHA512), selon l'OWASP."
+    }
+  ]
+}

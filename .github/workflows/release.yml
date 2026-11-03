@@ -1,0 +1,88 @@
+name: Release
+
+# Publier une version : git tag v2.4.0 && git push origin v2.4.0
+# Construit l'installateur Windows et les paquets Linux, puis les publie dans une release GitHub où les
+# applications installées vont chercher leurs mises à jour.
+#
+# Le code peut rester privé : si la variable RELEASES_REPO (ex. Bobypopy/Chiffrium-releases) et le secret
+# RELEASES_TOKEN sont définis, les releases partent dans ce dépôt public. Sinon, elles restent dans ce dépôt
+# (qui doit alors être public pour que les mises à jour automatiques fonctionnent).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  backend:
+    name: Backend (tests + JAR)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # Version unique : le numéro du tag (v2.4.0 -> 2.4.0) s'applique au backend et à l'application de bureau.
+      - run: mvn -B -f backend/pom.xml verify -Drevision="${GITHUB_REF_NAME#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/chiffrium-backend.jar
+
+  desktop:
+    name: Installateur ${{ matrix.os }}
+    needs: backend
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target
+      # JDK de la plateforme cible : jlink produit un JRE propre à chaque système.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Dépendances et ressources embarquées
+        working-directory: desktop
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+        run: |
+          npm ci
+          npm test
+          node scripts/prepare.mjs
+      - name: Construction et publication
+        working-directory: desktop
+        shell: bash
+        env:
+          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Signature Windows : activée automatiquement si les secrets existent (voir docs/code-signing.md).
+          WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          if [ -n "$RELEASES_REPO" ]; then
+            if [ -z "$RELEASES_TOKEN" ]; then
+              echo "::error::RELEASES_REPO est défini mais le secret RELEASES_TOKEN manque (voir docs/desktop.md)."
+              exit 1
+            fi
+            export UPDATE_OWNER="${RELEASES_REPO%%/*}" UPDATE_REPO="${RELEASES_REPO#*/}" GH_TOKEN="$RELEASES_TOKEN"
+            echo "Publication dans $RELEASES_REPO"
+          else
+            export GH_TOKEN="$REPO_TOKEN"
+          fi
+          npx electron-builder --config electron-builder.config.cjs --publish always \
+            -c.extraMetadata.version="${GITHUB_REF_NAME#v}"

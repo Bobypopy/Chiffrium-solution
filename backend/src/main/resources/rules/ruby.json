@@ -1,0 +1,38 @@
+{
+  "id": "ruby",
+  "languages": ["ruby"],
+  "blockStyle": "indent",
+  "commentPrefixes": ["#"],
+  "functionPatterns": [
+    "^\\s*def\\s+(?:self\\.)?(?<name>[\\w?!]+)"
+  ],
+  "classPatterns": [
+    "^\\s*(?:class|module)\\s+(?<name>[\\w:]+)"
+  ],
+  "rules": [
+    {
+      "id": "ruby.openssl.cipher-class",
+      "pattern": "\\bOpenSSL\\s*::\\s*Cipher\\s*::\\s*(?<name>AES\\d*|DES|BF|CAST5|RC4|RC2|Camellia)\\s*\\.\\s*new\\s*\\(\\s*(?:(?<size>\\d{3})\\s*,\\s*)?(?::(?<mode>\\w+))?",
+      "map": { "bf": "Blowfish" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    { "id": "ruby.openssl.cipher", "pattern": "\\bOpenSSL\\s*::\\s*Cipher\\s*\\.\\s*new\\s*\\(\\s*{ARG}", "functions": ["encrypt", "decrypt"] },
+    { "id": "ruby.openssl.hmac", "pattern": "\\bOpenSSL\\s*::\\s*HMAC\\s*\\.\\s*\\w+\\s*\\(\\s*{STR}", "template": "HMAC-{algo}", "functions": ["tag"] },
+    { "id": "ruby.openssl.digest-new", "pattern": "\\bOpenSSL\\s*::\\s*Digest\\s*\\.\\s*new\\s*\\(\\s*{ARG}", "functions": ["digest"] },
+    { "id": "ruby.openssl.digest-class", "pattern": "\\bOpenSSL\\s*::\\s*Digest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)\\b", "functions": ["digest"] },
+    { "id": "ruby.digest", "pattern": "\\bDigest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|SHA2|RMD160)\\b", "map": { "sha2": "SHA-256", "rmd160": "RIPEMD-160" }, "functions": ["digest"] },
+    {
+      "id": "ruby.openssl.pkey",
+      "pattern": "\\bOpenSSL\\s*::\\s*PKey\\s*::\\s*(?<name>RSA|DSA|EC|DH)\\s*\\.\\s*(?:new|generate)\\s*\\(\\s*(?:{SIZE}|['\"](?<curve>[\\w-]+)['\"])?",
+      "functions": ["keygen"]
+    },
+    { "id": "ruby.openssl.pbkdf2", "pattern": "\\bOpenSSL\\s*::\\s*(?:PKCS5\\s*\\.\\s*pbkdf2_hmac(?:_sha1)?|KDF\\s*\\.\\s*pbkdf2_hmac)\\s*\\(", "algorithm": "PBKDF2", "functions": ["keyderive"] },
+    { "id": "ruby.openssl.scrypt", "pattern": "\\bOpenSSL\\s*::\\s*KDF\\s*\\.\\s*scrypt\\s*\\(", "algorithm": "scrypt", "functions": ["keyderive"] },
+    { "id": "ruby.bcrypt", "pattern": "\\bBCrypt\\s*::\\s*Password\\s*\\.\\s*(?:create|new)\\b", "algorithm": "bcrypt", "functions": ["keyderive"] },
+    { "id": "ruby.ssl.version", "pattern": "\\b(?:ssl_version|min_version|max_version)\\s*=\\s*:(?<name>\\w+)", "skipUnrecognized": true, "functions": ["other"] },
+    { "id": "ruby.ssl.constant", "pattern": "\\bOpenSSL\\s*::\\s*SSL\\s*::\\s*(?<name>TLS1_VERSION|TLS1_1_VERSION|TLS1_2_VERSION|TLS1_3_VERSION|SSL3_VERSION)\\b", "functions": ["other"] },
+    { "id": "ruby.io.write", "kind": "file", "direction": "write", "pattern": "\\bFile\\s*\\.\\s*(?:write|binwrite)\\s*\\(\\s*{FILE}" },
+    { "id": "ruby.io.read", "kind": "file", "direction": "read", "pattern": "\\bFile\\s*\\.\\s*(?:read|binread|readlines)\\s*\\(\\s*{FILE}" },
+    { "id": "ruby.io.open", "kind": "file", "pattern": "\\bFile\\s*\\.\\s*open\\s*\\(\\s*{FILE}\\s*,\\s*(?<mode>['\"][^'\"]*['\"])" }
+  ]
+}

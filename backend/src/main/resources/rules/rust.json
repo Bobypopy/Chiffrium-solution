@@ -1,0 +1,62 @@
+{
+  "id": "rust",
+  "languages": ["rust"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^\\s*(?:pub(?:\\([^)]*\\))?\\s+)?(?:const\\s+)?(?:async\\s+)?(?:unsafe\\s+)?(?:extern\\s+\"\\w+\"\\s+)?fn\\s+(?<name>\\w+)"
+  ],
+  "classPatterns": [
+    "^\\s*impl(?:<[^>]*>)?\\s+(?:[\\w:<>]+\\s+for\\s+)?(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "rust.ring",
+      "pattern": "\\b(?:digest|hmac|aead|signature|agreement|pbkdf2)\\s*::\\s*(?<name>SHA1_FOR_LEGACY_USE_ONLY|SHA256|SHA384|SHA512|SHA512_256|HMAC_SHA256|HMAC_SHA384|HMAC_SHA512|AES_128_GCM|AES_256_GCM|CHACHA20_POLY1305|ECDSA_P256_SHA256_ASN1_SIGNING|ECDSA_P256_SHA256_FIXED_SIGNING|ECDSA_P384_SHA384_ASN1_SIGNING|ECDSA_P384_SHA384_FIXED_SIGNING|ED25519|X25519|ECDH_P256|ECDH_P384|RSA_PKCS1_SHA256|RSA_PKCS1_SHA384|RSA_PKCS1_SHA512|RSA_PSS_SHA256|RSA_PSS_SHA384|RSA_PSS_SHA512|PBKDF2_HMAC_SHA1|PBKDF2_HMAC_SHA256|PBKDF2_HMAC_SHA384|PBKDF2_HMAC_SHA512)\\b",
+      "primitive": "signature",
+      "functions": ["other"]
+    },
+    {
+      "id": "rust.cipher-mode",
+      "pattern": "\\b(?<mode>cbc|ecb|ctr|cfb|ofb)\\s*::\\s*(?:Encryptor|Decryptor)\\s*::\\s*<\\s*(?:\\w+\\s*::\\s*)?(?<name>Aes\\d+|Des|TdesEde3|Blowfish)",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "rust.aead-block",
+      "pattern": "\\b(?<name>Aes128Gcm|Aes256Gcm|Aes128GcmSiv|Aes256GcmSiv|Aes128Ccm|Aes256Ccm|ChaCha20Poly1305|XChaCha20Poly1305|Aes128|Aes192|Aes256|Des|TdesEde3|Blowfish|Aes256SivAead)\\s*::\\s*new(?:_from_slice)?\\s*\\(",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "rust.digest",
+      "pattern": "\\b(?<name>Sha1|Sha224|Sha256|Sha384|Sha512|Sha512_256|Sha3_256|Sha3_384|Sha3_512|Md5|Md4|Blake2b512|Blake2s256|Blake3|Ripemd160|Sm3)\\s*::\\s*(?:new|digest|default|new_with_prefix)\\s*\\(",
+      "functions": ["digest"]
+    },
+    { "id": "rust.md5-compute", "pattern": "\\bmd5\\s*::\\s*compute\\s*\\(", "algorithm": "MD5", "functions": ["digest"] },
+    { "id": "rust.hmac", "pattern": "\\bHmac\\s*<\\s*(?<name>Sha1|Sha256|Sha384|Sha512|Md5|Sha3_256)\\s*>", "template": "HMAC-{name}", "functions": ["tag"] },
+    { "id": "rust.rsa.generate", "pattern": "\\bRsaPrivateKey\\s*::\\s*new\\s*\\(\\s*[^,]+,\\s*{SIZE}?", "algorithm": "RSA", "functions": ["keygen"] },
+    {
+      "id": "rust.rsa.padding",
+      "pattern": "\\b(?<api>Oaep|Pkcs1v15Encrypt|Pkcs1v15Sign|Pss)\\s*::\\s*new",
+      "template": "RSA/{api}",
+      "map": { "pkcs1v15encrypt": "PKCS1Padding", "pkcs1v15sign": "PKCS1Padding" },
+      "primitiveByApi": { "Pkcs1v15Sign": "signature", "Pss": "signature" },
+      "functionsByApi": { "Oaep": ["encrypt", "decrypt"], "Pkcs1v15Encrypt": ["encrypt", "decrypt"], "Pkcs1v15Sign": ["sign", "verify"], "Pss": ["sign", "verify"] }
+    },
+    {
+      "id": "rust.curve-crates",
+      "pattern": "\\buse\\s+(?<name>ed25519_dalek|x25519_dalek|p256|p384|p521|k256)\\b",
+      "map": { "ed25519_dalek": "Ed25519", "x25519_dalek": "X25519", "p256": "ECDSA-P256", "p384": "ECDSA-P384", "p521": "ECDSA-P521", "k256": "ECDSA-secp256k1" },
+      "functions": ["other"]
+    },
+    {
+      "id": "rust.pbkdf2",
+      "pattern": "\\bpbkdf2(?:_hmac)?\\s*(?:::\\s*<\\s*(?:Hmac\\s*<\\s*)?(?<name>Sha\\d+)\\s*>+)?\\s*\\(",
+      "template": "PBKDF2WithHmac{name}",
+      "functions": ["keyderive"]
+    },
+    { "id": "rust.argon2", "pattern": "\\bArgon2\\s*::\\s*(?:default|new)\\s*\\(", "algorithm": "Argon2id", "functions": ["keyderive"] },
+    { "id": "rust.bcrypt", "pattern": "\\bbcrypt\\s*::\\s*(?:hash|verify)\\s*\\(", "algorithm": "bcrypt", "functions": ["keyderive"] },
+    { "id": "rust.rustls.version", "pattern": "\\brustls\\s*::\\s*version\\s*::\\s*(?<name>TLS12|TLS13)\\b", "functions": ["other"] },
+    { "id": "rust.io.write", "kind": "file", "direction": "write", "pattern": "\\b(?:fs\\s*::\\s*write|File\\s*::\\s*create)\\s*\\(\\s*{FILE}" },
+    { "id": "rust.io.read", "kind": "file", "direction": "read", "pattern": "\\b(?:fs\\s*::\\s*(?:read|read_to_string)|File\\s*::\\s*open)\\s*\\(\\s*{FILE}" }
+  ]
+}

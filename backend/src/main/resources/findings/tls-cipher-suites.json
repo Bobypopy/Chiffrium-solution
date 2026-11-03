@@ -1,0 +1,79 @@
+{
+  "weaknesses": [
+    {
+      "pattern": "(^|[_-])NULL([_-]|$)|ENULL",
+      "severity": "critical",
+      "reason": "aucun chiffrement (NULL)"
+    },
+    {
+      "pattern": "(^|[_-])(ANON|ADH|AECDH)([_-]|$)|ANULL",
+      "severity": "critical",
+      "reason": "aucune authentification du serveur (anonyme)"
+    },
+    {
+      "pattern": "EXPORT|(^|[_-])EXP([_-]|$)|^EXP$",
+      "severity": "critical",
+      "reason": "chiffrement \"export\" 40/56 bits (FREAK, Logjam)"
+    },
+    {
+      "pattern": "RC4|ARCFOUR",
+      "severity": "high",
+      "reason": "RC4 cassé, interdit par la RFC 7465"
+    },
+    {
+      "pattern": "(^|[_-])DES(40)?([_-]|$)",
+      "severity": "high",
+      "reason": "DES 56 bits cassable en quelques heures"
+    },
+    {
+      "pattern": "3DES|DES-CBC3|DES_EDE|BLOWFISH-CBC|CAST128-CBC",
+      "severity": "high",
+      "reason": "blocs de 64 bits (Sweet32) ; 3DES retiré par le NIST fin 2023"
+    },
+    {
+      "pattern": "^(ALL|LOW|MEDIUM|COMPLEMENTOFALL)$",
+      "severity": "high",
+      "reason": "classe OpenSSL incluant des suites faibles"
+    },
+    {
+      "pattern": "RC2|IDEA|(^|[_-])SEED([_-]|$)|[_-]MD5$",
+      "severity": "medium",
+      "reason": "algorithme obsolète (RC2, IDEA, SEED ou MAC MD5)"
+    },
+    {
+      "pattern": "^(TLS|SSL)_RSA_WITH_|^(AES|CAMELLIA|ARIA|SEED|DES|RC4|IDEA|NULL)[0-9A-Z-]*-(SHA|SHA256|SHA384|MD5)$|^K?RSA$",
+      "severity": "medium",
+      "reason": "échange de clés RSA statique : pas de confidentialité persistante (supprimé de TLS 1.3)"
+    },
+    {
+      "pattern": "_CBC_SHA$|^(?!.*GCM)(?!.*CHACHA)(?!.*CCM)(ECDHE|DHE|EDH)[A-Z0-9-]*-SHA$",
+      "severity": "low",
+      "reason": "CBC avec HMAC-SHA1 (Lucky13, pas d'AEAD)"
+    },
+    {
+      "pattern": "^(DHE|EDH)-|_DHE_",
+      "severity": "low",
+      "reason": "DHE : sûreté dépendante de la taille des paramètres (au moins 2048 bits)"
+    },
+    {
+      "pattern": "^AES(128|192|256)-CBC$",
+      "severity": "low",
+      "reason": "mode CBC en SSH (préférer ctr, gcm ou chacha20-poly1305)"
+    },
+    {
+      "pattern": "^HMAC-MD5|^HMAC-SHA1(-96)?(-ETM@OPENSSH\\.COM)?$|^UMAC-64",
+      "severity": "medium",
+      "reason": "MAC SSH faible (MD5, SHA-1 ou 64 bits)"
+    },
+    {
+      "pattern": "^DIFFIE-HELLMAN-GROUP(1|14)-SHA1$|^DIFFIE-HELLMAN-GROUP-EXCHANGE-SHA1$",
+      "severity": "medium",
+      "reason": "échange de clés SSH avec SHA-1 ou groupe 1024 bits"
+    },
+    {
+      "pattern": "^SSH-DSS$|^SSH-RSA$",
+      "severity": "medium",
+      "reason": "signature SSH DSA ou RSA/SHA-1 (désactivée par OpenSSH 8.8)"
+    }
+  ]
+}

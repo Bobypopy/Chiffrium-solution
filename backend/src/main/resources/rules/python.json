@@ -1,0 +1,235 @@
+{
+  "id": "python",
+  "languages": ["python"],
+  "blockStyle": "indent",
+  "commentPrefixes": ["#"],
+  "functionPatterns": [
+    "^\\s*(?:async\\s+)?def\\s+(?<name>\\w+)\\s*\\("
+  ],
+  "classPatterns": [
+    "^\\s*class\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "python.hashlib.pbkdf2",
+      "pattern": "\\bhashlib\\s*\\.\\s*pbkdf2_hmac\\s*\\(\\s*{ARG}",
+      "template": "PBKDF2WithHmac{algo}",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.hashlib.scrypt",
+      "pattern": "\\bhashlib\\s*\\.\\s*scrypt\\s*\\(",
+      "algorithm": "scrypt",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.hashlib.new",
+      "pattern": "\\bhashlib\\s*\\.\\s*new\\s*\\(\\s*{ARG}",
+      "functions": ["digest"]
+    },
+    {
+      "id": "python.hashlib.constructor",
+      "pattern": "\\bhashlib\\s*\\.\\s*(?<name>md5|sha1|sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|shake_128|shake_256)\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "python.hmac",
+      "pattern": "\\bhmac\\s*\\.\\s*(?:new|digest)\\s*\\((?:[^()]|\\([^()]*\\))*?(?:hashlib\\s*\\.\\s*|['\"])(?<name>md5|sha1|sha224|sha256|sha384|sha512|sha3_256|sha3_512|blake2b)\\b",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "python.cryptography.cipher-with-mode",
+      "pattern": "\\bCipher\\s*\\(\\s*algorithms\\s*\\.\\s*(?<name>\\w+)\\s*\\((?:[^()]|\\([^()]*\\))*\\)\\s*,\\s*modes\\s*\\.\\s*(?<mode>\\w+)",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.cryptography.algorithm",
+      "pattern": "\\balgorithms\\s*\\.\\s*(?<name>AES|AES128|AES256|TripleDES|Camellia|ChaCha20|Blowfish|CAST5|IDEA|SEED|SM4|ARC4)\\s*\\(",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.cryptography.aead",
+      "pattern": "\\b(?<name>AESGCM|AESCCM|AESOCB3|AESSIV|AESGCMSIV|ChaCha20Poly1305)\\s*\\(",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.cryptography.hash",
+      "pattern": "\\bhashes\\s*\\.\\s*(?<name>MD5|SHA1|SHA224|SHA256|SHA384|SHA512|SHA512_224|SHA512_256|SHA3_224|SHA3_256|SHA3_384|SHA3_512|SHAKE128|SHAKE256|BLAKE2b|BLAKE2s|SM3)\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "python.cryptography.rsa-keygen-size",
+      "pattern": "\\brsa\\s*\\.\\s*generate_private_key\\s*\\((?:[^()]|\\([^()]*\\))*?key_size\\s*=\\s*{SIZE}",
+      "algorithm": "RSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.rsa-keygen",
+      "pattern": "\\brsa\\s*\\.\\s*generate_private_key\\s*\\(",
+      "algorithm": "RSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.dsa-keygen",
+      "pattern": "\\bdsa\\s*\\.\\s*generate_private_key\\s*\\((?:[^()]|\\([^()]*\\))*?(?:key_size\\s*=\\s*)?{SIZE}?",
+      "algorithm": "DSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.dh",
+      "pattern": "\\bdh\\s*\\.\\s*generate_parameters\\s*\\((?:[^()]|\\([^()]*\\))*?key_size\\s*=\\s*{SIZE}",
+      "algorithm": "DH",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.ec-keygen",
+      "pattern": "\\bec\\s*\\.\\s*generate_private_key\\s*\\(\\s*(?:curve\\s*=\\s*)?ec\\s*\\.\\s*(?<curve>\\w+)",
+      "algorithm": "EC",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.ecdsa",
+      "pattern": "\\bec\\s*\\.\\s*ECDSA\\s*\\(",
+      "algorithm": "ECDSA",
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "python.cryptography.ecdh",
+      "pattern": "\\bec\\s*\\.\\s*ECDH\\s*\\(",
+      "algorithm": "ECDH",
+      "functions": ["other"]
+    },
+    {
+      "id": "python.cryptography.edwards",
+      "pattern": "\\b(?<name>Ed25519|Ed448|X25519|X448)PrivateKey\\s*\\.\\s*(?:generate|from_private_bytes)\\s*\\(",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.cryptography.rsa-padding",
+      "pattern": "\\bpadding\\s*\\.\\s*(?<api>OAEP|PSS|PKCS1v15)\\s*\\(",
+      "template": "RSA/{api}",
+      "functionsByApi": { "OAEP": ["encrypt", "decrypt"], "PSS": ["sign", "verify"], "PKCS1v15": ["other"] },
+      "primitiveByApi": { "PSS": "signature" }
+    },
+    {
+      "id": "python.cryptography.kdf",
+      "pattern": "\\b(?<name>PBKDF2HMAC|Scrypt|HKDF|HKDFExpand|ConcatKDFHash|X963KDF|Argon2id|KBKDFHMAC)\\s*\\(",
+      "map": { "pbkdf2hmac": "PBKDF2", "hkdfexpand": "HKDF", "kbkdfhmac": "HMAC", "concatkdfhash": "HKDF", "x963kdf": "HKDF" },
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.cryptography.fernet",
+      "pattern": "\\b(?:Multi)?Fernet\\s*\\(",
+      "algorithm": "AES-128-CBC",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.pycryptodome.cipher-mode",
+      "pattern": "\\b(?<name>AES|DES|DES3|ARC2|Blowfish|CAST)\\s*\\.\\s*new\\s*\\((?:[^()]|\\([^()]*\\))*?\\bMODE_(?<mode>[A-Z]+)",
+      "map": { "des3": "3DES", "arc2": "RC2", "cast": "CAST5" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.pycryptodome.cipher",
+      "pattern": "\\b(?<name>AES|DES|DES3|ARC2|ARC4|Blowfish|CAST|ChaCha20|ChaCha20_Poly1305|Salsa20)\\s*\\.\\s*new\\s*\\(",
+      "map": { "des3": "3DES", "arc2": "RC2", "arc4": "RC4", "cast": "CAST5" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.pycryptodome.rsa-oaep",
+      "pattern": "\\bPKCS1_OAEP\\s*\\.\\s*new\\s*\\(",
+      "algorithm": "RSA/OAEP",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "python.pycryptodome.rsa-pkcs1",
+      "pattern": "\\bPKCS1_v1_5\\s*\\.\\s*new\\s*\\(",
+      "algorithm": "RSA/PKCS1Padding",
+      "functions": ["other"]
+    },
+    {
+      "id": "python.pycryptodome.pss",
+      "pattern": "\\bpss\\s*\\.\\s*new\\s*\\(",
+      "algorithm": "RSA/PSS",
+      "primitive": "signature",
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "python.pycryptodome.dss",
+      "pattern": "\\bDSS\\s*\\.\\s*new\\s*\\(",
+      "algorithm": "ECDSA",
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "python.pycryptodome.hash",
+      "pattern": "\\b(?<name>MD2|MD4|MD5|SHA1|SHA224|SHA256|SHA384|SHA512|SHA3_224|SHA3_256|SHA3_384|SHA3_512|BLAKE2b|BLAKE2s|RIPEMD160|RIPEMD|SHAKE128|SHAKE256)\\s*\\.\\s*new\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "python.pycryptodome.rsa-generate",
+      "pattern": "\\bRSA\\s*\\.\\s*generate\\s*\\(\\s*(?:bits\\s*=\\s*)?{SIZE}",
+      "algorithm": "RSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.pycryptodome.dsa-generate",
+      "pattern": "\\bDSA\\s*\\.\\s*generate\\s*\\(\\s*(?:bits\\s*=\\s*)?{SIZE}",
+      "algorithm": "DSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.pycryptodome.ecc-generate",
+      "pattern": "\\bECC\\s*\\.\\s*generate\\s*\\(\\s*curve\\s*=\\s*['\"](?<curve>[\\w-]+)['\"]",
+      "algorithm": "EC",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "python.pycryptodome.kdf",
+      "pattern": "\\b(?<name>PBKDF2|scrypt|HKDF|bcrypt)\\s*\\(\\s*(?:password|secret|master|key|\\w+)\\s*,",
+      "functions": ["keyderive"],
+      "skipUnrecognized": true
+    },
+    {
+      "id": "python.bcrypt",
+      "pattern": "\\bbcrypt\\s*\\.\\s*(?:hashpw|gensalt|checkpw|kdf)\\s*\\(",
+      "algorithm": "bcrypt",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.argon2",
+      "pattern": "\\b(?:argon2\\s*\\.\\s*)?PasswordHasher\\s*\\(",
+      "algorithm": "Argon2id",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.passlib",
+      "pattern": "\\bpasslib\\.hash\\s+import\\s+(?<list>[\\w, ]+)",
+      "map": { "md5_crypt": "MD5", "sha256_crypt": "SHA-256", "sha512_crypt": "SHA-512", "pbkdf2_sha256": "PBKDF2WithHmacSHA256", "pbkdf2_sha512": "PBKDF2WithHmacSHA512" },
+      "skipUnrecognized": true,
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "python.ssl.protocol",
+      "pattern": "\\bssl\\s*\\.\\s*PROTOCOL_(?<name>TLSv1_2|TLSv1_1|TLSv1|SSLv23|SSLv3|SSLv2|TLS_CLIENT|TLS_SERVER|TLS)\\b",
+      "map": { "tls_client": "TLS", "tls_server": "TLS" },
+      "functions": ["other"]
+    },
+    {
+      "id": "python.ssl.tls-version",
+      "pattern": "\\bTLSVersion\\s*\\.\\s*(?<name>\\w+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "python.io.open",
+      "kind": "file",
+      "pattern": "\\bopen\\s*\\(\\s*{FILE}\\s*,\\s*(?:mode\\s*=\\s*)?(?<mode>\"[^\"]*\"|'[^']*')"
+    },
+    {
+      "id": "python.io.pathlib",
+      "kind": "file",
+      "pattern": "\\bPath\\s*\\(\\s*{FILE}\\s*\\)\\s*\\.\\s*(?<op>write_bytes|write_text|read_bytes|read_text)\\s*\\("
+    }
+  ]
+}

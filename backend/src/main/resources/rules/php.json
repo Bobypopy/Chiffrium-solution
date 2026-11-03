@@ -1,0 +1,60 @@
+{
+  "id": "php",
+  "languages": ["php"],
+  "commentPrefixes": ["//", "/*", "*", "#"],
+  "functionPatterns": [
+    "\\bfunction\\s+&?(?<name>\\w+)\\s*\\("
+  ],
+  "classPatterns": [
+    "\\b(?:class|trait|interface|enum)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    { "id": "php.hash-hmac", "pattern": "\\bhash_hmac(?:_file)?\\s*\\(\\s*{ARG}", "template": "HMAC-{algo}", "functions": ["tag"] },
+    { "id": "php.hash-pbkdf2", "pattern": "\\bhash_pbkdf2\\s*\\(\\s*{ARG}", "template": "PBKDF2WithHmac{algo}", "functions": ["keyderive"] },
+    { "id": "php.hash", "pattern": "\\bhash(?:_file|_init)?\\s*\\(\\s*{ARG}", "functions": ["digest"] },
+    { "id": "php.md5-sha1", "pattern": "(?<![\\w$>:])(?<name>md5|sha1)(?:_file)?\\s*\\(", "functions": ["digest"] },
+    { "id": "php.openssl.cipher", "pattern": "\\bopenssl_(?<op>encrypt|decrypt)\\s*\\(\\s*[^,]+,\\s*{ARG}" },
+    { "id": "php.openssl.digest", "pattern": "\\bopenssl_digest\\s*\\(\\s*[^,]+,\\s*{ARG}", "functions": ["digest"] },
+    {
+      "id": "php.openssl.sign",
+      "pattern": "\\bopenssl_(?<op>sign|verify)\\s*\\((?:[^;()]|\\([^()]*\\))*?OPENSSL_ALGO_(?<name>SHA1|SHA224|SHA256|SHA384|SHA512|MD5|MD4)",
+      "template": "{name}withRSA",
+      "primitive": "signature"
+    },
+    {
+      "id": "php.openssl.pkey-new",
+      "pattern": "\\bopenssl_pkey_new\\s*\\((?:[^;]*?[\"']private_key_bits[\"']\\s*=>\\s*{SIZE})?",
+      "algorithm": "RSA",
+      "functions": ["keygen"]
+    },
+    { "id": "php.openssl.keytype", "pattern": "\\bOPENSSL_KEYTYPE_(?<name>RSA|DSA|DH|EC)\\b", "functions": ["keygen"] },
+    {
+      "id": "php.openssl.curve",
+      "kind": "curve",
+      "pattern": "[\"']curve_name[\"']\\s*=>\\s*[\"'](?<curve>[\\w-]+)[\"']"
+    },
+    {
+      "id": "php.mcrypt",
+      "pattern": "\\bmcrypt_(?:encrypt|decrypt|module_open|generic_init)\\s*\\(\\s*MCRYPT_(?<name>\\w+)(?:(?:[^;()]|\\([^()]*\\))*?MCRYPT_MODE_(?<mode>\\w+))?",
+      "map": { "tripledes": "3DES" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "php.password-hash",
+      "pattern": "\\bpassword_hash\\s*\\(\\s*[^,]+,\\s*PASSWORD_(?<name>DEFAULT|BCRYPT|ARGON2I|ARGON2ID)\\b",
+      "map": { "default": "bcrypt" },
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "php.sodium",
+      "pattern": "\\bsodium_crypto_(?<name>aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_chacha20poly1305|aead_aes256gcm|secretbox|box|sign|generichash|pwhash|kx|scalarmult|auth)(?:_\\w+)?\\s*\\(",
+      "map": {
+        "secretbox": "XSalsa20-Poly1305", "box": "X25519", "sign": "Ed25519", "generichash": "BLAKE2b",
+        "pwhash": "Argon2id", "kx": "X25519", "scalarmult": "X25519", "aead_aes256gcm": "AES-256-GCM", "auth": "HMAC-SHA512"
+      }
+    },
+    { "id": "php.io.write", "kind": "file", "direction": "write", "pattern": "\\b(?:file_put_contents|openssl_pkey_export_to_file|openssl_x509_export_to_file)\\s*\\(\\s*(?:[^,]+,\\s*)?{FILE}" },
+    { "id": "php.io.read", "kind": "file", "direction": "read", "pattern": "\\bfile_get_contents\\s*\\(\\s*{FILE}" },
+    { "id": "php.io.fopen", "kind": "file", "pattern": "\\bfopen\\s*\\(\\s*{FILE}\\s*,\\s*(?<mode>'[^']*'|\"[^\"]*\")" }
+  ]
+}

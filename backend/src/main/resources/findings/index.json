@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    "secrets.json",
+    "tls-validation.json",
+    "protocol-config.json",
+    "randomness.json",
+    "key-material.json",
+    "key-derivation.json",
+    "jwt.json"
+  ],
+  "cipherSuites": "tls-cipher-suites.json",
+  "commentPrefixes": {
+    "java": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "kotlin": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "scala": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "groovy": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "javascript": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "typescript": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "go": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "csharp": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "c": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "cpp": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "rust": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "swift": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "php": [
+      "//",
+      "/*",
+      "*",
+      "#"
+    ],
+    "python": [
+      "#"
+    ],
+    "ruby": [
+      "#"
+    ],
+    "config": [
+      "#",
+      ";"
+    ]
+  },
+  "testPathPattern": "(^|/)(src/test|[Tt]ests?|[Ss]pecs?|__tests__|__mocks__|testdata|test-data|[Ff]ixtures?|[Mm]ocks?|[Ee]xamples?|[Ss]amples?|[Dd]emos?)(/|$)|[._-](test|spec)s?\\.[A-Za-z0-9]+$|[a-z0-9]Tests?\\.[A-Za-z]+$",
+  "placeholderPattern": "^(\\$\\{.*\\}|\\$\\(.*\\)|\\$[A-Za-z_][A-Za-z0-9_]*|%[A-Za-z_]+%|<[^>]*>|\\{\\{.*\\}\\}|\\*+|x{3,}|\\.{3,}|#+|-+|0+|1234.*|null|none|nil|undefined|true|false)$|change_?me|example|placeholder|dummy|sample|your[_-]|redacted|todo|fixme|secret[_-]?here|replace|insert|getenv|environ|process\\.env|config\\[|settings\\.|vault:|arn:aws|^test|^fake|^mock",
+  "suppressionMarker": "chiffrium:ignore"
+}

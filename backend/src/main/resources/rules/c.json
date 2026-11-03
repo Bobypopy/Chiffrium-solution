@@ -1,0 +1,215 @@
+{
+  "id": "c",
+  "languages": [
+    "c",
+    "cpp"
+  ],
+  "commentPrefixes": [
+    "//",
+    "/*",
+    "*"
+  ],
+  "functionPatterns": [
+    "^(?!\\s*(?:return|else|if|for|while|switch|case|do|sizeof|typedef|#)\\b)\\s*(?:[\\w*&:<>,]+\\s+)+\\**(?<name>[A-Za-z_][\\w:~]*)\\s*\\([^;]*$"
+  ],
+  "classPatterns": [
+    "^\\s*(?:class|struct)\\s+(?<name>\\w+)\\s*(?::[^{]*)?\\{?\\s*$"
+  ],
+  "rules": [
+    {
+      "id": "c.openssl.hmac",
+      "pattern": "\\bHMAC(?:_Init_ex)?\\s*\\((?:[^;()]|\\([^()]*\\))*?EVP_(?<name>md5|sha1|sha224|sha256|sha384|sha512|sha3_256)\\s*\\(",
+      "template": "HMAC-{name}",
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "c.openssl.pbkdf2-sha1",
+      "pattern": "\\bPKCS5_PBKDF2_HMAC_SHA1\\s*\\(",
+      "algorithm": "PBKDF2WithHmacSHA1",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "c.openssl.pbkdf2",
+      "pattern": "\\bPKCS5_PBKDF2_HMAC\\s*\\((?:[^;()]|\\([^()]*\\))*?EVP_(?<name>\\w+)\\s*\\(",
+      "template": "PBKDF2WithHmac{name}",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "c.openssl.evp-cipher",
+      "pattern": "\\bEVP_(?<name>aes_(?:128|192|256)_(?:ecb|cbc|cfb\\d*|ofb|ctr|gcm|ccm|xts|ocb|wrap(?:_pad)?)|des_(?:ede3?_)?(?:ecb|cbc|cfb\\d*|ofb)|des_ede3?|rc4(?:_\\d+)?|rc2_\\w+|bf_\\w+|cast5_\\w+|idea_\\w+|seed_\\w+|camellia_\\w+|chacha20(?:_poly1305)?|sm4_\\w+|aria_\\w+)\\s*\\(",
+      "map": {
+        "bf_cbc": "Blowfish/CBC",
+        "bf_ecb": "Blowfish/ECB",
+        "bf_cfb64": "Blowfish/CFB",
+        "bf_ofb": "Blowfish/OFB"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "c.openssl.evp-digest",
+      "pattern": "\\bEVP_(?<name>md5|md4|md2|sha1|sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|shake128|shake256|blake2b512|blake2s256|ripemd160|sm3|mdc2|whirlpool)\\s*\\(",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "c.openssl.evp-fetch",
+      "pattern": "\\bEVP_(?<api>CIPHER|MD|MAC|KDF|SIGNATURE|KEM)_fetch\\s*\\(\\s*[^,]+,\\s*{STR}",
+      "functionsByApi": {
+        "CIPHER": [
+          "encrypt",
+          "decrypt"
+        ],
+        "MD": [
+          "digest"
+        ],
+        "MAC": [
+          "tag"
+        ],
+        "KDF": [
+          "keyderive"
+        ],
+        "SIGNATURE": [
+          "sign",
+          "verify"
+        ],
+        "KEM": [
+          "encapsulate",
+          "decapsulate"
+        ]
+      }
+    },
+    {
+      "id": "c.openssl.low-level-digest",
+      "pattern": "\\b(?<name>MD5|MD4|SHA1|SHA224|SHA256|SHA384|SHA512|RIPEMD160)(?:_Init|_Update|_Final)?\\s*\\(",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "c.openssl.low-level-cipher",
+      "pattern": "\\b(?<name>DES|BF|RC4|RC2|CAST|IDEA|AES)_(?:set_key|set_encrypt_key|set_decrypt_key|ecb_encrypt|ecb3_encrypt|cbc_encrypt|ede3_cbc_encrypt|encrypt|decrypt|key_setup)\\w*\\s*\\(",
+      "map": {
+        "bf": "Blowfish",
+        "cast": "CAST5"
+      },
+      "functions": [
+        "encrypt",
+        "decrypt"
+      ]
+    },
+    {
+      "id": "c.openssl.rsa-generate-ex",
+      "pattern": "\\bRSA_generate_key_ex\\s*\\(\\s*[^,]+,\\s*{SIZE}?",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "c.openssl.rsa-generate",
+      "pattern": "\\bRSA_generate_key\\s*\\(\\s*{SIZE}?",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "c.openssl.rsa-padding",
+      "pattern": "\\bRSA_(?<op>public_encrypt|private_decrypt|private_encrypt|public_decrypt)\\s*\\((?:[^;()]|\\([^()]*\\))*?RSA_(?<padding>PKCS1_PADDING|PKCS1_OAEP_PADDING|NO_PADDING)",
+      "algorithm": "RSA",
+      "map": {
+        "pkcs1_padding": "PKCS1Padding",
+        "pkcs1_oaep_padding": "OAEP",
+        "no_padding": "NoPadding"
+      }
+    },
+    {
+      "id": "c.openssl.pkey-keygen",
+      "pattern": "\\bEVP_PKEY_CTX_new_id\\s*\\(\\s*EVP_PKEY_(?<name>RSA|EC|DSA|DH|ED25519|ED448|X25519|X448|HMAC)\\b",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "c.openssl.ec-curve",
+      "pattern": "\\bEC_KEY_new_by_curve_name\\s*\\(\\s*NID_(?<curve>\\w+)",
+      "algorithm": "EC",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "c.openssl.rsa-keygen-bits",
+      "kind": "keysize",
+      "pattern": "\\bEVP_PKEY_CTX_set_rsa_keygen_bits\\s*\\(\\s*[^,]+,\\s*{SIZE}"
+    },
+    {
+      "id": "c.openssl.ssl-method",
+      "pattern": "\\b(?<name>SSLv23|SSLv2|SSLv3|TLSv1_2|TLSv1_1|TLSv1|DTLSv1_2|DTLSv1|TLS|DTLS)_(?:client_|server_)?method\\s*\\(",
+      "map": {
+        "sslv23": "TLS",
+        "dtls": "TLS",
+        "dtlsv1": "TLSv1.1",
+        "dtlsv1_2": "TLSv1.2"
+      },
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "c.openssl.proto-version",
+      "pattern": "\\bSSL(?:_CTX)?_set_(?:min|max)_proto_version\\s*\\(\\s*[^,]+,\\s*(?<name>TLS1_VERSION|TLS1_1_VERSION|TLS1_2_VERSION|TLS1_3_VERSION|SSL3_VERSION)",
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "c.libsodium",
+      "pattern": "\\bcrypto_(?<name>aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_chacha20poly1305|aead_aes256gcm|secretbox|box|sign|generichash|pwhash|kx|scalarmult|auth_hmacsha256|auth_hmacsha512|hash_sha256|hash_sha512|stream_xchacha20|stream_chacha20)(?:_\\w+)?\\s*\\(",
+      "map": {
+        "secretbox": "XSalsa20-Poly1305",
+        "box": "X25519",
+        "sign": "Ed25519",
+        "generichash": "BLAKE2b",
+        "pwhash": "Argon2id",
+        "kx": "X25519",
+        "scalarmult": "X25519",
+        "aead_aes256gcm": "AES-256-GCM",
+        "auth_hmacsha256": "HMAC-SHA256",
+        "auth_hmacsha512": "HMAC-SHA512",
+        "hash_sha256": "SHA-256",
+        "hash_sha512": "SHA-512",
+        "stream_xchacha20": "XChaCha20",
+        "stream_chacha20": "ChaCha20"
+      }
+    },
+    {
+      "id": "c.mbedtls",
+      "pattern": "\\bmbedtls_(?<name>aes|des3|des|camellia|aria|chacha20|chachapoly|gcm|ccm|md5|sha1|sha256|sha512|sha3|ripemd160|rsa|ecdsa|ecdh|dhm)_init\\s*\\(",
+      "map": {
+        "des3": "3DES",
+        "chachapoly": "ChaCha20-Poly1305",
+        "dhm": "DH",
+        "gcm": "AES-GCM",
+        "ccm": "AES-CCM",
+        "sha3": "SHA3-256"
+      },
+      "skipUnrecognized": true
+    },
+    {
+      "id": "c.io.fopen",
+      "kind": "file",
+      "pattern": "\\b(?:fopen|BIO_new_file)\\s*\\(\\s*{FILE}\\s*,\\s*(?<mode>\"[^\"]*\")"
+    }
+  ]
+}

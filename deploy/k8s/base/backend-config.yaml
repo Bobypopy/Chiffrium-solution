@@ -1,0 +1,20 @@
+# Configuration non sensible du backend (voir README pour la liste complète des variables).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  PORT: "8080"
+  DATA_DIR: /data
+  MAX_CONCURRENT_ANALYSES: "2"
+  MAX_QUEUED_ANALYSES: "20"
+  CDXGEN_TIMEOUT_SECONDS: "900"
+  CDXGEN_CRYPTO_LANGUAGES: java,python
+  CDXGEN_INSTALL_DEPS: "false"
+  GIT_CLONE_DEPTH: "1"
+  # Restreindre les hôtes Git autorisés en production, ex. "gitlab.example.com,github.com".
+  ALLOWED_GIT_HOSTS: ""
+  OSV_ENABLED: "true"
+  # Le frontend nginx relaie les requêtes : l'adresse d'origine (audit) est lue dans X-Forwarded-For.
+  TRUST_PROXY: "true"
+  LOG_LEVEL: INFO

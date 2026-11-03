@@ -1,0 +1,215 @@
+{
+  "rules": [
+    {
+      "id": "key-java-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+SecretKeySpec\\s*\\(\\s*(?:\\\"(?<secret>[^\\\"]{4,})\\\"\\s*\\.(?:getBytes|toByteArray)|new\\s+byte\\s*\\[\\s*\\]\\s*\\{[^}]{4,}\\})",
+      "title": "Clé symétrique en dur",
+      "description": "Clé de chiffrement construite à partir d'une constante du code.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "iv-java-static",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-329",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+(?:IvParameterSpec\\s*\\(|GCMParameterSpec\\s*\\(\\s*\\w+\\s*,)\\s*(?:\\\"[^\\\"]*\\\"\\s*\\.(?:getBytes|toByteArray)|new\\s+byte\\s*\\[|byteArrayOf\\s*\\(|ByteArray\\s*\\()",
+      "title": "IV ou nonce constant",
+      "description": "IV/nonce constant ou nul : même chiffré pour un même message, et en GCM perte totale de sécurité.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé."
+    },
+    {
+      "id": "salt-java-static",
+      "category": "hardcoded-key-material",
+      "severity": "medium",
+      "cwe": "CWE-760",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+PBEKeySpec\\s*\\([^,]+,\\s*\\\"[^\\\"]*\\\"\\s*\\.(?:getBytes|toByteArray)",
+      "title": "Sel constant",
+      "description": "Sel de dérivation constant : les mêmes mots de passe donnent les mêmes clés (attaques par tables).",
+      "recommendation": "Générer un sel aléatoire d'au moins 16 octets par mot de passe et le stocker avec l'empreinte."
+    },
+    {
+      "id": "key-python-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "python"
+      ],
+      "pattern": "(?:\\b(?:AES|DES3?|Blowfish|ARC4|ChaCha20|Salsa20|CAST)\\.new|\\bFernet)\\s*\\(\\s*b?[\\\"'](?<secret>[^\\\"']{4,})[\\\"']",
+      "title": "Clé symétrique en dur",
+      "description": "Clé de chiffrement littérale passée au chiffreur.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "iv-python-static",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-329",
+      "languages": [
+        "python"
+      ],
+      "pattern": "modes\\.(?:CBC|GCM|CTR|CFB|OFB|XTS)\\s*\\(\\s*b[\\\"']|\\b(?:iv|IV|nonce)\\s*=\\s*b[\\\"'][^\\\"']{4,}[\\\"']",
+      "title": "IV ou nonce constant",
+      "description": "IV/nonce littéral.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé."
+    },
+    {
+      "id": "key-js-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "create(?:Cipher|Decipher)iv\\s*\\(\\s*[^,]+,\\s*(?:Buffer\\.from\\s*\\(\\s*)?[\\\"'`](?<secret>[^\\\"'`]{4,})[\\\"'`]",
+      "title": "Clé symétrique en dur",
+      "description": "Clé littérale passée à createCipheriv.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "iv-js-static",
+      "category": "hardcoded-key-material",
+      "severity": "medium",
+      "cwe": "CWE-329",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "create(?:Cipher|Decipher)iv\\s*\\([^,]+,[^,]+,\\s*(?:[\\\"'`][^\\\"'`]*[\\\"'`]|Buffer\\.alloc\\s*\\(|new\\s+Uint8Array\\s*\\(\\s*\\d+\\s*\\))",
+      "title": "IV ou nonce constant",
+      "description": "IV littéral ou nul (Buffer.alloc) passé à createCipheriv.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé."
+    },
+    {
+      "id": "key-go-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "go"
+      ],
+      "pattern": "(?:aes|des|chacha20poly1305)\\.New(?:Cipher|TripleDESCipher|X)?\\s*\\(\\s*\\[\\]byte\\s*\\(\\s*\\\"(?<secret>[^\\\"]{4,})\\\"",
+      "title": "Clé symétrique en dur",
+      "description": "Clé littérale passée à aes.NewCipher.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "key-csharp-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "\\.(?:Key|IV)\\s*=\\s*(?:Encoding\\.\\w+\\.GetBytes\\s*\\(\\s*\\\"(?<secret>[^\\\"]{4,})\\\"|new\\s+byte\\s*\\[)",
+      "title": "Clé ou IV en dur",
+      "description": "Clé ou IV défini à partir d'une constante.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "key-php-literal",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "php"
+      ],
+      "pattern": "openssl_(?:en|de)crypt\\s*\\([^,]+,[^,]+,\\s*[\\\"'](?<secret>[^\\\"']{4,})[\\\"']",
+      "title": "Clé symétrique en dur",
+      "description": "Clé littérale passée à openssl_encrypt/openssl_decrypt.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver (KDF) et la stocker dans un coffre ; ne jamais l'écrire dans le code.",
+      "secretGroup": "secret"
+    },
+    {
+      "id": "key-java-constant",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?:static\\s+)?final\\s+(?:String|byte\\s*\\[\\s*\\])\\s+(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*\\\"(?<secret>[^\\\"\\n]{8,})\\\"[\\s\\S]{0,2000}?new\\s+SecretKeySpec\\s*\\(\\s*(?:\\k<nom>\\b|\\k<nom>\\s*\\.\\s*getBytes)",
+      "secretGroup": "secret",
+      "minEntropy": 2.0,
+      "title": "Clé symétrique en dur (constante)",
+      "description": "La clé vient d'une constante du fichier : elle est dans le dépôt et dans le binaire livré, donc connue de quiconque y a accès.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la stocker dans un coffre ou une variable d'environnement."
+    },
+    {
+      "id": "key-python-constant",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "python"
+      ],
+      "pattern": "(?<![\\w$])(?<nom>[A-Za-z_][\\w]*)\\s*=\\s*b?[\\\"'](?<secret>[^\\\"'\\n]{8,})[\\\"'][\\s\\S]{0,2000}?(?:\\b(?:AES|DES3?|Blowfish|ARC4|ChaCha20|Salsa20|CAST)\\.new|\\bFernet)\\s*\\(\\s*\\k<nom>\\b",
+      "secretGroup": "secret",
+      "minEntropy": 2.0,
+      "title": "Clé symétrique en dur (constante)",
+      "description": "La clé vient d'une constante du module : elle est dans le dépôt, donc connue de quiconque y a accès.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la stocker dans un coffre ou une variable d'environnement."
+    },
+    {
+      "id": "key-js-constant",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "(?:const|let|var)\\s+(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*[\\\"'`](?<secret>[^\\\"'`\\n]{8,})[\\\"'`][\\s\\S]{0,2000}?createCipheriv\\s*\\([^,)]+,\\s*(?:Buffer\\.from\\s*\\(\\s*)?\\k<nom>\\b",
+      "secretGroup": "secret",
+      "minEntropy": 2.0,
+      "title": "Clé symétrique en dur (constante)",
+      "description": "La clé vient d'une constante du module : elle est dans le dépôt et dans le paquet publié.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la lire dans l'environnement ou un coffre."
+    },
+    {
+      "id": "key-csharp-constant",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "(?:const|static\\s+readonly)\\s+string\\s+(?<nom>\\w+)\\s*=\\s*\\\"(?<secret>[^\\\"\\n]{8,})\\\"[\\s\\S]{0,2000}?\\.Key\\s*=\\s*(?:Encoding\\.\\w+\\.GetBytes\\s*\\(\\s*)?\\k<nom>\\b",
+      "secretGroup": "secret",
+      "minEntropy": 2.0,
+      "title": "Clé symétrique en dur (constante)",
+      "description": "La clé vient d'une constante de la classe : elle est dans le dépôt et dans l'assembly livré.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la stocker dans un coffre (DPAPI, Key Vault)."
+    }
+  ]
+}

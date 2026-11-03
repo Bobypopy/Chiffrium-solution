@@ -1,0 +1,40 @@
+{
+  "id": "swift",
+  "languages": ["swift"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "\\bfunc\\s+(?<name>\\w+)"
+  ],
+  "classPatterns": [
+    "\\b(?:class|struct|enum|extension|actor)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    { "id": "swift.cryptokit.insecure", "pattern": "\\bInsecure\\s*\\.\\s*(?<name>MD5|SHA1)\\b", "functions": ["digest"] },
+    { "id": "swift.cryptokit.hmac", "pattern": "\\bHMAC\\s*<\\s*(?:Insecure\\s*\\.\\s*)?(?<name>SHA256|SHA384|SHA512|MD5|SHA1)\\s*>", "template": "HMAC-{name}", "functions": ["tag"] },
+    { "id": "swift.cryptokit.hkdf", "pattern": "\\bHKDF\\s*<\\s*(?<name>SHA\\d+)\\s*>", "template": "HKDF-{name}", "functions": ["keyderive"] },
+    { "id": "swift.cryptokit.hash", "pattern": "\\b(?<name>SHA256|SHA384|SHA512)\\s*\\.\\s*hash\\s*\\(", "functions": ["digest"] },
+    { "id": "swift.cryptokit.aes", "pattern": "\\bAES\\s*\\.\\s*(?<mode>GCM|KeyWrap)\\s*\\.\\s*(?<op>seal|open|wrap|unwrap)\\b", "algorithm": "AES" },
+    { "id": "swift.cryptokit.chachapoly", "pattern": "\\bChaChaPoly\\s*\\.\\s*(?<op>seal|open)\\b", "algorithm": "ChaCha20-Poly1305" },
+    { "id": "swift.cryptokit.ecdsa", "pattern": "\\b(?<curve>P256|P384|P521)\\s*\\.\\s*Signing\\b", "algorithm": "ECDSA", "functions": ["sign", "verify"] },
+    { "id": "swift.cryptokit.ecdh", "pattern": "\\b(?<curve>P256|P384|P521)\\s*\\.\\s*KeyAgreement\\b", "algorithm": "ECDH", "functions": ["other"] },
+    { "id": "swift.cryptokit.ed25519", "pattern": "\\bCurve25519\\s*\\.\\s*Signing\\b", "algorithm": "Ed25519", "functions": ["sign", "verify"] },
+    { "id": "swift.cryptokit.x25519", "pattern": "\\bCurve25519\\s*\\.\\s*KeyAgreement\\b", "algorithm": "X25519", "functions": ["other"] },
+    { "id": "swift.commoncrypto.digest", "pattern": "\\bCC_(?<name>MD5|SHA1|SHA224|SHA256|SHA384|SHA512)\\s*\\(", "functions": ["digest"] },
+    { "id": "swift.commoncrypto.hmac", "pattern": "\\bkCCHmacAlg(?<name>MD5|SHA1|SHA224|SHA256|SHA384|SHA512)\\b", "template": "HMAC-{name}", "functions": ["tag"] },
+    {
+      "id": "swift.commoncrypto.cipher",
+      "pattern": "\\bkCCAlgorithm(?<name>AES128|AES|DES|3DES|CAST|RC4|RC2|Blowfish)\\b",
+      "map": { "cast": "CAST5" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    { "id": "swift.commoncrypto.ecb", "kind": "mode", "pattern": "\\bkCCOption(?<mode>ECB)Mode\\b" },
+    {
+      "id": "swift.security.keytype",
+      "pattern": "\\bkSecAttrKeyType(?<name>RSA|ECSECPrimeRandom|EC)\\b",
+      "map": { "ecsecprimerandom": "EC" },
+      "functions": ["keygen"]
+    },
+    { "id": "swift.security.keysize", "kind": "keysize", "pattern": "\\bkSecAttrKeySizeInBits[^:\\n]*:\\s*{SIZE}" },
+    { "id": "swift.tls.version", "pattern": "\\btls_protocol_version_t\\s*\\.\\s*(?<name>TLSv10|TLSv11|TLSv12|TLSv13)\\b", "functions": ["other"] }
+  ]
+}

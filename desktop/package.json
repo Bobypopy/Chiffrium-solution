@@ -1,0 +1,30 @@
+{
+  "name": "chiffrium-desktop",
+  "productName": "Chiffrium",
+  "version": "1.0.0",
+  "description": "Application de bureau Chiffrium : inventaire cryptographique (CBOM), constats de sécurité et préparation post-quantique, en local",
+  "main": "src/main.js",
+  "private": true,
+  "homepage": "https://github.com/Bobypopy/Chiffrium-releases",
+  "author": "Les auteurs de Chiffrium",
+  "desktopName": "chiffrium.desktop",
+  "license": "UNLICENSED",
+  "scripts": {
+    "prepare-resources": "node scripts/prepare.mjs",
+    "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
+    "dist": "electron-builder --config electron-builder.config.cjs --publish never",
+    "release": "electron-builder --config electron-builder.config.cjs --publish always"
+  },
+  "dependencies": {
+    "@cyclonedx/cdxgen": "11.7.0",
+    "electron-updater": "6.8.9"
+  },
+  "devDependencies": {
+    "electron": "44.4.3",
+    "electron-builder": "26.15.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

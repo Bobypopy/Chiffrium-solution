@@ -1,0 +1,8 @@
+{
+  "comment": "Première règle qui correspond (identifiant SPDX entier). Le copyleft faible est testé avant le fort : LGPL n'est pas GPL.",
+  "rules": [
+    { "pattern": "(?i)LGPL.*|MPL-.*|EPL-.*|CDDL-.*|CPL-.*|MS-RL|CECILL-C", "risk": "weak-copyleft" },
+    { "pattern": "(?i)A?GPL.*|SSPL.*|OSL-.*|EUPL-.*|CC-BY-SA-.*|Sleepycat|RPL-.*|CPAL-.*|CECILL-[0-9.]+", "risk": "strong-copyleft" },
+    { "pattern": "(?i)MIT(-0)?|X11|ISC|0BSD|BSD-[0-9]-Clause.*|BSD|Apache-[0-9.]+|Apache.*2.*|Zlib|Unlicense|CC0-1\\.0|WTFPL|PSF-2\\.0|Python-2\\.0|BSL-1\\.0|UPL-1\\.0|Artistic-2\\.0|MS-PL|Unicode-.*|BlueOak-.*|CECILL-B", "risk": "permissive" }
+  ]
+}

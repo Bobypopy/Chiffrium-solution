@@ -1,0 +1,107 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:6ea54266-2820-4d7d-a99f-2e983be3524a",
+  "version": 2,
+  "metadata": {
+    "timestamp": "2025-10-16T14:25:43Z",
+    "tools": {
+      "components": [
+        {
+          "group": "@cyclonedx",
+          "name": "cdxgen",
+          "version": "11.7.0",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.7.0",
+          "type": "application",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.7.0",
+          "publisher": "OWASP Foundation",
+          "authors": [
+            {
+              "name": "OWASP Foundation"
+            }
+          ]
+        }
+      ]
+    },
+    "authors": [
+      {
+        "name": "OWASP Foundation"
+      }
+    ],
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ],
+    "properties": []
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "name": "aes",
+      "bom-ref": "crypto/algorithm/aes@2.16.840.1.101.3.4.1",
+      "description": "NIST Algorithm",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "oid": "2.16.840.1.101.3.4.1"
+      },
+      "tags": [
+        "cryptographic-asset"
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "rsa",
+      "bom-ref": "crypto/algorithm/rsa@2.5.8.1.1",
+      "description": "X.500 algorithms.  Ambiguous, since no padding rules specified",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "oid": "2.5.8.1.1"
+      },
+      "tags": [
+        "cryptographic-asset"
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "hmacSHA",
+      "bom-ref": "crypto/algorithm/hmacSHA@1.3.6.1.5.5.8.1.2",
+      "description": "ISAKMP HMAC algorithm",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "oid": "1.3.6.1.5.5.8.1.2"
+      },
+      "tags": [
+        "cryptographic-asset"
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "sha-256",
+      "bom-ref": "crypto/algorithm/sha-256@2.16.840.1.101.3.4.2.1",
+      "description": "NIST Algorithm",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "oid": "2.16.840.1.101.3.4.2.1"
+      },
+      "tags": [
+        "cryptographic-asset"
+      ]
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "PBKDF2",
+      "bom-ref": "crypto/algorithm/PBKDF2@1.2.840.113549.1.5.12",
+      "description": "PBKDF2 key derivation algorithm",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "oid": "1.2.840.113549.1.5.12"
+      },
+      "tags": [
+        "cryptographic-asset"
+      ]
+    }
+  ],
+  "dependencies": [],
+  "annotations": []
+}

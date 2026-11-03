@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'">
+  <title>Chiffrium - Bienvenue</title>
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main>
+    <img src="icon.png" alt="" width="64" height="64">
+    <h1>Bienvenue dans Chiffrium</h1>
+    <p>Choisissez comment utiliser l'application. Vous pourrez changer plus tard (menu Fichier).</p>
+
+    <section>
+      <h2>Sur ce poste</h2>
+      <p>Les analyses, comptes et rapports restent sur cet ordinateur, chiffrés dans votre profil.</p>
+      <button id="local" type="button">Utiliser en local</button>
+    </section>
+
+    <section>
+      <h2>Avec mon équipe</h2>
+      <p>Se connecter au serveur Chiffrium de votre organisation : groupes, analyses partagées, demandes
+        de modification du catalogue validées par un administrateur.</p>
+      <form id="server-form">
+        <label for="server-url">Adresse du serveur</label>
+        <input id="server-url" type="url" required placeholder="https://chiffrium.mon-entreprise.fr">
+        <p id="error" class="error" role="alert"></p>
+        <button type="submit">Se connecter au serveur</button>
+      </form>
+    </section>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

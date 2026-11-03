@@ -1,0 +1,48 @@
+{
+  "id": "jwt",
+  "languages": ["java", "kotlin", "scala", "groovy", "python", "javascript", "typescript", "go", "csharp", "php", "ruby", "rust"],
+  "commentPrefixes": ["//", "/*", "*", "#"],
+  "functionPatterns": [],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "jwt.algorithm-constant",
+      "pattern": "\\b(?:SignatureAlgorithm|Algorithm|SigningMethod|Jwts\\s*\\.\\s*SIG|JWSAlgorithm|AlgorithmIdentifiers)\\s*\\.?\\s*(?<name>HS256|HS384|HS512|RS256|RS384|RS512|ES256|ES384|ES512|PS256|PS384|PS512|EdDSA|NONE|HMAC256|HMAC384|HMAC512|RSA256|RSA384|RSA512|ECDSA256|ECDSA384|ECDSA512)\\b",
+      "map": {
+        "hs256": "HMAC-SHA256", "hs384": "HMAC-SHA384", "hs512": "HMAC-SHA512",
+        "hmac256": "HMAC-SHA256", "hmac384": "HMAC-SHA384", "hmac512": "HMAC-SHA512",
+        "rs256": "SHA256withRSA", "rs384": "SHA384withRSA", "rs512": "SHA512withRSA",
+        "rsa256": "SHA256withRSA", "rsa384": "SHA384withRSA", "rsa512": "SHA512withRSA",
+        "es256": "SHA256withECDSA-P256", "es384": "SHA384withECDSA-P384", "es512": "SHA512withECDSA-P521",
+        "ecdsa256": "SHA256withECDSA-P256", "ecdsa384": "SHA384withECDSA-P384", "ecdsa512": "SHA512withECDSA-P521",
+        "ps256": "SHA256withRSA/PSS", "ps384": "SHA384withRSA/PSS", "ps512": "SHA512withRSA/PSS",
+        "eddsa": "Ed25519", "none": "JWT alg=none"
+      },
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "jwt.algorithm-string",
+      "pattern": "\\balgorithms?\\s*[:=]\\s*\\[?\\s*(?<list>(?:['\"](?:HS|RS|ES|PS)(?:256|384|512)['\"]\\s*,?\\s*|['\"](?:EdDSA|none)['\"]\\s*,?\\s*)+)",
+      "map": {
+        "hs256": "HMAC-SHA256", "hs384": "HMAC-SHA384", "hs512": "HMAC-SHA512",
+        "rs256": "SHA256withRSA", "rs384": "SHA384withRSA", "rs512": "SHA512withRSA",
+        "es256": "SHA256withECDSA-P256", "es384": "SHA384withECDSA-P384", "es512": "SHA512withECDSA-P521",
+        "ps256": "SHA256withRSA/PSS", "ps384": "SHA384withRSA/PSS", "ps512": "SHA512withRSA/PSS",
+        "eddsa": "Ed25519", "none": "JWT alg=none"
+      },
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "jwt.dotnet-security-algorithms",
+      "pattern": "\\bSecurityAlgorithms\\s*\\.\\s*(?<name>HmacSha256|HmacSha384|HmacSha512|RsaSha256|RsaSha384|RsaSha512|EcdsaSha256|EcdsaSha384|EcdsaSha512|RsaSsaPssSha256|Aes128CbcHmacSha256|Aes256Gcm|RsaOAEP)\\b",
+      "map": {
+        "hmacsha256": "HMAC-SHA256", "hmacsha384": "HMAC-SHA384", "hmacsha512": "HMAC-SHA512",
+        "rsasha256": "SHA256withRSA", "rsasha384": "SHA384withRSA", "rsasha512": "SHA512withRSA",
+        "ecdsasha256": "SHA256withECDSA", "ecdsasha384": "SHA384withECDSA", "ecdsasha512": "SHA512withECDSA",
+        "rsassapsssha256": "SHA256withRSA/PSS", "aes128cbchmacsha256": "AES-128-CBC", "aes256gcm": "AES-256-GCM",
+        "rsaoaep": "RSA/OAEP"
+      },
+      "functions": ["sign", "verify"]
+    }
+  ]
+}

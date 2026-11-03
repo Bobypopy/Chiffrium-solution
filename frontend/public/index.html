@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inventaire cryptographique (CBOM), constats de sécurité et préparation post-quantique de dépôts Git">
+  <title>Chiffrium</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="icon" href="img/logo-192.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#app" data-i18n>Aller au contenu</a>
+  <header class="topbar">
+    <a class="brand" href="#/analyses">
+      <img src="img/logo.svg" alt="" width="32" height="32">
+      <span>Chiffrium</span>
+      <span id="version" class="muted small"></span>
+    </a>
+    <nav id="main-nav" aria-label="Navigation principale" data-i18n-label hidden>
+      <a href="#/analyses" data-nav="analyses" data-i18n>Analyses</a>
+      <a href="#/catalog" data-nav="catalog" data-i18n>Catalogue</a>
+      <a href="#/groups" data-nav="groups" data-i18n>Groupes</a>
+      <a href="#/admin" data-nav="admin" hidden data-i18n>Administration</a>
+      <a href="#/help" data-nav="help" data-i18n>Aide</a>
+      <a href="#/about" data-nav="about" data-i18n>À propos</a>
+    </nav>
+    <div id="update-area" class="update-area" aria-live="polite"></div>
+    <div id="user-area" class="user-area"></div>
+    <select id="locale-select" class="locale-select" aria-label="Langue de l'interface" data-i18n-label></select>
+  <button id="theme-toggle" class="button ghost small" type="button" aria-label="Changer de thème"
+          data-i18n-label>☾</button>
+  </header>
+  <main id="app" tabindex="-1"></main>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <script src="js/demarrage.js"></script>
+  <script src="vendor/vis-network.min.js" defer></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

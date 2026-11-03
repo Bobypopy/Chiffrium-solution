@@ -1,0 +1,33 @@
+{
+  "id": "config",
+  "languages": ["config"],
+  "commentPrefixes": ["#", ";", "//"],
+  "functionPatterns": [],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "config.nginx.ssl-protocols",
+      "pattern": "\\bssl_protocols\\s+(?<list>[^;\\n]+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "config.apache.ssl-protocol",
+      "pattern": "\\bSSLProtocol\\s+(?<list>[^\\n]+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "config.enabled-protocols",
+      "pattern": "\\b(?:enabled-protocols|enabledProtocols|ssl-protocols|tls-versions?|min-tls-version|minimum-tls-version|tls_min_version|min_version)\\s*[:=]\\s*(?<list>[^\\n#]+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "config.algorithm-setting",
+      "pattern": "\\b(?:signature|hash|digest|cipher|encryption|key)[-_.]?(?:algorithm|algo)\\s*[:=]\\s*['\"]?(?<name>[\\w./-]+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    }
+  ]
+}

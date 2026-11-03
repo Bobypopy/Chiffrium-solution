@@ -1,0 +1,269 @@
+{
+  "id": "javascript",
+  "languages": [
+    "javascript",
+    "typescript"
+  ],
+  "commentPrefixes": [
+    "//",
+    "/*",
+    "*"
+  ],
+  "functionPatterns": [
+    "\\bfunction\\s*\\*?\\s*(?<name>[\\w$]+)\\s*\\(",
+    "\\b(?:const|let|var)\\s+(?<name>[\\w$]+)\\s*(?::[^=]+)?=\\s*(?:async\\s*)?(?:function\\b|\\([^)]*\\)\\s*(?::[^=]+)?=>|[\\w$]+\\s*=>)",
+    "^\\s*(?:(?:public|private|protected|static|async|override|readonly|get|set)\\s+)*(?<name>[\\w$]+)\\s*\\([^)]*\\)\\s*(?::\\s*[\\w<>\\[\\]|., ]+)?\\s*\\{"
+  ],
+  "classPatterns": [
+    "\\bclass\\s+(?<name>[\\w$]+)"
+  ],
+  "rules": [
+    {
+      "id": "js.node.hmac",
+      "pattern": "\\bcreateHmac\\s*\\(\\s*{ARG}",
+      "template": "HMAC-{algo}",
+      "functions": [
+        "tag"
+      ]
+    },
+    {
+      "id": "js.node.hash",
+      "pattern": "\\bcreateHash\\s*\\(\\s*{ARG}",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "js.node.cipher",
+      "pattern": "\\bcreate(?<api>Cipheriv|Cipher|Decipheriv|Decipher)\\s*\\(\\s*{ARG}",
+      "functionsByApi": {
+        "Cipheriv": [
+          "encrypt"
+        ],
+        "Cipher": [
+          "encrypt"
+        ],
+        "Decipheriv": [
+          "decrypt"
+        ],
+        "Decipher": [
+          "decrypt"
+        ]
+      }
+    },
+    {
+      "id": "js.node.sign",
+      "pattern": "\\bcreate(?<api>Sign|Verify)\\s*\\(\\s*{ARG}",
+      "primitive": "signature",
+      "functionsByApi": {
+        "Sign": [
+          "sign"
+        ],
+        "Verify": [
+          "verify"
+        ]
+      }
+    },
+    {
+      "id": "js.node.one-shot-sign",
+      "pattern": "\\bcrypto\\s*\\.\\s*(?<api>sign|verify)\\s*\\(\\s*{STR}",
+      "primitive": "signature",
+      "functionsByApi": {
+        "sign": [
+          "sign"
+        ],
+        "verify": [
+          "verify"
+        ]
+      }
+    },
+    {
+      "id": "js.node.keypair",
+      "pattern": "\\bgenerateKeyPair(?:Sync)?\\s*\\(\\s*{ARG}(?:\\s*,\\s*\\{[^}]*?(?:modulusLength\\s*:\\s*{SIZE}|namedCurve\\s*:\\s*['\"](?<curve>[\\w-]+)['\"]))?",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "js.node.keygen",
+      "pattern": "\\bgenerateKey(?:Sync)?\\s*\\(\\s*{STR}\\s*,\\s*\\{\\s*length\\s*:\\s*{SIZE}",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "js.node.pbkdf2",
+      "pattern": "\\bpbkdf2(?:Sync)?\\s*\\((?:[^;()]|\\([^()]*\\))*?,\\s*(?<algo>'(?:sha1|sha224|sha256|sha384|sha512|md5)'|\"(?:sha1|sha224|sha256|sha384|sha512|md5)\")",
+      "template": "PBKDF2WithHmac{algo}",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.node.pbkdf2-generic",
+      "pattern": "\\bpbkdf2(?:Sync)?\\s*\\(",
+      "algorithm": "PBKDF2",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.node.scrypt",
+      "pattern": "\\bscrypt(?:Sync)?\\s*\\(",
+      "algorithm": "scrypt",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.node.hkdf",
+      "pattern": "\\bhkdf(?:Sync)?\\s*\\(\\s*{ARG}",
+      "template": "HKDF-{algo}",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.node.dh",
+      "pattern": "\\bcreateDiffieHellman(?:Group)?\\s*\\(",
+      "algorithm": "DH",
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "js.node.ecdh",
+      "pattern": "\\bcreateECDH\\s*\\(\\s*{ARG}",
+      "template": "ECDH-{algo}",
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "js.webcrypto.operation",
+      "pattern": "\\bsubtle\\s*\\.\\s*(?<op>encrypt|decrypt|sign|verify|digest|generateKey|deriveKey|deriveBits|wrapKey|unwrapKey)\\s*\\(\\s*(?:\\{\\s*name\\s*:\\s*)?{ARG}",
+      "skipUnrecognized": true
+    },
+    {
+      "id": "js.webcrypto.algorithm-object",
+      "pattern": "\\bname\\s*:\\s*['\"](?<name>AES-GCM|AES-CBC|AES-CTR|AES-KW|RSA-OAEP|RSA-PSS|RSASSA-PKCS1-v1_5|ECDSA|ECDH|HMAC|PBKDF2|HKDF|Ed25519|X25519|Ed448|X448)['\"]",
+      "map": {
+        "rsassa-pkcs1-v1_5": "RSA/PKCS1Padding",
+        "rsa-pss": "RSA/PSS"
+      },
+      "primitiveByApi": {},
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "js.webcrypto.hash",
+      "pattern": "\\bhash\\s*:\\s*(?:\\{\\s*name\\s*:\\s*)?['\"](?<name>SHA-1|SHA-256|SHA-384|SHA-512)['\"]",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "js.webcrypto.modulus",
+      "kind": "keysize",
+      "pattern": "\\bmodulusLength\\s*:\\s*{SIZE}"
+    },
+    {
+      "id": "js.webcrypto.length",
+      "kind": "keysize",
+      "pattern": "\\blength\\s*:\\s*(?<size>128|192|256)\\b"
+    },
+    {
+      "id": "js.webcrypto.curve",
+      "kind": "curve",
+      "pattern": "\\bnamedCurve\\s*:\\s*['\"](?<curve>P-256|P-384|P-521)['\"]"
+    },
+    {
+      "id": "js.cryptojs",
+      "pattern": "\\bCryptoJS\\s*\\.\\s*(?<name>AES|DES|TripleDES|RC4|RC4Drop|Rabbit|RabbitLegacy|MD5|SHA1|SHA224|SHA256|SHA384|SHA512|SHA3|RIPEMD160|HmacMD5|HmacSHA1|HmacSHA224|HmacSHA256|HmacSHA384|HmacSHA512|PBKDF2|EvpKDF)\\b(?:\\s*\\.\\s*(?<op>encrypt|decrypt))?",
+      "map": {
+        "rc4drop": "RC4",
+        "evpkdf": "MD5",
+        "rabbit": "Rabbit",
+        "rabbitlegacy": "Rabbit",
+        "sha3": "SHA3-512"
+      },
+      "skipUnrecognized": false
+    },
+    {
+      "id": "js.cryptojs.mode",
+      "kind": "mode",
+      "pattern": "\\bmode\\s*:\\s*CryptoJS\\s*\\.\\s*mode\\s*\\.\\s*(?<mode>ECB|CBC|CFB|OFB|CTR|CTRGladman)\\b"
+    },
+    {
+      "id": "js.forge.md",
+      "pattern": "\\bforge\\s*\\.\\s*md\\s*\\.\\s*(?<name>md5|sha1|sha256|sha384|sha512)\\b",
+      "functions": [
+        "digest"
+      ]
+    },
+    {
+      "id": "js.forge.cipher",
+      "pattern": "\\bforge\\s*\\.\\s*cipher\\s*\\.\\s*create(?<api>Cipher|Decipher)\\s*\\(\\s*{ARG}",
+      "functionsByApi": {
+        "Cipher": [
+          "encrypt"
+        ],
+        "Decipher": [
+          "decrypt"
+        ]
+      }
+    },
+    {
+      "id": "js.forge.rsa",
+      "pattern": "\\bforge\\s*\\.\\s*pki\\s*\\.\\s*rsa\\s*\\.\\s*generateKeyPair\\s*\\(\\s*(?:\\{\\s*bits\\s*:\\s*)?{SIZE}?",
+      "algorithm": "RSA",
+      "functions": [
+        "keygen"
+      ]
+    },
+    {
+      "id": "js.bcrypt",
+      "pattern": "\\bbcrypt(?:js)?\\s*\\.\\s*(?:hash|hashSync|genSalt|genSaltSync|compare|compareSync)\\s*\\(",
+      "algorithm": "bcrypt",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.argon2",
+      "pattern": "\\bargon2\\s*\\.\\s*(?:hash|verify)\\s*\\(",
+      "algorithm": "Argon2id",
+      "functions": [
+        "keyderive"
+      ]
+    },
+    {
+      "id": "js.tls.min-version",
+      "pattern": "\\b(?:minVersion|maxVersion|secureProtocol)\\s*:\\s*['\"](?<name>[\\w.]+)['\"]",
+      "map": {
+        "tlsv1_method": "TLSv1",
+        "tlsv1_1_method": "TLSv1.1",
+        "tlsv1_2_method": "TLSv1.2",
+        "sslv3_method": "SSLv3",
+        "sslv23_method": "TLS"
+      },
+      "skipUnrecognized": true,
+      "functions": [
+        "other"
+      ]
+    },
+    {
+      "id": "js.fs.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\b(?:fs|fsp|fs\\.promises)\\s*\\.\\s*(?:writeFile|writeFileSync|appendFile|appendFileSync|createWriteStream)\\s*\\(\\s*{FILE}"
+    },
+    {
+      "id": "js.fs.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\b(?:fs|fsp|fs\\.promises)\\s*\\.\\s*(?:readFile|readFileSync|createReadStream)\\s*\\(\\s*{FILE}"
+    }
+  ]
+}

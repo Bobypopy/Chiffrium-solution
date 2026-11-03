@@ -1,0 +1,1297 @@
+{
+  "schemaVersion": 1,
+  "algorithms": [
+    {
+      "id": "aes", "name": "AES", "primitive": "block-cipher",
+      "aliases": ["aes", "rijndael"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.1", "description": "NIST AES" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "keySizeRules": [{ "below": 128, "status": "disallowed", "reason": "taille de clé inférieure à 128 bits." }],
+      "note": "Standard FIPS 197. AES-128 reste sûr face au quantique (Grover réduit la sécurité à 64 bits effectifs théoriques, jugé suffisant par le NIST).",
+      "references": ["FIPS 197", "NIST SP 800-131A Rev.2"]
+    },
+    {
+      "id": "des", "name": "DES", "primitive": "block-cipher",
+      "aliases": ["des"],
+      "oids": [{ "oid": "1.3.14.3.2.7", "description": "desCBC" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Clé de 56 bits cassable par force brute.",
+      "recommendation": "Remplacer par AES-256-GCM.",
+      "references": ["NIST SP 800-131A Rev.2"]
+    },
+    {
+      "id": "3des", "name": "3DES", "primitive": "block-cipher",
+      "aliases": ["desede", "desede3", "tripledes", "3des", "tdea", "des3", "tdes"],
+      "oids": [{ "oid": "1.2.840.113549.3.7", "description": "des-ede3-cbc" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Blocs de 64 bits (attaque Sweet32) ; chiffrement interdit par le NIST depuis fin 2023.",
+      "recommendation": "Remplacer par AES-256-GCM.",
+      "references": ["NIST SP 800-131A Rev.2", "NIST SP 800-67 Rev.2"]
+    },
+    {
+      "id": "rc2", "name": "RC2", "primitive": "block-cipher",
+      "aliases": ["rc2"],
+      "oids": [{ "oid": "1.2.840.113549.3.2", "description": "rc2-cbc" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Algorithme obsolète et faible.", "recommendation": "Remplacer par AES-256-GCM."
+    },
+    {
+      "id": "rc4", "name": "RC4", "primitive": "stream-cipher",
+      "aliases": ["rc4", "arcfour", "arc4"],
+      "oids": [{ "oid": "1.2.840.113549.3.4", "description": "rc4" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Biais statistiques exploitables ; interdit dans TLS (RFC 7465).",
+      "recommendation": "Remplacer par AES-GCM ou ChaCha20-Poly1305.",
+      "references": ["RFC 7465"]
+    },
+    {
+      "id": "rc5", "name": "RC5", "primitive": "block-cipher",
+      "aliases": ["rc5"],
+      "oids": [{ "oid": "1.2.840.113549.3.8", "description": "rc5-CBC" }], "status": "deprecated", "quantumVulnerable": false,
+      "note": "Peu analysé, non standardisé par le NIST.", "recommendation": "Remplacer par AES."
+    },
+    {
+      "id": "blowfish", "name": "Blowfish", "primitive": "block-cipher",
+      "aliases": ["blowfish"],
+      "oids": [{ "oid": "1.3.6.1.4.1.3029.1.2", "description": "blowfish-cbc" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Blocs de 64 bits (Sweet32).", "recommendation": "Remplacer par AES."
+    },
+    {
+      "id": "idea", "name": "IDEA", "primitive": "block-cipher",
+      "aliases": ["idea"],
+      "oids": [{ "oid": "1.3.6.1.4.1.188.7.1.1.2", "description": "idea-cbc" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Blocs de 64 bits.", "recommendation": "Remplacer par AES."
+    },
+    {
+      "id": "cast5", "name": "CAST5", "primitive": "block-cipher",
+      "aliases": ["cast5", "cast128"],
+      "oids": [{ "oid": "1.2.840.113533.7.66.10", "description": "cast5-cbc" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Blocs de 64 bits.", "recommendation": "Remplacer par AES."
+    },
+    {
+      "id": "camellia", "name": "Camellia", "primitive": "block-cipher",
+      "aliases": ["camellia"],
+      "oids": [{ "oid": "1.2.392.200011.61.1.1.1.2", "description": "camellia128-cbc" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Standard ISO/CRYPTREC, équivalent à AES."
+    },
+    {
+      "id": "aria", "name": "ARIA", "primitive": "block-cipher",
+      "aliases": ["aria"],
+      "oids": [{ "oid": "1.2.410.200046.1.1", "description": "ARIA" }],
+      "status": "acceptable", "quantumVulnerable": false, "note": "Standard coréen (KS X 1213)."
+    },
+    {
+      "id": "seed", "name": "SEED", "primitive": "block-cipher",
+      "tokens": ["seed"],
+      "oids": [{ "oid": "1.2.410.200004.1.4", "description": "seedCBC" }],
+      "status": "acceptable", "quantumVulnerable": false, "note": "Standard coréen, peu répandu."
+    },
+    {
+      "id": "sm4", "name": "SM4", "primitive": "block-cipher",
+      "aliases": ["sm4"],
+      "oids": [{ "oid": "1.2.156.10197.1.104", "description": "SM4" }],
+      "status": "acceptable", "quantumVulnerable": false, "note": "Standard chinois (GB/T 32907)."
+    },
+    {
+      "id": "twofish", "name": "Twofish", "primitive": "block-cipher",
+      "aliases": ["twofish"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Finaliste AES, non standardisé."
+    },
+    {
+      "id": "serpent", "name": "Serpent", "primitive": "block-cipher",
+      "aliases": ["serpent"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Finaliste AES, non standardisé."
+    },
+    {
+      "id": "chacha20", "name": "ChaCha20", "primitive": "stream-cipher",
+      "aliases": ["chacha20", "chacha", "xchacha20"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Sans authentification : à associer à Poly1305.",
+      "recommendation": "Utiliser ChaCha20-Poly1305."
+    },
+    {
+      "id": "chacha20-poly1305", "name": "ChaCha20-Poly1305", "primitive": "ae",
+      "aliases": ["chacha20poly1305", "xchacha20poly1305", "chachapoly"],
+      "oids": [{ "oid": "1.2.840.113549.1.9.16.3.18", "description": "id-alg-AEADChaCha20Poly1305" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["RFC 8439"]
+    },
+    {
+      "id": "salsa20", "name": "Salsa20", "primitive": "stream-cipher",
+      "aliases": ["salsa20", "xsalsa20"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Sans authentification.", "recommendation": "Préférer XSalsa20-Poly1305 ou ChaCha20-Poly1305."
+    },
+    {
+      "id": "md2", "name": "MD2", "primitive": "hash",
+      "aliases": ["md2"], "oids": [{ "oid": "1.2.840.113549.2.2", "description": "md2" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Fonction de hachage cassée.", "recommendation": "Remplacer par SHA-256 ou SHA-3."
+    },
+    {
+      "id": "md4", "name": "MD4", "primitive": "hash",
+      "aliases": ["md4"], "oids": [{ "oid": "1.2.840.113549.2.4", "description": "md4" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Fonction de hachage cassée.", "recommendation": "Remplacer par SHA-256 ou SHA-3."
+    },
+    {
+      "id": "md5", "name": "MD5", "primitive": "hash",
+      "aliases": ["md5"], "oids": [{ "oid": "1.2.840.113549.2.5", "description": "md5" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Collisions calculables en quelques secondes.",
+      "recommendation": "Remplacer par SHA-256 (intégrité) ou Argon2id (mots de passe).",
+      "references": ["RFC 6151"]
+    },
+    {
+      "id": "sha-1", "name": "SHA-1", "primitive": "hash",
+      "aliases": ["sha1"], "tokens": ["sha"],
+      "oids": [{ "oid": "1.3.14.3.2.26", "description": "id-sha1" }],
+      "status": "deprecated", "quantumVulnerable": false, "disallowedAfter": 2030,
+      "note": "Collisions pratiques (SHAttered) ; interdit pour les signatures, retrait complet prévu fin 2030.",
+      "recommendation": "Remplacer par SHA-256 ou SHA-3.",
+      "references": ["NIST SP 800-131A Rev.2", "NIST (2022) SHA-1 retirement"]
+    },
+    {
+      "id": "sha-224", "name": "SHA-224", "primitive": "hash",
+      "aliases": ["sha224"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.4", "description": "id-sha224" }],
+      "status": "acceptable", "quantumVulnerable": false, "disallowedAfter": 2030,
+      "note": "112 bits de sécurité ; retrait proposé après 2030 (projet SP 800-131A Rev.3).",
+      "recommendation": "Préférer SHA-256 ou plus."
+    },
+    {
+      "id": "sha-256", "name": "SHA-256", "primitive": "hash",
+      "aliases": ["sha256", "sha2256"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.1", "description": "id-sha256" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 180-4"]
+    },
+    {
+      "id": "sha-384", "name": "SHA-384", "primitive": "hash",
+      "aliases": ["sha384"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.2", "description": "id-sha384" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 180-4"]
+    },
+    {
+      "id": "sha-512", "name": "SHA-512", "primitive": "hash",
+      "aliases": ["sha512"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.3", "description": "id-sha512" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 180-4"]
+    },
+    {
+      "id": "sha-512-224", "name": "SHA-512/224", "primitive": "hash",
+      "aliases": ["sha512224"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.5", "description": "id-sha512-224" }],
+      "status": "acceptable", "quantumVulnerable": false, "disallowedAfter": 2030,
+      "note": "112 bits de sécurité."
+    },
+    {
+      "id": "sha-512-256", "name": "SHA-512/256", "primitive": "hash",
+      "aliases": ["sha512256"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.6", "description": "id-sha512-256" }],
+      "status": "recommended", "quantumVulnerable": false
+    },
+    {
+      "id": "sha3-224", "name": "SHA3-224", "primitive": "hash",
+      "aliases": ["sha3224"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.7", "description": "id-sha3-224" }],
+      "status": "acceptable", "quantumVulnerable": false, "disallowedAfter": 2030
+    },
+    {
+      "id": "sha3-256", "name": "SHA3-256", "primitive": "hash",
+      "aliases": ["sha3256"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.8", "description": "id-sha3-256" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 202"]
+    },
+    {
+      "id": "sha3-384", "name": "SHA3-384", "primitive": "hash",
+      "aliases": ["sha3384"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.9", "description": "id-sha3-384" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 202"]
+    },
+    {
+      "id": "sha3-512", "name": "SHA3-512", "primitive": "hash",
+      "aliases": ["sha3512"], "oids": [{ "oid": "2.16.840.1.101.3.4.2.10", "description": "id-sha3-512" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 202"]
+    },
+    {
+      "id": "shake", "name": "SHAKE", "primitive": "xof",
+      "aliases": ["shake128", "shake256", "shake"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.2.11", "description": "id-shake128" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["FIPS 202"]
+    },
+    {
+      "id": "ripemd-160", "name": "RIPEMD-160", "primitive": "hash",
+      "aliases": ["ripemd160", "ripemd", "rmd160"], "oids": [{ "oid": "1.3.36.3.2.1", "description": "ripemd160" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Non approuvé par le NIST, marge de sécurité réduite.", "recommendation": "Remplacer par SHA-256."
+    },
+    {
+      "id": "blake2", "name": "BLAKE2", "primitive": "hash",
+      "aliases": ["blake2b", "blake2s", "blake2"],
+      "oids": [{ "oid": "1.3.6.1.4.1.1722.12.2.1.16", "description": "id-blake2b512" }, { "oid": "1.3.6.1.4.1.1722.12.2.2.8", "description": "id-blake2s256" }], "status": "acceptable", "quantumVulnerable": false,
+      "references": ["RFC 7693"]
+    },
+    {
+      "id": "blake3", "name": "BLAKE3", "primitive": "hash",
+      "aliases": ["blake3"], "status": "acceptable", "quantumVulnerable": false
+    },
+    {
+      "id": "whirlpool", "name": "Whirlpool", "primitive": "hash",
+      "aliases": ["whirlpool"],
+      "oids": [{ "oid": "1.0.10118.3.0.55", "description": "whirlpool (ISO/IEC 10118-3)" }], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Standard ISO, peu répandu."
+    },
+    {
+      "id": "sm3", "name": "SM3", "primitive": "hash",
+      "aliases": ["sm3"], "oids": [{ "oid": "1.2.156.10197.1.401", "description": "SM3" }],
+      "status": "acceptable", "quantumVulnerable": false
+    },
+    {
+      "id": "hmac", "name": "HMAC", "primitive": "mac",
+      "aliases": ["hmac"],
+      "oids": [{ "oid": "1.2.840.113549.2.7", "description": "hmacWithSHA1" }, { "oid": "1.2.840.113549.2.9", "description": "hmacWithSHA256" }, { "oid": "1.2.840.113549.2.10", "description": "hmacWithSHA384" }, { "oid": "1.2.840.113549.2.11", "description": "hmacWithSHA512" }], "status": "recommended", "quantumVulnerable": false,
+      "note": "La robustesse dépend de la fonction de hachage sous-jacente.",
+      "references": ["FIPS 198-1", "RFC 2104"]
+    },
+    {
+      "id": "cmac", "name": "CMAC", "primitive": "mac",
+      "aliases": ["aescmac", "cmac", "omac1"], "status": "recommended", "quantumVulnerable": false,
+      "references": ["NIST SP 800-38B"]
+    },
+    {
+      "id": "gmac", "name": "GMAC", "primitive": "mac",
+      "aliases": ["aesgmac", "gmac"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.1.9", "description": "aes128-GMAC" }, { "oid": "2.16.840.1.101.3.4.1.29", "description": "aes192-GMAC" }, { "oid": "2.16.840.1.101.3.4.1.49", "description": "aes256-GMAC" }], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Nonce unique impératif."
+    },
+    {
+      "id": "poly1305", "name": "Poly1305", "primitive": "mac",
+      "aliases": ["poly1305"], "status": "acceptable", "quantumVulnerable": false
+    },
+    {
+      "id": "kmac", "name": "KMAC", "primitive": "mac",
+      "aliases": ["kmac128", "kmac256", "kmac"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.2.19", "description": "id-KMACWithSHAKE128" }],
+      "status": "recommended", "quantumVulnerable": false, "references": ["NIST SP 800-185"]
+    },
+    {
+      "id": "siphash", "name": "SipHash", "primitive": "mac",
+      "aliases": ["siphash"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Conçu pour les tables de hachage, pas pour l'authentification forte."
+    },
+    {
+      "id": "pbkdf2", "name": "PBKDF2", "primitive": "kdf",
+      "aliases": ["pbkdf2"], "oids": [{ "oid": "1.2.840.113549.1.5.12", "description": "id-PBKDF2" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Acceptable avec un grand nombre d'itérations (>= 600 000 pour HMAC-SHA-256 selon l'OWASP).",
+      "recommendation": "Préférer Argon2id pour le stockage de mots de passe.",
+      "references": ["NIST SP 800-132", "RFC 8018"]
+    },
+    {
+      "id": "pbe", "name": "PBES1", "primitive": "kdf",
+      "aliases": ["pbewith", "pbes1", "pbkdf1"],
+      "oids": [{ "oid": "1.2.840.113549.1.5.3", "description": "pbeWithMD5AndDES-CBC" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Schémas PKCS#5 v1 reposant sur MD5/SHA-1 et DES/RC2.",
+      "recommendation": "Utiliser PBES2 (PBKDF2 + AES) ou Argon2id."
+    },
+    {
+      "id": "scrypt", "name": "scrypt", "primitive": "kdf",
+      "aliases": ["scrypt"], "oids": [{ "oid": "1.3.6.1.4.1.11591.4.11", "description": "id-scrypt" }],
+      "status": "acceptable", "quantumVulnerable": false, "references": ["RFC 7914"]
+    },
+    {
+      "id": "argon2", "name": "Argon2", "primitive": "kdf",
+      "aliases": ["argon2id", "argon2i", "argon2d", "argon2"],
+      "status": "recommended", "quantumVulnerable": false, "references": ["RFC 9106"]
+    },
+    {
+      "id": "bcrypt", "name": "bcrypt", "primitive": "kdf",
+      "aliases": ["bcrypt"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Mots de passe limités à 72 octets.", "recommendation": "Préférer Argon2id."
+    },
+    {
+      "id": "hkdf", "name": "HKDF", "primitive": "kdf",
+      "aliases": ["hkdf"],
+      "oids": [{ "oid": "1.2.840.113549.1.9.16.3.28", "description": "id-alg-hkdf-with-sha256" }, { "oid": "1.2.840.113549.1.9.16.3.29", "description": "id-alg-hkdf-with-sha384" }, { "oid": "1.2.840.113549.1.9.16.3.30", "description": "id-alg-hkdf-with-sha512" }], "status": "recommended", "quantumVulnerable": false, "references": ["RFC 5869"]
+    },
+    {
+      "id": "rsa", "name": "RSA", "primitive": "pke",
+      "aliases": ["rsa"], "oids": [{ "oid": "1.2.840.113549.1.1.1", "description": "rsaEncryption" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "keySizeRules": [
+        { "below": 2048, "status": "disallowed", "reason": "moins de 112 bits de sécurité." },
+        { "below": 3072, "status": "deprecated", "fromYear": 2031, "reason": "112 bits de sécurité seulement, déprécié après 2030." }
+      ],
+      "note": "Cassable par l'algorithme de Shor. Pour une sécurité classique de 256 bits, le NIST indique RSA-15360 : augmenter la taille ne protège pas du quantique, seule la migration post-quantique le fait.",
+      "recommendation": "RSA >= 3072 bits à court terme, puis migration vers ML-KEM (chiffrement) ou ML-DSA (signature).",
+      "references": ["NIST SP 800-131A Rev.2", "NIST IR 8547 (ipd)", "NIST SP 800-57 Part 1 Rev.5"]
+    },
+    {
+      "id": "dsa", "name": "DSA", "primitive": "signature",
+      "aliases": ["dsa", "sshdss", "dss"], "oids": [{ "oid": "1.2.840.10040.4.1", "description": "id-dsa" }],
+      "status": "disallowed", "quantumVulnerable": true,
+      "note": "Génération de signatures DSA retirée de FIPS 186-5.",
+      "recommendation": "Remplacer par ECDSA P-256+/Ed25519 à court terme, ML-DSA à terme.",
+      "references": ["FIPS 186-5"]
+    },
+    {
+      "id": "ec", "name": "EC", "primitive": "other",
+      "aliases": ["ellipticcurve"], "tokens": ["ec", "ecc"],
+      "oids": [{ "oid": "1.2.840.10045.2.1", "description": "id-ecPublicKey" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Clé sur courbe elliptique : cassable par l'algorithme de Shor.",
+      "recommendation": "Prévoir la migration vers ML-KEM / ML-DSA.",
+      "references": ["NIST IR 8547 (ipd)"]
+    },
+    {
+      "id": "ecdsa", "name": "ECDSA", "primitive": "signature",
+      "aliases": ["ecdsa"], "oids": [{ "oid": "1.2.840.10045.4.3", "description": "ecdsa-with-SHA2" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-DSA (FIPS 204) ; hybride ECDSA+ML-DSA pendant la transition.",
+      "references": ["FIPS 186-5", "NIST IR 8547 (ipd)"]
+    },
+    {
+      "id": "ecdh", "name": "ECDH", "primitive": "key-agree",
+      "aliases": ["ecdh", "ecdhe", "ecmqv"], "oids": [{ "oid": "1.3.132.1.12", "description": "id-ecDH" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-KEM (FIPS 203) ; hybride X25519+ML-KEM pendant la transition.",
+      "references": ["NIST SP 800-56A Rev.3", "NIST IR 8547 (ipd)"]
+    },
+    {
+      "id": "dh", "name": "DH", "primitive": "key-agree",
+      "aliases": ["diffiehellman"], "tokens": ["dh", "dhe", "ffdh"],
+      "oids": [{ "oid": "1.2.840.113549.1.3.1", "description": "dhKeyAgreement" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "keySizeRules": [{ "below": 2048, "status": "disallowed", "reason": "groupe trop petit (Logjam)." }],
+      "recommendation": "Migrer vers ML-KEM.",
+      "references": ["NIST SP 800-56A Rev.3", "NIST IR 8547 (ipd)"]
+    },
+    {
+      "id": "ed25519", "name": "Ed25519", "primitive": "signature",
+      "aliases": ["ed25519"], "oids": [{ "oid": "1.3.101.112", "description": "id-Ed25519" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-DSA.", "references": ["RFC 8032", "FIPS 186-5"]
+    },
+    {
+      "id": "ed448", "name": "Ed448", "primitive": "signature",
+      "aliases": ["ed448"], "oids": [{ "oid": "1.3.101.113", "description": "id-Ed448" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-DSA."
+    },
+    {
+      "id": "eddsa", "name": "EdDSA", "primitive": "signature",
+      "aliases": ["eddsa"],
+      "oids": [{ "oid": "1.3.101.112", "description": "id-Ed25519" }, { "oid": "1.3.101.113", "description": "id-Ed448" }], "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-DSA."
+    },
+    {
+      "id": "x25519", "name": "X25519", "primitive": "key-agree",
+      "aliases": ["x25519", "curve25519"], "oids": [{ "oid": "1.3.101.110", "description": "id-X25519" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-KEM (ou hybride X25519MLKEM768).", "references": ["RFC 7748"]
+    },
+    {
+      "id": "x448", "name": "X448", "primitive": "key-agree",
+      "aliases": ["x448", "curve448"], "oids": [{ "oid": "1.3.101.111", "description": "id-X448" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-KEM."
+    },
+    {
+      "id": "ecies", "name": "ECIES", "primitive": "pke",
+      "aliases": ["ecies"],
+      "oids": [{ "oid": "1.3.132.1.7", "description": "ecies-recommendedParameters" }], "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "recommendation": "Migrer vers ML-KEM."
+    },
+    {
+      "id": "elgamal", "name": "ElGamal", "primitive": "pke",
+      "aliases": ["elgamal"], "oids": [{ "oid": "1.3.14.7.2.1.1", "description": "elGamal" }],
+      "status": "deprecated", "quantumVulnerable": true,
+      "recommendation": "Remplacer par ML-KEM ou, à court terme, ECIES."
+    },
+    {
+      "id": "sm2", "name": "SM2", "primitive": "signature",
+      "aliases": ["sm2"], "oids": [{ "oid": "1.2.156.10197.1.301", "description": "SM2" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035
+    },
+    {
+      "id": "ml-kem", "name": "ML-KEM", "primitive": "kem",
+      "aliases": ["mlkem", "kyber", "crystalskyber"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.4.2", "description": "id-alg-ml-kem-768" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "KEM post-quantique standardisé (niveaux 512, 768 et 1024). L'ANSSI et le BSI recommandent un usage hybride avec ECDH pendant la transition ; préférer ML-KEM-768 ou ML-KEM-1024 (CNSA 2.0).", "references": ["FIPS 203", "CNSA 2.0"]
+    },
+    {
+      "id": "ml-dsa", "name": "ML-DSA", "primitive": "signature",
+      "aliases": ["mldsa", "dilithium", "crystalsdilithium"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.3.18", "description": "id-ml-dsa-65" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Signature post-quantique standardisée (ML-DSA-44/65/87). ML-DSA-87 exigé par CNSA 2.0 ; signatures hybrides (composites) recommandées par l'ANSSI pendant la transition.", "references": ["FIPS 204", "CNSA 2.0"]
+    },
+    {
+      "id": "slh-dsa", "name": "SLH-DSA", "primitive": "signature",
+      "aliases": ["slhdsa", "sphincsplus", "sphincs"],
+      "oids": [{ "oid": "2.16.840.1.101.3.4.3.20", "description": "id-slh-dsa-sha2-128s" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Signature post-quantique à base de hachage.", "references": ["FIPS 205"]
+    },
+    {
+      "id": "fn-dsa", "name": "FN-DSA", "primitive": "signature",
+      "aliases": ["fndsa", "falcon"], "status": "recommended", "quantumVulnerable": false,
+      "note": "Signature post-quantique (FIPS 206 en cours)."
+    },
+    {
+      "id": "xmss", "name": "XMSS", "primitive": "signature",
+      "aliases": ["xmssmt", "xmss"], "oids": [{ "oid": "1.3.6.1.5.5.7.6.34", "description": "id-alg-xmss-hashsig" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Signature à état : gestion stricte de l'état requise.", "references": ["NIST SP 800-208"]
+    },
+    {
+      "id": "lms", "name": "LMS/HSS", "primitive": "signature",
+      "tokens": ["lms", "hss"], "oids": [{ "oid": "1.2.840.113549.1.9.16.3.17", "description": "id-alg-hss-lms-hashsig" }],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Signature à état : gestion stricte de l'état requise.", "references": ["NIST SP 800-208"]
+    },
+    {
+      "id": "hqc", "name": "HQC", "primitive": "kem",
+      "aliases": ["hqc"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "KEM post-quantique sélectionné par le NIST en 2025 (standard en préparation)."
+    },
+    {
+      "id": "frodokem", "name": "FrodoKEM", "primitive": "kem",
+      "aliases": ["frodokem", "frodo"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "KEM post-quantique conservateur recommandé par l'ANSSI/BSI."
+    },
+    {
+      "id": "hybrid-mlkem", "name": "Hybride ECDH + ML-KEM", "primitive": "kem",
+      "aliases": ["x25519mlkem768", "secp256r1mlkem768", "secp384r1mlkem1024", "x448mlkem1024", "mlkem768x25519", "mlkem1024p384", "mlkem768p256", "xwing"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Échange de clés hybride : reste sûr tant qu'un des deux composants résiste (approche recommandée par l'ANSSI et le BSI pendant la transition). X25519MLKEM768 est activé par défaut dans les navigateurs, OpenSSL 3.5 et OpenSSH 10.",
+      "references": ["draft-ietf-tls-ecdhe-mlkem", "FIPS 203", "ANSSI - PQC transition (2023)"]
+    },
+    {
+      "id": "hybrid-kyber-draft", "name": "X25519Kyber768 (brouillon)", "primitive": "kem",
+      "aliases": ["x25519kyber768draft00", "x25519kyber768", "x25519kyber512draft00"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Version pré-standard de Kyber, retirée des navigateurs et incompatible avec ML-KEM final.",
+      "recommendation": "Remplacer par X25519MLKEM768.",
+      "references": ["draft-tls-westerbaan-xyber768d00"]
+    },
+    {
+      "id": "sntrup761", "name": "sntrup761x25519", "primitive": "kem",
+      "aliases": ["sntrup761x25519", "sntrup761", "ntruprime"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Hybride NTRU Prime + X25519 utilisé par OpenSSH depuis la version 9.0 ; non standardisé par le NIST.",
+      "recommendation": "Préférer mlkem768x25519-sha256 (OpenSSH 9.9+).",
+      "references": ["draft-josefsson-ntruprime-ssh"]
+    },
+    {
+      "id": "classic-mceliece", "name": "Classic McEliece", "primitive": "kem",
+      "aliases": ["classicmceliece", "mceliece"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "KEM post-quantique très conservateur (codes correcteurs), recommandé par le BSI ; clés publiques de plusieurs centaines de Ko.",
+      "references": ["BSI TR-02102-1", "ISO/IEC 18033-2 (en cours)"]
+    },
+    {
+      "id": "sha1prng", "name": "SHA1PRNG", "primitive": "drbg",
+      "aliases": ["sha1prng"], "status": "deprecated", "quantumVulnerable": false,
+      "note": "Générateur Java historique, graine parfois prévisible.",
+      "recommendation": "Utiliser new SecureRandom() ou SecureRandom.getInstanceStrong()."
+    },
+    {
+      "id": "drbg", "name": "DRBG", "primitive": "drbg",
+      "aliases": ["hashdrbg", "hmacdrbg", "ctrdrbg", "drbg"], "status": "recommended", "quantumVulnerable": false,
+      "references": ["NIST SP 800-90A Rev.1"]
+    },
+    {
+      "id": "nativeprng", "name": "NativePRNG", "primitive": "drbg",
+      "aliases": ["nativeprngnonblocking", "nativeprngblocking", "nativeprng", "windowsprng"],
+      "status": "acceptable", "quantumVulnerable": false
+    },
+    {
+      "id": "sslv2", "name": "SSL 2.0", "primitive": "other", "assetType": "protocol",
+      "aliases": ["sslv2", "ssl2", "sslv20"], "status": "disallowed", "quantumVulnerable": false,
+      "note": "Protocole cassé (RFC 6176).", "recommendation": "Utiliser TLS 1.3 (ou TLS 1.2)."
+    },
+    {
+      "id": "sslv3", "name": "SSL 3.0", "primitive": "other", "assetType": "protocol",
+      "aliases": ["sslv3", "ssl3", "sslv30", "ssl30"], "status": "disallowed", "quantumVulnerable": false,
+      "note": "Attaque POODLE (RFC 7568).", "recommendation": "Utiliser TLS 1.3 (ou TLS 1.2)."
+    },
+    {
+      "id": "ssl", "name": "SSL", "primitive": "other", "assetType": "protocol",
+      "tokens": ["ssl"], "status": "deprecated", "quantumVulnerable": false,
+      "note": "Contexte \"SSL\" générique : peut autoriser des versions obsolètes selon la plateforme.",
+      "recommendation": "Demander explicitement TLSv1.3 ou TLSv1.2."
+    },
+    {
+      "id": "tls10", "name": "TLS 1.0", "primitive": "other", "assetType": "protocol",
+      "aliases": ["tlsv10", "tls10", "tlsv1", "tls1"], "status": "disallowed", "quantumVulnerable": false,
+      "note": "Déprécié par la RFC 8996.", "recommendation": "Utiliser TLS 1.3 (ou TLS 1.2).",
+      "references": ["RFC 8996", "NIST SP 800-52 Rev.2"]
+    },
+    {
+      "id": "tls11", "name": "TLS 1.1", "primitive": "other", "assetType": "protocol",
+      "aliases": ["tlsv11", "tls11"], "status": "disallowed", "quantumVulnerable": false,
+      "note": "Déprécié par la RFC 8996.", "recommendation": "Utiliser TLS 1.3 (ou TLS 1.2).",
+      "references": ["RFC 8996", "NIST SP 800-52 Rev.2"]
+    },
+    {
+      "id": "tls12", "name": "TLS 1.2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["tlsv12", "tls12"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Acceptable avec des suites AEAD et ECDHE.", "recommendation": "Privilégier TLS 1.3.",
+      "references": ["NIST SP 800-52 Rev.2"]
+    },
+    {
+      "id": "tls13", "name": "TLS 1.3", "primitive": "other", "assetType": "protocol",
+      "aliases": ["tlsv13", "tls13"], "status": "recommended", "quantumVulnerable": false,
+      "references": ["RFC 8446"]
+    },
+    {
+      "id": "tls", "name": "TLS", "primitive": "other", "assetType": "protocol",
+      "aliases": ["sslv23"], "tokens": ["tls", "tlsv"], "status": "acceptable", "quantumVulnerable": false,
+      "note": "Version négociée selon la plateforme : vérifier que TLS < 1.2 est désactivé."
+    },
+    {
+      "id": "jwt-none", "name": "JWT alg=none", "primitive": "signature",
+      "aliases": ["jwtalgnone"], "status": "disallowed", "quantumVulnerable": false,
+      "note": "Jeton JWT non signé : falsifiable par n'importe qui.",
+      "recommendation": "Refuser alg=none et imposer une liste blanche d'algorithmes (ex. ES256, EdDSA).",
+      "references": ["RFC 8725"]
+    },
+    {
+      "id": "gost-28147", "name": "GOST 28147-89 (Magma)", "primitive": "block-cipher",
+      "aliases": ["gost2814789", "gost28147", "magma"],
+      "oids": [{ "oid": "1.2.643.2.2.21", "description": "id-Gost28147-89" }, { "oid": "1.2.643.7.1.1.5.1", "description": "id-tc26-cipher-gostr3412-2015-magma" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Bloc de 64 bits : exposé aux attaques par anniversaire (Sweet32) au-delà de quelques Go par clé.",
+      "recommendation": "AES-256 (ou Kuznyechik si une conformité russe est imposée).",
+      "references": ["GOST 28147-89", "RFC 5830", "RFC 8891"]
+    },
+    {
+      "id": "kuznyechik", "name": "Kuznyechik (GOST R 34.12-2015)", "primitive": "block-cipher",
+      "aliases": ["kuznyechik", "kuznechik", "grasshopper", "gost341215"],
+      "oids": [{ "oid": "1.2.643.7.1.1.5.2", "description": "id-tc26-cipher-gostr3412-2015-kuznyechik" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Bloc de 128 bits, clé de 256 bits. Aucune attaque pratique, mais conception de la boîte S contestée et absence d'évaluation ANSSI/NIST : réservé aux obligations réglementaires russes.",
+      "recommendation": "AES-256 hors contexte réglementaire.",
+      "references": ["RFC 7801", "GOST R 34.12-2015"]
+    },
+    {
+      "id": "skipjack", "name": "Skipjack", "primitive": "block-cipher",
+      "aliases": ["skipjack"],
+      "oids": [{ "oid": "2.16.840.1.101.2.1.1.4", "description": "id-fortezzaConfidentialityAlgorithm" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Clé de 80 bits, retiré par le NIST en 2010.",
+      "recommendation": "AES.",
+      "references": ["NIST SP 800-131A Rev.2"]
+    },
+    {
+      "id": "tea", "name": "TEA", "primitive": "block-cipher",
+      "aliases": ["tea"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Clés équivalentes et attaques par clés liées ; bloc de 64 bits.",
+      "recommendation": "AES ou ChaCha20."
+    },
+    {
+      "id": "xtea", "name": "XTEA / XXTEA", "primitive": "block-cipher",
+      "aliases": ["xxtea", "xtea", "btea"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Bloc de 64 bits (Sweet32) ; XXTEA est vulnérable à des attaques à textes choisis.",
+      "recommendation": "AES ou ChaCha20-Poly1305."
+    },
+    {
+      "id": "speck", "name": "Speck", "primitive": "block-cipher",
+      "aliases": ["speck"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Chiffrement léger de la NSA rejeté par l'ISO (2018) faute de justification de conception.",
+      "recommendation": "Ascon (standard NIST pour l'embarqué) ou AES.",
+      "references": ["NIST SP 800-232"]
+    },
+    {
+      "id": "simon", "name": "Simon", "primitive": "block-cipher",
+      "tokens": ["simon"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Chiffrement léger de la NSA rejeté par l'ISO (2018).",
+      "recommendation": "Ascon ou AES."
+    },
+    {
+      "id": "lea", "name": "LEA", "primitive": "block-cipher",
+      "tokens": ["lea"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Chiffrement coréen (bloc de 128 bits), normalisé ISO/IEC 29192-2.",
+      "recommendation": "AES en dehors de la Corée.",
+      "references": ["ISO/IEC 29192-2"]
+    },
+    {
+      "id": "kasumi", "name": "KASUMI (A5/3)", "primitive": "block-cipher",
+      "aliases": ["kasumi", "a53", "uea1", "uia1"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Attaques pratiques par clés liées ; remplacé par SNOW 3G, AES et ZUC dans les réseaux mobiles.",
+      "recommendation": "128-EEA2 (AES) ou 128-EEA3 (ZUC).",
+      "references": ["3GPP TS 35.202"]
+    },
+    {
+      "id": "misty1", "name": "MISTY1", "primitive": "block-cipher",
+      "aliases": ["misty1", "misty"],
+      "oids": [{ "oid": "1.2.392.200011.61.1.1.1.1", "description": "misty1-cbc" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Bloc de 64 bits, cryptanalyse intégrale complète (2015).",
+      "recommendation": "AES ou Camellia."
+    },
+    {
+      "id": "rc6", "name": "RC6", "primitive": "block-cipher",
+      "aliases": ["rc6"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Finaliste AES sans attaque pratique connue, mais peu utilisé et peu évalué depuis.",
+      "recommendation": "Préférer AES pour l'interopérabilité."
+    },
+    {
+      "id": "threefish", "name": "Threefish", "primitive": "block-cipher",
+      "aliases": ["threefish"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Chiffrement à blocs réglables de Skein ; non normalisé.",
+      "recommendation": "AES-256 ou XChaCha20."
+    },
+    {
+      "id": "mars", "name": "MARS", "primitive": "block-cipher",
+      "tokens": ["mars"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Finaliste AES, sans attaque pratique mais quasiment plus utilisé.",
+      "recommendation": "AES."
+    },
+    {
+      "id": "desx", "name": "DES-X", "primitive": "block-cipher",
+      "aliases": ["desx"],
+      "oids": [{ "oid": "1.2.840.113549.3.6", "description": "DESX-CBC" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Renforcement de DES par blanchiment : bloc de 64 bits et sécurité insuffisante.",
+      "recommendation": "AES."
+    },
+    {
+      "id": "a5-1", "name": "A5/1 et A5/2 (GSM)", "primitive": "stream-cipher",
+      "aliases": ["a51", "a52"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Chiffrement GSM cassé en temps réel (tables précalculées).",
+      "recommendation": "Réseaux 4G/5G (AES, ZUC)."
+    },
+    {
+      "id": "zuc", "name": "ZUC (128-EEA3)", "primitive": "stream-cipher",
+      "aliases": ["zuc128", "zuc256", "zuc", "eea3", "eia3"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Algorithme des réseaux mobiles 4G/5G (3GPP), sûr à ce jour.",
+      "references": ["3GPP TS 35.221"]
+    },
+    {
+      "id": "snow3g", "name": "SNOW 3G (128-EEA1)", "primitive": "stream-cipher",
+      "aliases": ["snow3g", "uea2", "uia2", "eea1", "eia1"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Algorithme des réseaux mobiles 3G/4G ; clé de 128 bits.",
+      "references": ["3GPP TS 35.216"]
+    },
+    {
+      "id": "rabbit", "name": "Rabbit", "primitive": "stream-cipher",
+      "tokens": ["rabbit"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Portefeuille eSTREAM (RFC 4503), peu utilisé.",
+      "recommendation": "ChaCha20-Poly1305."
+    },
+    {
+      "id": "hc-256", "name": "HC-128 / HC-256", "primitive": "stream-cipher",
+      "aliases": ["hc128", "hc256"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Portefeuille eSTREAM, sans attaque pratique.",
+      "recommendation": "ChaCha20-Poly1305 pour l'interopérabilité."
+    },
+    {
+      "id": "trivium", "name": "Trivium / Grain", "primitive": "stream-cipher",
+      "aliases": ["trivium", "grain128aead", "grain128", "grainv1"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Chiffrements légers du portefeuille eSTREAM (matériel contraint).",
+      "recommendation": "Ascon pour l'embarqué.",
+      "references": ["ISO/IEC 29192-3"]
+    },
+    {
+      "id": "ascon", "name": "Ascon", "primitive": "ae",
+      "aliases": ["asconaead128", "ascon128a", "ascon128", "asconhash256", "ascon"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Standard NIST de cryptographie légère (2025) : chiffrement authentifié, hachage et XOF pour l'embarqué.",
+      "references": ["NIST SP 800-232"]
+    },
+    {
+      "id": "aegis", "name": "AEGIS", "primitive": "ae",
+      "aliases": ["aegis128l", "aegis128x", "aegis256x", "aegis256", "aegis"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Chiffrement authentifié très rapide sur processeurs AES-NI ; en cours de normalisation à l'IETF.",
+      "recommendation": "AES-GCM ou ChaCha20-Poly1305 si l'interopérabilité prime.",
+      "references": ["draft-irtf-cfrg-aegis-aead"]
+    },
+    {
+      "id": "deoxys", "name": "Deoxys-II", "primitive": "ae",
+      "aliases": ["deoxysii", "deoxys"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Lauréat CAESAR (usage défensif), résistant à la réutilisation de nonce.",
+      "recommendation": "AES-GCM-SIV pour une résistance normalisée à la réutilisation de nonce."
+    },
+    {
+      "id": "sha-0", "name": "SHA-0", "primitive": "hash",
+      "aliases": ["sha0"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Retiré en 1995, collisions pratiques.",
+      "recommendation": "SHA-256 ou SHA-3."
+    },
+    {
+      "id": "ripemd-128", "name": "RIPEMD-128 / RIPEMD-256", "primitive": "hash",
+      "aliases": ["ripemd128", "rmd128", "ripemd256", "rmd256"],
+      "oids": [{ "oid": "1.3.36.3.2.2", "description": "ripemd128" }, { "oid": "1.3.36.3.2.3", "description": "ripemd256" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Sécurité de 64 bits contre les collisions (RIPEMD-256 n'est pas plus sûr que RIPEMD-128).",
+      "recommendation": "SHA-256 ou SHA-3."
+    },
+    {
+      "id": "ripemd-320", "name": "RIPEMD-320", "primitive": "hash",
+      "aliases": ["ripemd320", "rmd320"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Même sécurité que RIPEMD-160.",
+      "recommendation": "SHA-256 ou SHA-3."
+    },
+    {
+      "id": "tiger", "name": "Tiger", "primitive": "hash",
+      "aliases": ["tiger192", "tiger2", "tiger"],
+      "oids": [{ "oid": "1.3.6.1.4.1.11591.12.2", "description": "tiger (GNU)" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Peu évalué, attaques sur versions réduites.",
+      "recommendation": "SHA-256 ou BLAKE2."
+    },
+    {
+      "id": "haval", "name": "HAVAL / Snefru", "primitive": "hash",
+      "aliases": ["haval", "snefru"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Collisions pratiques.",
+      "recommendation": "SHA-256 ou SHA-3."
+    },
+    {
+      "id": "gost-34.11-94", "name": "GOST R 34.11-94", "primitive": "hash",
+      "aliases": ["gostr341194", "gost341194", "gost3411"],
+      "oids": [{ "oid": "1.2.643.2.2.9", "description": "id-GostR3411-94" }],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Remplacé par Streebog (GOST R 34.11-2012) ; attaques par collision théoriques.",
+      "recommendation": "Streebog ou SHA-256.",
+      "references": ["RFC 5831"]
+    },
+    {
+      "id": "streebog", "name": "Streebog (GOST R 34.11-2012)", "primitive": "hash",
+      "aliases": ["gostr34112012", "gost34112012", "streebog256", "streebog512", "streebog"],
+      "oids": [{ "oid": "1.2.643.7.1.1.2.2", "description": "id-tc26-gost3411-12-256" }, { "oid": "1.2.643.7.1.1.2.3", "description": "id-tc26-gost3411-12-512" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Hachage russe actuel ; conception de la boîte S contestée, usage réglementaire.",
+      "recommendation": "SHA-256 / SHA-3 hors contexte réglementaire.",
+      "references": ["RFC 6986"]
+    },
+    {
+      "id": "keccak", "name": "Keccak (pré-standard)", "primitive": "hash",
+      "aliases": ["keccak256", "keccak384", "keccak512", "keccak"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Version d'origine de SHA-3 avec un bourrage différent (Ethereum) : sûr, mais non interopérable avec SHA3-256.",
+      "recommendation": "SHA3-256 hors écosystème Ethereum."
+    },
+    {
+      "id": "kangarootwelve", "name": "KangarooTwelve / TurboSHAKE", "primitive": "xof",
+      "aliases": ["kangarootwelve", "turboshake128", "turboshake256", "turboshake", "k12"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Variantes rapides de Keccak (RFC 9861) ; sûres mais moins répandues que SHAKE.",
+      "recommendation": "SHAKE256 pour la conformité FIPS.",
+      "references": ["RFC 9861"]
+    },
+    {
+      "id": "crc", "name": "CRC / Adler-32 (non cryptographique)", "primitive": "hash",
+      "aliases": ["crc32c", "crc32", "crc64", "crc16", "adler32"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Somme de contrôle contre les erreurs accidentelles : trivialement falsifiable, sans valeur de sécurité.",
+      "recommendation": "HMAC-SHA-256 pour l'intégrité, SHA-256 pour l'empreinte."
+    },
+    {
+      "id": "fast-hash", "name": "Hachages rapides non cryptographiques", "primitive": "hash",
+      "aliases": ["murmurhash3", "murmurhash", "murmur3", "xxhash", "xxh3", "xxh64", "xxh32", "fnv1a", "fnv1", "cityhash", "farmhash"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Conçus pour les tables de hachage : collisions faciles à fabriquer, inadaptés à la sécurité.",
+      "recommendation": "SHA-256/BLAKE2 pour l'intégrité ; SipHash contre les attaques de tables de hachage."
+    },
+    {
+      "id": "cbc-mac", "name": "CBC-MAC", "primitive": "mac",
+      "aliases": ["cbcmac"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Falsifiable pour des messages de longueur variable.",
+      "recommendation": "CMAC ou HMAC.",
+      "references": ["NIST SP 800-38B"]
+    },
+    {
+      "id": "umac", "name": "UMAC / VMAC", "primitive": "mac",
+      "aliases": ["umac128", "umac64", "umac", "vmac"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "MAC universels rapides (SSH) ; sûrs avec un nonce unique.",
+      "recommendation": "HMAC-SHA-256 ou Poly1305."
+    },
+    {
+      "id": "xcbc", "name": "AES-XCBC-MAC", "primitive": "mac",
+      "aliases": ["aesxcbcmac", "xcbcmac", "xcbc"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Utilisé par IPsec ; CMAC en est l'évolution normalisée.",
+      "recommendation": "CMAC ou HMAC-SHA-256.",
+      "references": ["RFC 3566"]
+    },
+    {
+      "id": "kbkdf", "name": "KBKDF (SP 800-108)", "primitive": "kdf",
+      "aliases": ["kbkdf", "sp800108", "kdfcounter", "kdfctr"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Dérivation à partir d'une clé secrète (mode compteur / feedback / double pipeline).",
+      "references": ["NIST SP 800-108 Rev.1"]
+    },
+    {
+      "id": "concat-kdf", "name": "KDF à une étape (SP 800-56C)", "primitive": "kdf",
+      "aliases": ["concatkdf", "onestepkdf", "sp80056c"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Dérivation du secret partagé d'un échange de clés.",
+      "references": ["NIST SP 800-56C Rev.2"]
+    },
+    {
+      "id": "x963-kdf", "name": "ANSI X9.63 KDF", "primitive": "kdf",
+      "aliases": ["ansix963kdf", "x963kdf"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Utilisé par ECIES ; acceptable avec SHA-256 ou plus.",
+      "recommendation": "HKDF pour les nouveaux protocoles.",
+      "references": ["ANSI X9.63", "NIST SP 800-135"]
+    },
+    {
+      "id": "tls-prf", "name": "PRF de TLS 1.2", "primitive": "kdf",
+      "aliases": ["tls12prf", "tlsprf"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Fonction de dérivation de TLS 1.2 (HMAC-SHA-256/384).",
+      "recommendation": "TLS 1.3 (HKDF).",
+      "references": ["RFC 5246"]
+    },
+    {
+      "id": "yescrypt", "name": "yescrypt", "primitive": "kdf",
+      "aliases": ["yescrypt"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Hachage de mots de passe par défaut de nombreuses distributions Linux ; résistant au matériel dédié.",
+      "recommendation": "Argon2id pour les nouvelles applications."
+    },
+    {
+      "id": "sha-crypt", "name": "SHA-crypt ($5$ / $6$)", "primitive": "kdf",
+      "aliases": ["sha512crypt", "sha256crypt", "shacrypt"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Hachage de mots de passe Unix ; acceptable avec beaucoup de tours, mais pas résistant aux GPU.",
+      "recommendation": "Argon2id, yescrypt ou bcrypt."
+    },
+    {
+      "id": "md5-crypt", "name": "MD5-crypt ($1$ / apr1)", "primitive": "kdf",
+      "aliases": ["md5crypt", "apr1"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Déclaré obsolète par son auteur (2012) : cassé rapidement sur GPU.",
+      "recommendation": "Argon2id ou bcrypt."
+    },
+    {
+      "id": "des-crypt", "name": "DES-crypt (crypt(3) historique)", "primitive": "kdf",
+      "aliases": ["descrypt", "bigcrypt"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Mots de passe tronqués à 8 caractères, cassés en quelques secondes.",
+      "recommendation": "Argon2id ou bcrypt."
+    },
+    {
+      "id": "lm-hash", "name": "LM / NT hash (Windows)", "primitive": "kdf",
+      "aliases": ["lmhash", "lanman", "nthash"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Empreintes de mots de passe Windows sans sel (MD4) : réutilisables telles quelles (pass-the-hash).",
+      "recommendation": "Désactiver LM, Kerberos AES et authentification moderne (FIDO2, certificats)."
+    },
+    {
+      "id": "gost-34.10", "name": "GOST R 34.10 (signature)", "primitive": "signature",
+      "aliases": ["gostr34102012", "gostr34102001", "gostr341012", "gostr341001", "gost341012", "gost3410", "ecgost"],
+      "oids": [{ "oid": "1.2.643.2.2.19", "description": "id-GostR3410-2001" }, { "oid": "1.2.643.7.1.1.1.1", "description": "id-tc26-gost3410-12-256" }, { "oid": "1.2.643.7.1.1.1.2", "description": "id-tc26-gost3410-12-512" }],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Signature sur courbes elliptiques russe ; cassable par l'algorithme de Shor.",
+      "recommendation": "Usage réglementaire uniquement ; prévoir la migration post-quantique.",
+      "references": ["RFC 7091"]
+    },
+    {
+      "id": "schnorr", "name": "Schnorr (BIP-340)", "primitive": "signature",
+      "aliases": ["bip340", "schnorr"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Signature Schnorr sur secp256k1 (Bitcoin Taproot) ; cassable par Shor.",
+      "recommendation": "ML-DSA ou SLH-DSA à terme."
+    },
+    {
+      "id": "bls", "name": "BLS (signature agrégeable)", "primitive": "signature",
+      "aliases": ["blssignature", "bls12381sig", "blssig", "bls"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Signatures agrégeables sur BLS12-381 (Ethereum, Zcash) ; cassables par Shor.",
+      "recommendation": "Suivre la migration post-quantique de l'écosystème.",
+      "references": ["draft-irtf-cfrg-bls-signature"]
+    },
+    {
+      "id": "ecgdsa", "name": "EC-GDSA / EC-KCDSA", "primitive": "signature",
+      "aliases": ["ecgdsa", "eckcdsa"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Variantes d'ECDSA (Allemagne, Corée) ; cassables par Shor.",
+      "recommendation": "ML-DSA à terme.",
+      "references": ["ISO/IEC 14888-3"]
+    },
+    {
+      "id": "rainbow", "name": "Rainbow", "primitive": "signature",
+      "aliases": ["rainbowiii", "rainbowv", "rainbowi"], "tokens": ["rainbow"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Candidat post-quantique cassé en 2022 (clé retrouvée en un week-end sur un portable).",
+      "recommendation": "ML-DSA ou SLH-DSA."
+    },
+    {
+      "id": "sike", "name": "SIKE / SIDH", "primitive": "kem",
+      "aliases": ["sikep434", "sikep503", "sikep610", "sikep751", "sike", "sidh"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Candidat post-quantique cassé en 2022 (attaque classique en quelques heures).",
+      "recommendation": "ML-KEM (idéalement en hybride avec X25519)."
+    },
+    {
+      "id": "saber", "name": "SABER", "primitive": "kem",
+      "aliases": ["lightsaber", "firesaber", "saber"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Finaliste NIST abandonné au profit de ML-KEM ; non normalisé.",
+      "recommendation": "ML-KEM."
+    },
+    {
+      "id": "bike", "name": "BIKE", "primitive": "kem",
+      "aliases": ["bikel1", "bikel3", "bikel5", "bike"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Candidat NIST non retenu (HQC choisi en 2025) ; non normalisé.",
+      "recommendation": "ML-KEM ou HQC."
+    },
+    {
+      "id": "ntru", "name": "NTRU", "primitive": "kem",
+      "aliases": ["ntruhps2048509", "ntruhps2048677", "ntruhps4096821", "ntruhrss701", "ntruencrypt", "ntru"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "KEM sur réseaux euclidiens normalisé IEEE 1363.1 mais non retenu par le NIST.",
+      "recommendation": "ML-KEM pour la conformité.",
+      "references": ["IEEE 1363.1"]
+    },
+    {
+      "id": "hpke", "name": "HPKE", "primitive": "pke",
+      "aliases": ["hpke"],
+      "status": "acceptable", "quantumVulnerable": true,
+      "note": "Chiffrement hybride à clé publique (MLS, ECH, OHTTP) ; sa sécurité quantique dépend du KEM choisi (DHKEM X25519 par défaut, cassable par Shor).",
+      "recommendation": "HPKE avec un KEM hybride (X-Wing, ML-KEM + X25519).",
+      "references": ["RFC 9180"]
+    },
+    {
+      "id": "paillier", "name": "Paillier", "primitive": "pke",
+      "aliases": ["paillier"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "keySizeRules": [{ "below": 2048, "status": "disallowed", "reason": "module inférieur à 2048 bits." }],
+      "note": "Chiffrement homomorphe additif fondé sur la factorisation : cassable par Shor.",
+      "recommendation": "Schémas homomorphes sur réseaux (BFV, CKKS) pour le long terme."
+    },
+    {
+      "id": "x3dh", "name": "X3DH", "primitive": "key-agree",
+      "aliases": ["x3dh"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Échange de clés asynchrone du protocole Signal (X25519) ; cassable par Shor.",
+      "recommendation": "PQXDH (hybride ML-KEM)."
+    },
+    {
+      "id": "pqxdh", "name": "PQXDH", "primitive": "key-agree",
+      "aliases": ["pqxdh"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Évolution post-quantique hybride de X3DH (Signal, 2023)."
+    },
+    {
+      "id": "srp", "name": "SRP", "primitive": "key-agree",
+      "aliases": ["srp6a", "srp6", "srp"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Authentification par mot de passe sans le transmettre ; fondé sur le logarithme discret.",
+      "recommendation": "OPAQUE ou CPace pour les nouveaux protocoles.",
+      "references": ["RFC 5054"]
+    },
+    {
+      "id": "spake2", "name": "SPAKE2 / CPace", "primitive": "key-agree",
+      "aliases": ["spake2plus", "spake2", "cpace"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "Échanges de clés authentifiés par mot de passe (PAKE) ; cassables par Shor.",
+      "references": ["RFC 9382"]
+    },
+    {
+      "id": "dual-ec-drbg", "name": "Dual_EC_DRBG", "primitive": "drbg",
+      "aliases": ["dualecdrbg", "dualec"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Générateur à porte dérobée présumée (NSA), retiré par le NIST en 2014.",
+      "recommendation": "CTR_DRBG ou HMAC_DRBG, ou le générateur du système.",
+      "references": ["NIST SP 800-90A Rev.1"]
+    },
+    {
+      "id": "x931-rng", "name": "ANSI X9.31 / X9.17 RNG", "primitive": "drbg",
+      "aliases": ["ansix931", "x931rng", "x931", "x917"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Retiré par le NIST (2016) ; attaque DUHK avec clé fixe.",
+      "recommendation": "Générateurs SP 800-90A.",
+      "references": ["NIST SP 800-131A Rev.2"]
+    },
+    {
+      "id": "mersenne-twister", "name": "Mersenne Twister (non cryptographique)", "primitive": "drbg",
+      "aliases": ["mersennetwister", "mt19937", "mt19937ar"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "L'état complet se déduit de 624 sorties : prévisible, interdit pour des secrets.",
+      "recommendation": "Générateur du système (SecureRandom, secrets, crypto.getRandomValues)."
+    },
+    {
+      "id": "os-rng", "name": "Générateur du système", "primitive": "drbg",
+      "aliases": ["bcryptgenrandom", "cryptgenrandom", "rtlgenrandom", "devurandom", "getrandom", "getentropy", "arc4random", "urandom"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Source d'aléa du système d'exploitation, à privilégier pour clés, jetons et IV."
+    },
+    {
+      "id": "rdrand", "name": "RDRAND / RDSEED", "primitive": "drbg",
+      "aliases": ["rdrand", "rdseed"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Aléa matériel Intel/AMD ; à combiner avec le générateur du système plutôt qu'à utiliser seul.",
+      "recommendation": "Générateur du système."
+    },
+    {
+      "id": "fortuna", "name": "Fortuna / Yarrow", "primitive": "drbg",
+      "aliases": ["fortuna", "yarrow"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Générateurs à accumulateur d'entropie (FreeBSD, macOS historiques).",
+      "recommendation": "Générateur du système."
+    },
+    {
+      "id": "dtls10", "name": "DTLS 1.0", "primitive": "other", "assetType": "protocol",
+      "aliases": ["dtlsv10", "dtls10", "dtlsv1"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Équivalent UDP de TLS 1.1, déprécié par la RFC 8996.",
+      "recommendation": "DTLS 1.3 (ou 1.2).",
+      "references": ["RFC 8996"]
+    },
+    {
+      "id": "dtls12", "name": "DTLS 1.2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["dtlsv12", "dtls12"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Acceptable avec des suites AEAD.",
+      "recommendation": "DTLS 1.3.",
+      "references": ["RFC 6347"]
+    },
+    {
+      "id": "dtls13", "name": "DTLS 1.3", "primitive": "other", "assetType": "protocol",
+      "aliases": ["dtlsv13", "dtls13"],
+      "status": "recommended", "quantumVulnerable": false,
+      "references": ["RFC 9147"]
+    },
+    {
+      "id": "dtls", "name": "DTLS", "primitive": "other", "assetType": "protocol",
+      "tokens": ["dtls"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Version non précisée.",
+      "recommendation": "Imposer DTLS 1.2 minimum."
+    },
+    {
+      "id": "ssh1", "name": "SSH-1", "primitive": "other", "assetType": "protocol",
+      "aliases": ["sshv1", "ssh1"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Protocole cassé (CRC-32, attaques par insertion).",
+      "recommendation": "SSH-2 uniquement."
+    },
+    {
+      "id": "ssh2", "name": "SSH-2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["sshv2", "ssh2"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Sûr avec des algorithmes modernes ; vérifier l'échange de clés (sntrup761/mlkem768x25519 pour le post-quantique) et désactiver ssh-rsa (SHA-1), diffie-hellman-group1 et les modes CBC.",
+      "references": ["RFC 4253", "RFC 9142"]
+    },
+    {
+      "id": "ikev1", "name": "IKEv1", "primitive": "other", "assetType": "protocol",
+      "aliases": ["ikev1"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Mode agressif exposant le secret partagé, déprécié.",
+      "recommendation": "IKEv2.",
+      "references": ["RFC 9395"]
+    },
+    {
+      "id": "ikev2", "name": "IKEv2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["ikev2"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Acceptable avec des groupes DH >= 3072 bits / ECP-256+ ; RFC 9370 pour l'hybride post-quantique.",
+      "references": ["RFC 7296", "RFC 9370"]
+    },
+    {
+      "id": "ipsec", "name": "IPsec", "primitive": "other", "assetType": "protocol",
+      "aliases": ["ipsec"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Vérifier les transformations (AES-GCM, SHA-2) et IKEv2.",
+      "references": ["RFC 8221"]
+    },
+    {
+      "id": "wep", "name": "WEP", "primitive": "other", "assetType": "protocol",
+      "aliases": ["wep104", "wep40", "wep"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Clé retrouvée en quelques minutes.",
+      "recommendation": "WPA3 (ou WPA2-AES)."
+    },
+    {
+      "id": "wpa", "name": "WPA (TKIP)", "primitive": "other", "assetType": "protocol",
+      "aliases": ["wpatkip", "wpa1", "tkip", "wpa"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "TKIP est cassé et retiré de la norme Wi-Fi.",
+      "recommendation": "WPA3 (ou WPA2-AES)."
+    },
+    {
+      "id": "wpa2", "name": "WPA2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["wpa2psk", "wpa2"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Acceptable avec AES-CCMP et une phrase de passe robuste (vulnérable au cassage hors ligne sinon).",
+      "recommendation": "WPA3."
+    },
+    {
+      "id": "wpa3", "name": "WPA3", "primitive": "other", "assetType": "protocol",
+      "aliases": ["wpa3sae", "wpa3"],
+      "status": "recommended", "quantumVulnerable": false,
+      "note": "Authentification SAE résistante au cassage hors ligne."
+    },
+    {
+      "id": "quic", "name": "QUIC / HTTP/3", "primitive": "other", "assetType": "protocol",
+      "aliases": ["quic", "http3"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Intègre TLS 1.3 ; sûr, vérifier la prise en charge de l'échange hybride post-quantique.",
+      "references": ["RFC 9000", "RFC 9001"]
+    },
+    {
+      "id": "openpgp", "name": "OpenPGP", "primitive": "other", "assetType": "protocol",
+      "aliases": ["openpgp", "gnupg", "pgp", "gpg"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Vérifier les algorithmes des clés (pas de DSA-1024, SHA-1, CAST5) ; la RFC 9580 modernise le format.",
+      "references": ["RFC 9580"]
+    },
+    {
+      "id": "smime", "name": "S/MIME / CMS", "primitive": "other", "assetType": "protocol",
+      "aliases": ["smime", "cms"],
+      "oids": [{ "oid": "1.2.840.113549.1.9.16", "description": "id-smime" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Vérifier les algorithmes (RSA-OAEP ou ECDH, AES-GCM, SHA-256).",
+      "references": ["RFC 8551", "RFC 5652"]
+    },
+    {
+      "id": "kerberos", "name": "Kerberos", "primitive": "other", "assetType": "protocol",
+      "aliases": ["kerberos", "krb5"],
+      "oids": [{ "oid": "1.2.840.113554.1.2.2", "description": "Kerberos V5 (GSS-API)" }],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Sûr avec les types AES (aes256-cts-hmac-sha384-192) ; désactiver RC4-HMAC et DES.",
+      "recommendation": "Interdire rc4-hmac et des-cbc-*.",
+      "references": ["RFC 8429", "RFC 8009"]
+    },
+    {
+      "id": "ntlm", "name": "NTLM (v1)", "primitive": "other", "assetType": "protocol",
+      "aliases": ["ntlmv1", "ntlm"],
+      "oids": [{ "oid": "1.3.6.1.4.1.311.2.2.10", "description": "NTLMSSP" }],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "NTLMv1 est cassé ; NTLM en général est retiré par Microsoft (relais, pass-the-hash).",
+      "recommendation": "Kerberos."
+    },
+    {
+      "id": "ntlmv2", "name": "NTLMv2", "primitive": "other", "assetType": "protocol",
+      "aliases": ["ntlmv2"],
+      "status": "deprecated", "quantumVulnerable": false,
+      "note": "Exposé aux attaques par relais ; retiré par Microsoft.",
+      "recommendation": "Kerberos."
+    },
+    {
+      "id": "mschapv2", "name": "MS-CHAPv2 / PPTP", "primitive": "other", "assetType": "protocol",
+      "aliases": ["mschapv2", "mschap", "pptp"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Réductible à une recherche DES de 56 bits.",
+      "recommendation": "IKEv2/IPsec, WireGuard ou TLS (EAP-TLS)."
+    },
+    {
+      "id": "snmpv1", "name": "SNMP v1 / v2c", "primitive": "other", "assetType": "protocol",
+      "aliases": ["snmpv2c", "snmpv2", "snmpv1"],
+      "status": "disallowed", "quantumVulnerable": false,
+      "note": "Chaînes de communauté transmises en clair.",
+      "recommendation": "SNMPv3 avec authPriv (SHA-2, AES)."
+    },
+    {
+      "id": "snmpv3", "name": "SNMPv3", "primitive": "other", "assetType": "protocol",
+      "aliases": ["snmpv3"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Imposer authPriv avec SHA-2 et AES.",
+      "references": ["RFC 7860"]
+    },
+    {
+      "id": "wireguard", "name": "WireGuard", "primitive": "other", "assetType": "protocol",
+      "aliases": ["wireguard"],
+      "status": "acceptable", "quantumVulnerable": false,
+      "note": "Protocole Noise (Curve25519, ChaCha20-Poly1305) ; ajouter une clé pré-partagée contre la menace quantique (\"récolter maintenant, déchiffrer plus tard\")."
+    }
+  ],
+  "modes": [
+    { "id": "ecb", "name": "ECB", "aliases": ["ecb"], "status": "disallowed",
+      "note": "les blocs identiques donnent des chiffrés identiques (fuite de motifs)." },
+    { "id": "cbc", "name": "CBC", "aliases": ["cbc"], "status": "acceptable",
+      "note": "IV aléatoire imprévisible et MAC (encrypt-then-MAC) requis ; sensible aux oracles de bourrage." },
+    { "id": "pcbc", "name": "PCBC", "aliases": ["pcbc"], "status": "deprecated", "note": "mode obsolète." },
+    { "id": "cfb", "name": "CFB", "aliases": ["cfb128", "cfb64", "cfb8", "cfb1", "cfb"], "status": "acceptable",
+      "note": "pas d'intégrité." },
+    { "id": "ofb", "name": "OFB", "aliases": ["ofb"], "status": "acceptable", "note": "pas d'intégrité." },
+    { "id": "ctr", "name": "CTR", "aliases": ["ctr"], "status": "acceptable",
+      "note": "nonce unique requis, pas d'intégrité." },
+    { "id": "gcm", "name": "GCM", "aliases": ["gcm"], "status": "recommended",
+      "note": "nonce unique impératif." },
+    { "id": "ccm", "name": "CCM", "aliases": ["ccm"], "status": "recommended" },
+    { "id": "siv", "name": "SIV", "aliases": ["gcmsiv", "siv"], "status": "recommended",
+      "note": "résistant à la réutilisation de nonce." },
+    { "id": "ocb", "name": "OCB", "aliases": ["ocb3", "ocb"], "status": "recommended" },
+    { "id": "xts", "name": "XTS", "aliases": ["xts"], "status": "acceptable",
+      "note": "réservé au chiffrement de stockage." },
+    { "id": "cts", "name": "CTS", "aliases": ["cts"], "status": "acceptable" },
+    { "id": "kw", "name": "KW", "aliases": ["keywrap", "wrap"], "tokens": ["kw", "kwp"], "status": "recommended",
+      "note": "enveloppement de clé (RFC 3394 / 5649)." },
+    { "id": "eax", "name": "EAX", "aliases": ["eax"], "status": "recommended", "note": "mode AEAD (CTR + OMAC)." },
+    { "id": "ige", "name": "IGE", "aliases": ["ige"], "status": "deprecated", "note": "mode non authentifié (utilisé par MTProto) : préférer un mode AEAD." },
+    { "id": "ff1", "name": "FF1 (chiffrement préservant le format)", "aliases": ["fpeff1", "ff1"], "status": "acceptable", "note": "chiffrement préservant le format (SP 800-38G) ; domaine d'au moins un million de valeurs." },
+    { "id": "ff3", "name": "FF3 / FF3-1", "aliases": ["fpeff3", "ff31", "ff3"], "status": "deprecated", "note": "attaques pratiques ; retiré par le NIST (SP 800-38G Rev.1)." }
+  ],
+  "paddings": [
+    { "id": "none", "name": "NoPadding", "aliases": ["nopadding"], "status": "recommended",
+      "note": "neutre : attendu pour les modes AEAD (GCM, CCM) et flux (CTR)." },
+    { "id": "pkcs7", "name": "PKCS7", "aliases": ["pkcs5padding", "pkcs7padding", "pkcs5", "pkcs7"],
+      "status": "acceptable", "note": "exposé aux oracles de bourrage en mode CBC sans MAC." },
+    { "id": "oaep", "name": "OAEP", "aliases": ["oaep"], "status": "recommended" },
+    { "id": "pss", "name": "PSS", "aliases": ["pss"], "status": "recommended" },
+    { "id": "pkcs1", "name": "PKCS1-v1.5", "aliases": ["pkcs1padding", "pkcs1v15", "pkcs1"],
+      "status": "deprecated", "note": "en chiffrement, vulnérable à l'attaque de Bleichenbacher ; préférer OAEP." },
+    { "id": "iso10126", "name": "ISO10126", "aliases": ["iso10126padding", "iso10126"], "status": "deprecated",
+      "note": "retiré de la norme ISO." },
+    { "id": "zero", "name": "ZeroPadding", "aliases": ["zerobytepadding", "zeropadding"], "status": "deprecated",
+      "note": "ambigu et non réversible de façon sûre." },
+    { "id": "x923", "name": "ANSI X.923", "aliases": ["x923padding", "ansix923", "x923"], "status": "deprecated", "note": "bourrage CBC exposé aux oracles de bourrage : préférer un mode AEAD." },
+    { "id": "iso7816", "name": "ISO/IEC 7816-4", "aliases": ["iso7816d4padding", "iso78164padding", "iso78164", "iso7816"], "status": "deprecated", "note": "bourrage CBC exposé aux oracles de bourrage : préférer un mode AEAD." }
+  ],
+  "curves": [
+    { "id": "p-192", "name": "P-192", "aliases": ["secp192r1", "prime192v1", "nistp192", "p192"], "status": "disallowed",
+      "note": "moins de 112 bits de sécurité." },
+    { "id": "p-224", "name": "P-224", "aliases": ["secp224r1", "nistp224", "p224"], "status": "deprecated",
+      "note": "112 bits de sécurité seulement." },
+    { "id": "p-256", "name": "P-256", "aliases": ["secp256r1", "prime256v1", "nistp256", "p256"], "status": "acceptable" },
+    { "id": "p-384", "name": "P-384", "aliases": ["secp384r1", "nistp384", "p384"], "status": "recommended" },
+    { "id": "p-521", "name": "P-521", "aliases": ["secp521r1", "nistp521", "p521"], "status": "recommended" },
+    { "id": "secp256k1", "name": "secp256k1", "aliases": ["secp256k1"], "status": "acceptable",
+      "note": "courbe Koblitz (Bitcoin), non recommandée hors blockchain." },
+    { "id": "brainpool", "name": "brainpool",
+      "aliases": ["brainpoolp256r1", "brainpoolp384r1", "brainpoolp512r1", "brainpoolp256t1", "brainpoolp384t1", "brainpoolp512t1", "brainpool"],
+      "status": "acceptable", "note": "recommandée par le BSI." },
+    { "id": "frp256v1", "name": "FRP256v1", "aliases": ["frp256v1"], "status": "acceptable",
+      "note": "courbe publiée par l'ANSSI." },
+    { "id": "binary", "name": "courbe binaire",
+      "aliases": ["sect163k1", "sect163r2", "sect233k1", "sect233r1", "sect283k1", "sect283r1", "sect409k1", "sect409r1", "sect571k1", "sect571r1"],
+      "status": "deprecated", "note": "courbes binaires retirées de SP 800-186." },
+    { "id": "small-curves", "name": "Courbes de moins de 192 bits",
+      "status": "disallowed", "aliases": ["secp112r1", "secp112r2", "secp128r1", "secp128r2", "secp160k1", "secp160r1", "secp160r2", "secp192k1", "brainpoolp160r1", "brainpoolp160t1", "brainpoolp192r1", "brainpoolp192t1"], "note": "moins de 112 bits de sécurité." },
+    { "id": "secp224k1", "name": "secp224k1 / brainpoolP224",
+      "status": "deprecated", "aliases": ["secp224k1", "brainpoolp224r1", "brainpoolp224t1"], "note": "112 bits de sécurité seulement." },
+    { "id": "bn254", "name": "BN254 (alt_bn128)",
+      "status": "deprecated", "aliases": ["altbn128", "bn254", "bn256", "bn128"], "note": "environ 100 bits de sécurité depuis les attaques exTNFS : préférer BLS12-381." },
+    { "id": "bls12-381", "name": "BLS12-381",
+      "status": "acceptable", "aliases": ["bls12381"], "note": "courbe à couplage d'environ 120 bits de sécurité (Ethereum, Zcash)." },
+    { "id": "sm2p256v1", "name": "SM2 P-256",
+      "status": "acceptable", "aliases": ["sm2p256v1", "sm2curve"], "note": "courbe chinoise normalisée (GB/T 32918)." },
+    { "id": "curve25519", "name": "Curve25519 / Edwards25519",
+      "status": "recommended", "aliases": ["edwards25519", "curve25519"], "note": "courbe moderne sans pièges d'implémentation (RFC 7748)." },
+    { "id": "curve448", "name": "Curve448 / Edwards448",
+      "status": "recommended", "aliases": ["edwards448", "goldilocks", "curve448"], "note": "224 bits de sécurité (RFC 7748)." }
+  ]
+}

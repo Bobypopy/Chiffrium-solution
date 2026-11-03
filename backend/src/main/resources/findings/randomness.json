@@ -1,0 +1,130 @@
+{
+  "rules": [
+    {
+      "id": "random-java-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:new\\s+Random\\s*\\(|Math\\.random\\s*\\(|ThreadLocalRandom\\.current\\s*\\(|RandomStringUtils\\.random(?:Alphanumeric|Alphabetic|Numeric|Ascii)?\\s*\\()",
+      "title": "Aléa non cryptographique pour un secret",
+      "description": "java.util.Random / Math.random / RandomStringUtils sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-python-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "python"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\brandom\\.(?:random|randint|randrange|choice|choices|getrandbits|sample|shuffle|uniform)\\s*\\(",
+      "title": "Module random pour un secret",
+      "description": "Le module random (Mersenne Twister) est prévisible.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-js-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?Math\\.random\\s*\\(",
+      "title": "Math.random pour un secret",
+      "description": "Math.random n'est pas un générateur cryptographique.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-go-math-rand",
+      "category": "weak-random",
+      "severity": "low",
+      "cwe": "CWE-338",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\\\"math/rand(?:/v2)?\\\"",
+      "title": "math/rand importé",
+      "description": "math/rand est prévisible : vérifier qu'il ne sert pas à produire des secrets.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-c-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "c",
+        "cpp"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\b(?:rand|random|drand48|lrand48)\\s*\\(\\s*\\)",
+      "title": "rand() pour un secret",
+      "description": "rand/random/drand48 sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-php-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "php"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\b(?:rand|mt_rand|uniqid|lcg_value|str_shuffle)\\s*\\(",
+      "title": "rand/mt_rand/uniqid pour un secret",
+      "description": "rand, mt_rand, uniqid et str_shuffle sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-ruby-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "ruby"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?:\\brand\\s*\\(|Random\\.(?:new|rand))",
+      "title": "rand pour un secret",
+      "description": "Kernel#rand et Random sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-csharp-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?new\\s+Random\\s*\\(",
+      "title": "System.Random pour un secret",
+      "description": "System.Random est prévisible.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-fixed-seed",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-337",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy",
+        "csharp"
+      ],
+      "pattern": "\\.setSeed\\s*\\(\\s*\\d+L?\\s*\\)|new\\s+SecureRandom\\s*\\(\\s*(?:\\\"[^\\\"]*\\\"\\s*\\.getBytes|new\\s+byte\\s*\\[\\s*\\]\\s*\\{)",
+      "title": "Graine fixe",
+      "description": "Générateur initialisé avec une graine constante : toute la suite est reproductible.",
+      "recommendation": "Ne jamais fixer la graine d'un générateur utilisé pour la sécurité (laisser SecureRandom s'initialiser seul)."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+# Builds
+target/
+*.class
+*.jar
+*.exe
+dependency-reduced-pom.xml
+
+# Dépendances
+node_modules/
+
+# Application de bureau : ressources préparées et installateurs générés
+desktop/resources/
+desktop/dist/
+
+# Certificats de signature (clé privée) : jamais dans le dépôt
+desktop/signing/
+*.pfx
+*.p12
+
+# Données générées par les analyses (volume /data en conteneur)
+data/
+# ... mais pas les traductions des textes du serveur, que ce motif attrapait au passage
+!frontend/public/js/i18n/data/
+workspace/
+# Données produites par la campagne de tests (projets, base, captures)
+qa/travail/
+output/
+
+# Journaux
+*.log
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+~$*
+
+# Secrets et configuration locale (ne jamais versionner)
+.env
+*.env
+docker-config/
+__pycache__/

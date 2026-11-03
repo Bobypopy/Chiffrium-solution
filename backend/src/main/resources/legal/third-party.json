@@ -1,0 +1,27 @@
+{
+  "components": [
+    { "name": "Javalin", "license": "Apache-2.0", "url": "https://javalin.io" },
+    { "name": "Eclipse Jetty", "license": "EPL-2.0 OR Apache-2.0", "url": "https://jetty.org" },
+    { "name": "Jackson", "license": "Apache-2.0", "url": "https://github.com/FasterXML/jackson" },
+    { "name": "Eclipse JGit", "license": "BSD-3-Clause (EDL-1.0)", "url": "https://www.eclipse.org/jgit/" },
+    { "name": "H2 Database", "license": "MPL-2.0 OR EPL-1.0", "url": "https://h2database.com" },
+    { "name": "PostgreSQL JDBC Driver", "license": "BSD-2-Clause", "url": "https://jdbc.postgresql.org" },
+    { "name": "HikariCP", "license": "Apache-2.0", "url": "https://github.com/brettwooldridge/HikariCP" },
+    { "name": "Nimbus JOSE + JWT", "license": "Apache-2.0", "url": "https://connect2id.com/products/nimbus-jose-jwt" },
+    { "name": "SLF4J", "license": "MIT", "url": "https://www.slf4j.org" },
+    { "name": "Logback", "license": "EPL-1.0 OR LGPL-2.1", "url": "https://logback.qos.ch" },
+    { "name": "OpenJDK (JRE embarqué)", "license": "GPL-2.0 WITH Classpath-exception-2.0", "url": "https://openjdk.org" },
+    { "name": "CycloneDX cdxgen", "license": "Apache-2.0", "url": "https://github.com/CycloneDX/cdxgen" },
+    { "name": "AppThreat atom", "license": "MIT", "url": "https://github.com/AppThreat/atom" },
+    { "name": "vis-network", "license": "Apache-2.0 OR MIT", "url": "https://visjs.org" },
+    { "name": "Electron (Chromium, Node.js)", "license": "MIT (Chromium : BSD-3-Clause et autres)", "url": "https://www.electronjs.org" },
+    { "name": "electron-updater", "license": "MIT", "url": "https://www.electron.build" }
+  ],
+  "data": [
+    { "name": "NIST (SP 800-131A, IR 8547, FIPS 203/204/205)", "terms": "Publications du gouvernement américain, domaine public", "url": "https://csrc.nist.gov" },
+    { "name": "OSV", "terms": "Données sous licences propres à chaque base source (majoritairement CC-BY-4.0)", "url": "https://osv.dev" },
+    { "name": "CISA Known Exploited Vulnerabilities", "terms": "Domaine public (CC0)", "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog" },
+    { "name": "FIRST EPSS", "terms": "Utilisation libre avec attribution (FIRST.org)", "url": "https://www.first.org/epss" },
+    { "name": "NVD", "terms": "This product uses the NVD API but is not endorsed or certified by the NVD.", "url": "https://nvd.nist.gov" }
+  ]
+}

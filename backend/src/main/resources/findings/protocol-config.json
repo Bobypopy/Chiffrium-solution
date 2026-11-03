@@ -1,0 +1,76 @@
+{
+  "rules": [
+    {
+      "id": "tls-cipher-list",
+      "category": "weak-cipher-suite",
+      "severity": "medium",
+      "cwe": "CWE-327",
+      "pattern": "(?:ssl_ciphers|SSLCipherSuite|ssl-default-(?:bind|server)-ciphers|\\bciphers|cipher[-_]?suites?|cipher[-_]?list|tls[-_]?ciphers)[\\\"']?\\s*(?:[:=]|=>|\\s)\\s*[\\\"'\\[]?\\s*(?<list>[A-Za-z0-9_:+!@=,.\\-\\\" ]{3,})",
+      "ignoreCase": true,
+      "listGroup": "list",
+      "listCheck": "cipher-suites",
+      "exclude": "^\\s*(?:Ciphers|MACs|KexAlgorithms|HostKeyAlgorithms|PubkeyAcceptedAlgorithms)\\s",
+      "title": "Suites TLS faibles activées",
+      "description": "La liste de suites active des suites obsolètes.",
+      "recommendation": "N'activer que des suites AEAD avec échange de clés éphémère (ECDHE + AES-GCM ou ChaCha20-Poly1305) et TLS 1.3 ; voir les guides TLS de l'ANSSI et de Mozilla (profil \"intermediate\")."
+    },
+    {
+      "id": "tls-iana-suite",
+      "category": "weak-cipher-suite",
+      "severity": "medium",
+      "cwe": "CWE-327",
+      "pattern": "\\b(?<list>(?:TLS|SSL)_[A-Z0-9]+(?:_[A-Z0-9]+)*_WITH_[A-Z0-9_]+)\\b",
+      "listGroup": "list",
+      "listCheck": "cipher-suites",
+      "exclude": "ssl_ciphers|SSLCipherSuite|ciphers|cipher[-_]?suites?\\s*[\\\"']?\\s*[:=]|cipher[-_]?list",
+      "title": "Suite TLS faible",
+      "description": "Suite de chiffrement TLS obsolète référencée dans le code.",
+      "recommendation": "N'activer que des suites AEAD avec échange de clés éphémère (ECDHE + AES-GCM ou ChaCha20-Poly1305) et TLS 1.3 ; voir les guides TLS de l'ANSSI et de Mozilla (profil \"intermediate\")."
+    },
+    {
+      "id": "ssh-weak-algorithms",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-327",
+      "pattern": "(?m)^\\s*(?:Ciphers|MACs|KexAlgorithms|HostKeyAlgorithms|PubkeyAcceptedAlgorithms)\\s+(?<list>\\S+)",
+      "listGroup": "list",
+      "listCheck": "cipher-suites",
+      "title": "Algorithmes SSH faibles",
+      "description": "La configuration SSH active des algorithmes obsolètes.",
+      "recommendation": "Restreindre Ciphers, MACs, KexAlgorithms et HostKeyAlgorithms aux algorithmes modernes (chacha20-poly1305, aes-gcm, curve25519, sntrup761x25519/mlkem768x25519 pour le post-quantique)."
+    },
+    {
+      "id": "jdk-tls-disabled-algorithms",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-757",
+      "pattern": "(?:jdk\\.tls\\.disabledAlgorithms\\s*=\\s*|setProperty\\s*\\(\\s*\\\"jdk\\.tls\\.disabledAlgorithms\\\"\\s*,\\s*\\\")(?<list>(?:[^\\n\\\"]*\\\\\\r?\\n)*[^\\n\\\"]*)",
+      "listGroup": "list",
+      "listCheck": "require-all",
+      "required": [
+        "SSLv3",
+        "TLSv1",
+        "TLSv1.1",
+        "RC4",
+        "DES",
+        "3DES_EDE_CBC",
+        "NULL",
+        "anon"
+      ],
+      "title": "jdk.tls.disabledAlgorithms trop permissif",
+      "description": "La redéfinition de jdk.tls.disabledAlgorithms réactive des protocoles ou algorithmes interdits par défaut dans le JDK.",
+      "recommendation": "Partir de la valeur par défaut du JDK et n'y ajouter que des restrictions (ne jamais en retirer)."
+    },
+    {
+      "id": "tls-old-protocol-enabled",
+      "category": "insecure-protocol-config",
+      "severity": "high",
+      "cwe": "CWE-757",
+      "pattern": "(?:ssl_protocols|SSLProtocol|setEnabledProtocols|enabled[-_]?protocols|MinimumVersion|min_version|minVersion|secureProtocol|ssl_version)[^\\n]{0,60}?(?<!!|-|\\w)(?:SSLv2|SSLv3|TLSv1(?:\\.0|_0)?(?![.\\d_])|TLSv1[._]1|VersionTLS1[01]\\b|TLS_1_[01]\\b|PROTOCOL_TLSv1(?:_1)?\\b|SslProtocols\\.(?:Ssl2|Ssl3|Tls|Tls11)\\b)",
+      "ignoreCase": false,
+      "title": "Protocole SSL/TLS obsolète activé",
+      "description": "SSLv2/SSLv3/TLS 1.0/TLS 1.1 activé explicitement (POODLE, BEAST, retiré par la RFC 8996).",
+      "recommendation": "N'autoriser que TLS 1.2 et TLS 1.3."
+    }
+  ]
+}

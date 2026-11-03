@@ -1,0 +1,150 @@
+{
+  "id": "java",
+  "languages": ["java", "kotlin", "scala", "groovy"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^(?!\\s*(?:return|new|else|throw|case|if|for|while|switch|catch|do|try)\\b)\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:(?:public|private|protected|static|final|synchronized|abstract|native|default|override|suspend|open|internal|inline|operator)\\s+)*(?:fun\\s+|def\\s+)?(?:<[^>]*>\\s*)?(?:[\\w.\\[\\]<>?,]+\\s+)?(?<name>[A-Za-z_]\\w*)\\s*\\([^=;]*$"
+  ],
+  "classPatterns": [
+    "\\b(?:class|interface|enum|record|object|trait)\\s+(?<name>[A-Za-z_]\\w*)"
+  ],
+  "rules": [
+    {
+      "id": "java.jca.cipher",
+      "pattern": "\\b(?<api>Cipher)\\s*\\.\\s*getInstance\\s*\\(\\s*{ARG}",
+      "map": {
+        "aes": "AES/ECB/PKCS5Padding",
+        "des": "DES/ECB/PKCS5Padding",
+        "desede": "DESede/ECB/PKCS5Padding",
+        "tripledes": "DESede/ECB/PKCS5Padding",
+        "blowfish": "Blowfish/ECB/PKCS5Padding",
+        "rsa": "RSA/ECB/PKCS1Padding"
+      },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "java.jca.get-instance",
+      "pattern": "\\b(?<api>Cipher|MessageDigest|Mac|Signature|KeyGenerator|KeyPairGenerator|SecretKeyFactory|KeyAgreement|KeyFactory|AlgorithmParameters|AlgorithmParameterGenerator|SecureRandom|SSLContext|KEM)\\s*\\.\\s*getInstance\\s*\\(\\s*{ARG}",
+      "functionsByApi": {
+        "Cipher": ["encrypt", "decrypt"],
+        "MessageDigest": ["digest"],
+        "Mac": ["tag"],
+        "Signature": ["sign", "verify"],
+        "KeyGenerator": ["keygen"],
+        "KeyPairGenerator": ["keygen"],
+        "SecretKeyFactory": ["keyderive"],
+        "KeyAgreement": ["other"],
+        "KeyFactory": ["other"],
+        "AlgorithmParameters": ["other"],
+        "AlgorithmParameterGenerator": ["generate"],
+        "SecureRandom": ["generate"],
+        "SSLContext": ["other"],
+        "KEM": ["encapsulate", "decapsulate"]
+      },
+      "primitiveByApi": {
+        "Signature": "signature",
+        "KeyAgreement": "key-agree",
+        "Mac": "mac",
+        "MessageDigest": "hash",
+        "SecureRandom": "drbg",
+        "KEM": "kem"
+      }
+    },
+    {
+      "id": "java.jca.secret-key-spec",
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?SecretKeySpec\\s*\\((?:[^;()]|\\([^()]*\\))*?,\\s*{ARG}\\s*\\)",
+      "functions": ["other"]
+    },
+    {
+      "id": "java.jca.ec-gen-parameter-spec",
+      "pattern": "\\bnew\\s+ECGenParameterSpec\\s*\\(\\s*{ARG}",
+      "template": "EC-{algo}",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "java.jca.named-parameter-spec",
+      "pattern": "\\bNamedParameterSpec\\s*\\.\\s*(?<name>X25519|X448|ED25519|ED448)\\b",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "java.jsse.enabled-protocols",
+      "pattern": "\\bsetEnabledProtocols\\s*\\(\\s*(?:new\\s+String\\s*\\[\\s*\\]\\s*)?(?:arrayOf\\s*\\()?\\{?(?<list>[^})]*)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "java.jsse.protocol-property",
+      "pattern": "\"(?:https\\.protocols|jdk\\.tls\\.client\\.protocols|jdk\\.tls\\.server\\.protocols)\"\\s*,\\s*\"(?<list>[^\"]+)\"",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "java.bc.block-cipher-mode",
+      "pattern": "\\bnew\\s+(?<mode>CBC|GCM|CCM|CTR|SIC|CFB|OFB|EAX|OCB|KCCM|KGCM)BlockCipher\\s*\\(\\s*(?:new\\s+)?(?<name>AES|DES|DESede|Blowfish|Twofish|Serpent|Camellia|CAST5|CAST6|IDEA|SEED|SM4|ARIA|RC2|RC6|Noekeon|Threefish)Engine",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "java.bc.engine",
+      "pattern": "\\bnew\\s+(?<name>AES|AESFast|AESLight|DES|DESede|Blowfish|Twofish|Serpent|Camellia|CAST5|CAST6|IDEA|SEED|SM4|ARIA|RC2|RC4|RC532|RC564|RC6|ChaCha|ChaCha7539|XSalsa20|Salsa20|Noekeon|Threefish|TEA|XTEA)Engine\\s*\\(",
+      "map": { "aesfast": "AES", "aeslight": "AES", "chacha7539": "ChaCha20", "rc532": "RC5", "rc564": "RC5" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "java.bc.hmac",
+      "pattern": "\\bnew\\s+HMac\\s*\\(\\s*new\\s+(?<name>\\w+?)Digest\\s*\\(",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "java.bc.digest",
+      "pattern": "\\bnew\\s+(?<name>SHA1|SHA224|SHA256|SHA384|SHA512|SHA512t|SHA3|SHAKE|MD2|MD4|MD5|RIPEMD128|RIPEMD160|RIPEMD256|RIPEMD320|Blake2b|Blake2s|Blake3|SM3|Keccak|Whirlpool|Tiger|GOST3411)Digest\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "java.bc.key-pair-generator",
+      "pattern": "\\bnew\\s+(?<name>RSA|EC|Ed25519|Ed448|X25519|X448|DSA|DH|ElGamal|GOST3410|SM2|MLKEM|MLDSA|SLHDSA|Kyber|Dilithium|SPHINCSPlus|Falcon)KeyPairGenerator\\s*\\(",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "java.bc.signer",
+      "pattern": "\\bnew\\s+(?<name>RSA|PSS|ECDSA|DSA|Ed25519|Ed448|SM2|MLDSA|SLHDSA|Dilithium|Falcon)Signer\\s*\\(",
+      "map": { "pss": "RSASSA-PSS" },
+      "primitive": "signature",
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "java.jca.keysize.initialize",
+      "kind": "keysize",
+      "pattern": "\\.\\s*(?:initialize|init)\\s*\\(\\s*{SIZE}\\b"
+    },
+    {
+      "id": "java.jca.keysize.rsa-spec",
+      "kind": "keysize",
+      "pattern": "\\bnew\\s+RSAKeyGenParameterSpec\\s*\\(\\s*{SIZE}\\b"
+    },
+    {
+      "id": "java.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?(?:FileOutputStream|FileWriter|PrintWriter|RandomAccessFile)\\s*\\(\\s*(?:new\\s+(?:[\\w.]+\\.)?File\\s*\\(\\s*)?{FILE}"
+    },
+    {
+      "id": "java.nio.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bFiles\\s*\\.\\s*(?:write|writeString|newOutputStream|newBufferedWriter)\\s*\\(\\s*(?:Paths?\\s*\\.\\s*(?:get|of)\\s*\\(\\s*)?{FILE}"
+    },
+    {
+      "id": "java.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\bnew\\s+(?:[\\w.]+\\.)?(?:FileInputStream|FileReader|Scanner)\\s*\\(\\s*(?:new\\s+(?:[\\w.]+\\.)?File\\s*\\(\\s*)?{FILE}"
+    },
+    {
+      "id": "java.nio.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\bFiles\\s*\\.\\s*(?:readAllBytes|readString|readAllLines|lines|newInputStream|newBufferedReader)\\s*\\(\\s*(?:Paths?\\s*\\.\\s*(?:get|of)\\s*\\(\\s*)?{FILE}"
+    }
+  ]
+}

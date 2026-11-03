@@ -1,0 +1,127 @@
+{
+  "id": "csharp",
+  "languages": ["csharp"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^(?!\\s*(?:return|new|else|throw|case|if|for|foreach|while|switch|catch|using|lock|do|try)\\b)\\s*(?:\\[[^\\]]*\\]\\s*)*(?:(?:public|private|protected|internal|static|virtual|override|abstract|sealed|async|extern|unsafe|partial|new|readonly)\\s+)*(?:[\\w.\\[\\]<>?,]+\\s+)(?<name>[A-Za-z_]\\w*)\\s*(?:<[^>]*>)?\\s*\\([^=;]*$"
+  ],
+  "classPatterns": [
+    "\\b(?:class|struct|record|interface)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    {
+      "id": "cs.hash.create",
+      "pattern": "\\b(?<name>MD5|SHA1|SHA256|SHA384|SHA512|SHA3_256|SHA3_384|SHA3_512|RIPEMD160)\\s*\\.\\s*(?:Create|HashData|HashDataAsync|TryHashData)\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "cs.hash.provider",
+      "pattern": "\\bnew\\s+(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "cs.hmac",
+      "pattern": "\\b(?:new\\s+)?(?<name>HMACMD5|HMACSHA1|HMACSHA256|HMACSHA384|HMACSHA512|HMACSHA3_256)\\s*(?:\\(|\\.\\s*HashData)",
+      "functions": ["tag"]
+    },
+    {
+      "id": "cs.symmetric.create",
+      "pattern": "\\b(?<name>Aes|DES|TripleDES|RC2|Rijndael)\\s*\\.\\s*Create\\s*\\(",
+      "map": { "tripledes": "3DES" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "cs.symmetric.provider",
+      "pattern": "\\bnew\\s+(?<name>Aes|DES|TripleDES|RC2|Rijndael)(?:CryptoServiceProvider|Managed|Cng)\\s*\\(",
+      "map": { "tripledes": "3DES" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "cs.aead",
+      "pattern": "\\bnew\\s+(?<name>AesGcm|AesCcm|ChaCha20Poly1305)\\s*\\(",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "cs.mode",
+      "kind": "mode",
+      "pattern": "\\.\\s*Mode\\s*=\\s*CipherMode\\s*\\.\\s*(?<mode>ECB|CBC|CFB|OFB|CTS)\\b"
+    },
+    {
+      "id": "cs.padding",
+      "kind": "padding",
+      "pattern": "\\.\\s*Padding\\s*=\\s*PaddingMode\\s*\\.\\s*(?<padding>PKCS7|Zeros|ANSIX923|ISO10126|None)\\b"
+    },
+    {
+      "id": "cs.keysize",
+      "kind": "keysize",
+      "pattern": "\\.\\s*KeySize\\s*=\\s*{SIZE}\\b"
+    },
+    {
+      "id": "cs.asymmetric.create-curve",
+      "pattern": "\\b(?<name>ECDsa|ECDiffieHellman)\\s*\\.\\s*Create\\s*\\(\\s*ECCurve\\s*\\.\\s*NamedCurves\\s*\\.\\s*(?<curve>\\w+)",
+      "map": { "ecdiffiehellman": "ECDH" },
+      "functions": ["keygen"]
+    },
+    {
+      "id": "cs.asymmetric.create",
+      "pattern": "\\b(?<name>RSA|ECDsa|ECDiffieHellman|DSA)\\s*\\.\\s*Create\\s*\\(\\s*{SIZE}?",
+      "map": { "ecdiffiehellman": "ECDH" },
+      "functions": ["keygen"]
+    },
+    {
+      "id": "cs.asymmetric.provider",
+      "pattern": "\\bnew\\s+(?<name>RSA|DSA)CryptoServiceProvider\\s*\\(\\s*{SIZE}?",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "cs.rsa.encryption-padding",
+      "pattern": "\\bRSAEncryptionPadding\\s*\\.\\s*(?<padding>Pkcs1|OaepSHA1|OaepSHA256|OaepSHA384|OaepSHA512)\\b",
+      "template": "RSA/{padding}",
+      "map": { "pkcs1": "PKCS1Padding" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "cs.rsa.signature-padding",
+      "pattern": "\\bRSASignaturePadding\\s*\\.\\s*(?<padding>Pkcs1|Pss)\\b",
+      "template": "RSA/{padding}",
+      "map": { "pkcs1": "PKCS1Padding" },
+      "primitive": "signature",
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "cs.hash-algorithm-name",
+      "pattern": "\\bHashAlgorithmName\\s*\\.\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|SHA3_256|SHA3_384|SHA3_512)\\b",
+      "functions": ["digest"]
+    },
+    {
+      "id": "cs.pbkdf2.static",
+      "pattern": "\\bRfc2898DeriveBytes\\s*\\.\\s*Pbkdf2\\s*\\(",
+      "algorithm": "PBKDF2",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "cs.pbkdf2",
+      "pattern": "\\bnew\\s+Rfc2898DeriveBytes\\s*\\(",
+      "algorithm": "PBKDF2",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "cs.tls",
+      "pattern": "\\b(?:SslProtocols|SecurityProtocolType)\\s*\\.\\s*(?<name>Ssl2|Ssl3|Tls13|Tls12|Tls11|Tls|SystemDefault|Default|None)\\b",
+      "map": { "ssl2": "SSLv2", "ssl3": "SSLv3", "tls": "TLSv1", "tls11": "TLSv1.1", "tls12": "TLSv1.2", "tls13": "TLSv1.3", "systemdefault": "TLS", "default": "TLS", "none": "TLS" },
+      "functions": ["other"]
+    },
+    {
+      "id": "cs.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bFile\\s*\\.\\s*(?:WriteAllText|WriteAllBytes|WriteAllLines|AppendAllText|Create|OpenWrite)(?:Async)?\\s*\\(\\s*{FILE}"
+    },
+    {
+      "id": "cs.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\b(?:File\\s*\\.\\s*(?:ReadAllText|ReadAllBytes|ReadAllLines|OpenRead|OpenText)(?:Async)?|new\\s+X509Certificate2|X509CertificateLoader\\s*\\.\\s*Load\\w*)\\s*\\(\\s*{FILE}"
+    }
+  ]
+}

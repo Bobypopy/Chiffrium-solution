@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Chiffrium">
+  <!--
+    Marque à plat, sans dégradé : une serrure, seule forme qui reste lisible à 16 px, posée sur un réseau
+    régulier - les réseaux euclidiens sont la base des algorithmes post-quantiques (ML-KEM, ML-DSA).
+    Deux couleurs, deux éléments : ce qui survit au favicon comme à une impression en noir et blanc.
+    Les PNG et le .ico sont rendus à partir de ce fichier (voir docs/logo.md).
+  -->
+  <rect width="512" height="512" rx="112" fill="#0e7c74"/>
+  <g stroke="#ffffff" stroke-width="4" opacity="0.14" fill="none">
+    <path d="M112 112H400M112 208H400M112 304H400M112 400H400M112 112V400M208 112V400M304 112V400M400 112V400"/>
+  </g>
+  <g fill="#ffffff" opacity="0.3">
+    <circle cx="112" cy="112" r="9"/><circle cx="208" cy="112" r="9"/>
+    <circle cx="304" cy="112" r="9"/><circle cx="400" cy="112" r="9"/>
+    <circle cx="112" cy="208" r="9"/><circle cx="400" cy="208" r="9"/>
+    <circle cx="112" cy="304" r="9"/><circle cx="400" cy="304" r="9"/>
+    <circle cx="112" cy="400" r="9"/><circle cx="208" cy="400" r="9"/>
+    <circle cx="304" cy="400" r="9"/><circle cx="400" cy="400" r="9"/>
+  </g>
+  <path fill="#ffffff"
+        d="M256 140a76 76 0 0 0-42 139l-22 86a16 16 0 0 0 15 20h98a16 16 0 0 0 15-20l-22-86a76 76 0 0 0-42-139zm0 44a32 32 0 1 1 0 64 32 32 0 0 1 0-64z"/>
+</svg>

@@ -1,0 +1,205 @@
+{
+  "rules": [
+    {
+      "id": "tls-java-trust-all-manager",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "checkServerTrusted\\s*\\([^)]*\\)\\s*(?::\\s*Unit\\s*)?(?:throws[^{]+)?\\{\\s*\\}",
+      "title": "TrustManager qui accepte tout",
+      "description": "checkServerTrusted vide : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-java-hostname-any",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-297",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "ALLOW_ALL_HOSTNAME_VERIFIER|NoopHostnameVerifier|AllowAllHostnameVerifier|setHostnameVerifier\\s*\\(\\s*\\(?[\\w\\s,]*\\)?\\s*->\\s*true|boolean\\s+verify\\s*\\(\\s*(?:final\\s+)?String\\s+\\w+\\s*,\\s*(?:final\\s+)?SSLSession\\s+\\w+\\s*\\)\\s*\\{\\s*return\\s+true",
+      "title": "Vérification du nom d'hôte désactivée",
+      "description": "Le nom d'hôte du certificat n'est pas vérifié.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-java-trust-strategy",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "TrustAllStrategy|InsecureTrustManagerFactory|TrustSelfSignedStrategy|trustAllCerts|TrustAllCertificates",
+      "title": "Stratégie de confiance permissive",
+      "description": "TrustAllStrategy / InsecureTrustManagerFactory désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-python-verify-false",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "python"
+      ],
+      "pattern": "\\bverify\\s*=\\s*False\\b",
+      "title": "verify=False",
+      "description": "Requête HTTPS sans vérification du certificat : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-python-unverified-context",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "python"
+      ],
+      "pattern": "_create_unverified_context|_create_default_https_context\\s*=|\\bCERT_NONE\\b|check_hostname\\s*=\\s*False",
+      "title": "Contexte SSL non vérifié",
+      "description": "Contexte SSL sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-node-reject-unauthorized",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "rejectUnauthorized\\s*:\\s*false",
+      "title": "rejectUnauthorized: false",
+      "description": "Connexion TLS Node.js sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-node-env-disable",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "pattern": "NODE_TLS_REJECT_UNAUTHORIZED[\\\"']?\\s*[=:]\\s*[\\\"']?0\\b",
+      "title": "NODE_TLS_REJECT_UNAUTHORIZED=0",
+      "description": "Désactive la vérification TLS pour tout le processus Node.js.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-go-insecure-skip-verify",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "go"
+      ],
+      "pattern": "InsecureSkipVerify\\s*:\\s*true",
+      "title": "InsecureSkipVerify",
+      "description": "tls.Config avec InsecureSkipVerify : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-csharp-accept-any",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "ServerCertificate(?:Custom)?ValidationCallback\\s*\\+?=\\s*(?:\\([^)]*\\)|\\w+)\\s*=>\\s*true|DangerousAcceptAnyServerCertificateValidator",
+      "title": "Callback de certificat permissif",
+      "description": "La validation du certificat renvoie toujours vrai : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-php-no-verify",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "php"
+      ],
+      "ignoreCase": true,
+      "pattern": "CURLOPT_SSL_VERIFY(?:PEER|HOST)\\s*(?:,|=>)\\s*(?:false|0)\\b|[\\\"']verify_peer(?:_name)?[\\\"']\\s*=>\\s*false",
+      "title": "Vérification SSL désactivée (PHP)",
+      "description": "Requête sans vérification du certificat : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-ruby-verify-none",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "ruby"
+      ],
+      "pattern": "VERIFY_NONE|verify_mode\\s*[:=]>?\\s*0\\b|ssl_verify\\s*[:=]>?\\s*false",
+      "title": "VERIFY_NONE",
+      "description": "Connexion TLS Ruby sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-rust-accept-invalid",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "rust"
+      ],
+      "pattern": "danger_accept_invalid_(?:certs|hostnames)\\s*\\(\\s*true\\s*\\)|dangerous\\(\\)\\.set_certificate_verifier",
+      "title": "Certificats invalides acceptés",
+      "description": "Client HTTP Rust qui accepte les certificats ou noms d'hôte invalides.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-c-verify-none",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "c",
+        "cpp"
+      ],
+      "pattern": "SSL_CTX_set_verify\\s*\\([^,]+,\\s*SSL_VERIFY_NONE|CURLOPT_SSL_VERIFY(?:PEER|HOST)\\s*,\\s*0L?\\b",
+      "title": "SSL_VERIFY_NONE / VERIFYPEER 0",
+      "description": "Connexion OpenSSL ou libcurl sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-swift-trust-any",
+      "category": "certificate-validation",
+      "severity": "medium",
+      "cwe": "CWE-295",
+      "languages": [
+        "swift"
+      ],
+      "pattern": "completionHandler\\s*\\(\\s*\\.useCredential\\s*,\\s*URLCredential\\s*\\(\\s*trust:",
+      "title": "Confiance inconditionnelle (Swift)",
+      "description": "Le défi d'authentification serveur est accepté sans évaluation du certificat.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-cli-insecure",
+      "category": "certificate-validation",
+      "severity": "medium",
+      "cwe": "CWE-295",
+      "pattern": "\\bcurl\\b[^\\n]*\\s(?:-k|--insecure)(?:\\s|$)|--no-check-certificate|http\\.sslVerify\\s*(?:=|\\s)\\s*false|GIT_SSL_NO_VERIFY\\s*=\\s*(?:1|true)",
+      "title": "Outil en ligne de commande sans vérification TLS",
+      "description": "curl -k, wget --no-check-certificate ou git sslVerify=false : les téléchargements peuvent être falsifiés.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    }
+  ]
+}

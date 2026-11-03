@@ -1,0 +1,130 @@
+{
+  "id": "go",
+  "languages": ["go"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^\\s*func\\s+(?:\\([^)]*\\)\\s*)?(?<name>\\w+)\\s*[\\[(]"
+  ],
+  "classPatterns": [],
+  "rules": [
+    { "id": "go.sha256.224", "pattern": "\\bsha256\\s*\\.\\s*(?:New224|Sum224)\\s*\\(", "algorithm": "SHA-224", "functions": ["digest"] },
+    { "id": "go.sha512.384", "pattern": "\\bsha512\\s*\\.\\s*(?:New384|Sum384)\\s*\\(", "algorithm": "SHA-384", "functions": ["digest"] },
+    { "id": "go.sha512.256", "pattern": "\\bsha512\\s*\\.\\s*(?:New512_256|Sum512_256)\\s*\\(", "algorithm": "SHA-512/256", "functions": ["digest"] },
+    { "id": "go.sha512.224", "pattern": "\\bsha512\\s*\\.\\s*(?:New512_224|Sum512_224)\\s*\\(", "algorithm": "SHA-512/224", "functions": ["digest"] },
+    {
+      "id": "go.sha3",
+      "pattern": "\\bsha3\\s*\\.\\s*(?:New|Sum)(?<bits>224|256|384|512)\\b",
+      "template": "SHA3-{bits}",
+      "functions": ["digest"]
+    },
+    {
+      "id": "go.hmac",
+      "pattern": "\\bhmac\\s*\\.\\s*New\\s*\\(\\s*(?<name>md5|sha1|sha256|sha512|sha3)\\s*\\.\\s*New",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "go.hash",
+      "pattern": "\\b(?<name>md5|sha1|sha256|sha512|md4|ripemd160|blake2b|blake2s)\\s*\\.\\s*(?:New\\w*|Sum\\w*)\\s*\\(",
+      "functions": ["digest"]
+    },
+    { "id": "go.aes", "pattern": "\\baes\\s*\\.\\s*NewCipher\\s*\\(", "algorithm": "AES", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.des3", "pattern": "\\bdes\\s*\\.\\s*NewTripleDESCipher\\s*\\(", "algorithm": "3DES", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.des", "pattern": "\\bdes\\s*\\.\\s*NewCipher\\s*\\(", "algorithm": "DES", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.rc4", "pattern": "\\brc4\\s*\\.\\s*NewCipher\\s*\\(", "algorithm": "RC4", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.blowfish", "pattern": "\\bblowfish\\s*\\.\\s*NewCipher\\w*\\s*\\(", "algorithm": "Blowfish", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.chacha20poly1305", "pattern": "\\bchacha20poly1305\\s*\\.\\s*New(?:X)?\\s*\\(", "algorithm": "ChaCha20-Poly1305", "functions": ["encrypt", "decrypt"] },
+    { "id": "go.chacha20", "pattern": "\\bchacha20\\s*\\.\\s*NewUnauthenticatedCipher\\s*\\(", "algorithm": "ChaCha20", "functions": ["encrypt", "decrypt"] },
+    {
+      "id": "go.cipher.mode",
+      "kind": "mode",
+      "pattern": "\\bcipher\\s*\\.\\s*New(?<mode>GCM|CBC|CFB|OFB|CTR)\\w*\\s*\\("
+    },
+    {
+      "id": "go.rsa.generate",
+      "pattern": "\\brsa\\s*\\.\\s*GenerateKey\\s*\\(\\s*[^,]+,\\s*{SIZE}?",
+      "algorithm": "RSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "go.rsa.oaep",
+      "pattern": "\\brsa\\s*\\.\\s*(?<op>EncryptOAEP|DecryptOAEP)\\s*\\(",
+      "algorithm": "RSA/OAEP"
+    },
+    {
+      "id": "go.rsa.pkcs1-encryption",
+      "pattern": "\\brsa\\s*\\.\\s*(?<op>EncryptPKCS1v15|DecryptPKCS1v15|DecryptPKCS1v15SessionKey)\\s*\\(",
+      "algorithm": "RSA/PKCS1Padding"
+    },
+    {
+      "id": "go.rsa.pss",
+      "pattern": "\\brsa\\s*\\.\\s*(?<op>SignPSS|VerifyPSS)\\s*\\(",
+      "algorithm": "RSA/PSS",
+      "primitive": "signature"
+    },
+    {
+      "id": "go.rsa.pkcs1-signature",
+      "pattern": "\\brsa\\s*\\.\\s*(?<op>SignPKCS1v15|VerifyPKCS1v15)\\s*\\(",
+      "algorithm": "RSA",
+      "primitive": "signature"
+    },
+    {
+      "id": "go.ecdsa.generate",
+      "pattern": "\\becdsa\\s*\\.\\s*GenerateKey\\s*\\(\\s*elliptic\\s*\\.\\s*(?<curve>P224|P256|P384|P521)\\s*\\(",
+      "algorithm": "ECDSA",
+      "functions": ["keygen"]
+    },
+    {
+      "id": "go.ecdsa.operation",
+      "pattern": "\\becdsa\\s*\\.\\s*(?<op>Sign\\w*|Verify\\w*)\\s*\\(",
+      "algorithm": "ECDSA"
+    },
+    {
+      "id": "go.ecdh",
+      "pattern": "\\becdh\\s*\\.\\s*(?<curve>P256|P384|P521|X25519)\\s*\\(",
+      "algorithm": "ECDH",
+      "map": {},
+      "functions": ["other"]
+    },
+    {
+      "id": "go.ed25519",
+      "pattern": "\\bed25519\\s*\\.\\s*(?<op>GenerateKey|Sign|Verify|NewKeyFromSeed)\\s*\\(",
+      "algorithm": "Ed25519"
+    },
+    { "id": "go.x25519", "pattern": "\\bcurve25519\\s*\\.\\s*(?:X25519|ScalarMult|ScalarBaseMult)\\s*\\(", "algorithm": "X25519", "functions": ["other"] },
+    { "id": "go.dsa", "pattern": "\\bdsa\\s*\\.\\s*(?:GenerateKey|GenerateParameters|Sign)\\s*\\(", "algorithm": "DSA", "functions": ["sign"] },
+    { "id": "go.mlkem", "pattern": "\\bmlkem\\s*\\.\\s*(?:GenerateKey|NewDecapsulationKey)(?<bits>768|1024)\\s*\\(", "template": "ML-KEM-{bits}", "functions": ["keygen"] },
+    {
+      "id": "go.pbkdf2",
+      "pattern": "\\bpbkdf2\\s*\\.\\s*Key\\s*\\((?:[^;()]|\\([^()]*\\))*?(?<name>sha1|sha256|sha512|md5)\\s*\\.\\s*New",
+      "template": "PBKDF2WithHmac{name}",
+      "functions": ["keyderive"]
+    },
+    { "id": "go.scrypt", "pattern": "\\bscrypt\\s*\\.\\s*Key\\s*\\(", "algorithm": "scrypt", "functions": ["keyderive"] },
+    { "id": "go.argon2", "pattern": "\\bargon2\\s*\\.\\s*(?:ID)?Key\\s*\\(", "algorithm": "Argon2", "functions": ["keyderive"] },
+    { "id": "go.bcrypt", "pattern": "\\bbcrypt\\s*\\.\\s*(?:GenerateFromPassword|CompareHashAndPassword)\\s*\\(", "algorithm": "bcrypt", "functions": ["keyderive"] },
+    {
+      "id": "go.hkdf",
+      "pattern": "\\bhkdf\\s*\\.\\s*(?:New|Extract|Expand|Key)\\s*\\(\\s*(?<name>sha1|sha256|sha512)\\s*\\.\\s*New",
+      "template": "HKDF-{name}",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "go.tls.version",
+      "pattern": "\\btls\\s*\\.\\s*Version(?<name>TLS10|TLS11|TLS12|TLS13|SSL30)\\b",
+      "functions": ["other"]
+    },
+    {
+      "id": "go.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\b(?:os|ioutil)\\s*\\.\\s*(?:WriteFile|Create|OpenFile)\\s*\\(\\s*{FILE}"
+    },
+    {
+      "id": "go.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\b(?:os|ioutil)\\s*\\.\\s*(?:ReadFile|Open)\\s*\\(\\s*{FILE}"
+    }
+  ]
+}

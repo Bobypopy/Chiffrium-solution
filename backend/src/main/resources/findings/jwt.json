@@ -1,0 +1,84 @@
+{
+  "rules": [
+    {
+      "id": "jwt-python-no-verify",
+      "category": "insecure-jwt",
+      "severity": "high",
+      "cwe": "CWE-347",
+      "languages": [
+        "python"
+      ],
+      "pattern": "jwt\\.decode\\s*\\([^)]*(?:verify\\s*=\\s*False|[\\\"']verify_signature[\\\"']\\s*:\\s*False)",
+      "title": "JWT décodé sans vérification",
+      "description": "La signature du jeton n'est pas vérifiée : n'importe qui peut forger un jeton.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    },
+    {
+      "id": "jwt-alg-none-allowed",
+      "category": "insecure-jwt",
+      "severity": "critical",
+      "cwe": "CWE-347",
+      "pattern": "algorithms\\s*[:=]\\s*\\[[^\\]]*[\\\"']none[\\\"']",
+      "ignoreCase": true,
+      "title": "Algorithme \"none\" accepté",
+      "description": "Les jetons non signés sont acceptés.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    },
+    {
+      "id": "jwt-java-unsigned",
+      "category": "insecure-jwt",
+      "severity": "high",
+      "cwe": "CWE-347",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\.parseClaimsJwt\\s*\\(|\\.parseUnsecuredClaims\\s*\\(|\\.unsecured\\s*\\(\\s*\\)",
+      "title": "JWT non signé accepté (jjwt)",
+      "description": "parseClaimsJwt / parseUnsecuredClaims acceptent des jetons sans signature.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    },
+    {
+      "id": "jwt-go-unverified",
+      "category": "insecure-jwt",
+      "severity": "high",
+      "cwe": "CWE-347",
+      "languages": [
+        "go"
+      ],
+      "pattern": "ParseUnverified\\s*\\(|UnsafeAllowNoneSignatureType",
+      "title": "JWT non vérifié (Go)",
+      "description": "ParseUnverified ou UnsafeAllowNoneSignatureType : signature non vérifiée.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    },
+    {
+      "id": "jwt-csharp-validation-off",
+      "category": "insecure-jwt",
+      "severity": "high",
+      "cwe": "CWE-347",
+      "languages": [
+        "csharp"
+      ],
+      "pattern": "(?:RequireSignedTokens|ValidateIssuerSigningKey|ValidateLifetime|RequireExpirationTime)\\s*=\\s*false",
+      "title": "Validation JWT désactivée (.NET)",
+      "description": "Un paramètre de validation essentiel du jeton est désactivé.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    },
+    {
+      "id": "jwt-js-decode-only",
+      "category": "insecure-jwt",
+      "severity": "low",
+      "cwe": "CWE-347",
+      "languages": [
+        "javascript",
+        "typescript"
+      ],
+      "pattern": "\\bjwt\\.decode\\s*\\(",
+      "title": "jwt.decode sans verify",
+      "description": "jwt.decode lit les revendications sans vérifier la signature : ne pas s'en servir pour autoriser.",
+      "recommendation": "Toujours vérifier la signature avec une liste explicite d'algorithmes autorisés (jamais \"none\") et valider exp, iss et aud."
+    }
+  ]
+}
