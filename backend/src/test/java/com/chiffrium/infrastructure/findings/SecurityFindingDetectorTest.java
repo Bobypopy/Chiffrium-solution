@@ -65,6 +65,8 @@ class SecurityFindingDetectorTest {
                 }
                 """);
         TestSupport.write(root, "app.yml", "password: ${DB_PASSWORD}\ntoken_url: https://auth.example.org/oauth\n");
+        // Clé YAML sans valeur : la ligne suivante n'est pas sa valeur.
+        TestSupport.write(root, "ci.yml", "jobs:\n  release:\n    secrets:\n      regcredProdEu1\n");
 
         assertThat(detect(root)).isEmpty();
     }
