@@ -13,18 +13,26 @@ const { MASTER_KEY_BYTES, MASTER_KEY_FILE } = require('./config');
 function loadOrCreateMasterKey(safeStorage, directory) {
   if (!safeStorage.isEncryptionAvailable()) return null;
   const file = path.join(directory, MASTER_KEY_FILE);
-  if (fs.existsSync(file)) {
-    return safeStorage.decryptString(fs.readFileSync(file));
-  }
+  const stored = readIfPresent(file);
+  if (stored !== null) return safeStorage.decryptString(stored);
   // Première exécution après une installation "fichier" : on reprend la clé existante pour ne rien perdre.
   const legacy = path.join(directory, 'data', 'secrets', 'master.key');
-  const key = fs.existsSync(legacy)
-    ? fs.readFileSync(legacy, 'utf8').trim()
-    : crypto.randomBytes(MASTER_KEY_BYTES).toString('base64');
+  const legacyKey = readIfPresent(legacy, 'utf8');
+  const key = legacyKey !== null ? legacyKey.trim() : crypto.randomBytes(MASTER_KEY_BYTES).toString('base64');
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(file, safeStorage.encryptString(key), { mode: 0o600 });
-  if (fs.existsSync(legacy)) fs.rmSync(legacy);
+  if (legacyKey !== null) fs.rmSync(legacy, { force: true });
   return key;
+}
+
+/** Lecture directe plutôt que existsSync puis lecture : le fichier ne peut pas changer entre les deux. */
+function readIfPresent(file, encoding) {
+  try {
+    return fs.readFileSync(file, encoding);
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 module.exports = { loadOrCreateMasterKey };

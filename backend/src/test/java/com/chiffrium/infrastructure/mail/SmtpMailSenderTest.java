@@ -3,6 +3,8 @@ package com.chiffrium.infrastructure.mail;
 import com.chiffrium.application.settings.Settings;
 import org.junit.jupiter.api.Test;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -80,6 +82,29 @@ class SmtpMailSenderTest {
                     .send("absente@exemple.fr", "Objet", "Corps"))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("550");
+        }
+    }
+
+    @Test
+    void aRefusedPasswordIsNeverRepeatedInTheError() throws Exception {
+        String encoded = Base64.getEncoder().encodeToString("mot-de-passe".getBytes(StandardCharsets.UTF_8));
+        try (FakeSmtp relais = new FakeSmtp(encoded, "535 authentification refusée")) {
+            Settings.Email config = new Settings.Email(true, "127.0.0.1", relais.port(), false, "expediteur",
+                    "mot-de-passe", "chiffrium@exemple.fr");
+
+            assertThatThrownBy(() -> new SmtpMailSender(config, TIMEOUT)
+                    .send("alice@exemple.fr", "Objet", "Corps"))
+                    .hasMessageContaining("AUTH (mot de passe)")
+                    .hasMessageContaining("535")
+                    .hasMessageNotContaining(encoded);
+        }
+    }
+
+    @Test
+    void tlsChecksThatTheCertificateNamesTheRelay() throws Exception {
+        try (SSLSocket socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket()) {
+            assertThat(SmtpMailSender.verifyHostName(socket).getSSLParameters().getEndpointIdentificationAlgorithm())
+                    .isEqualTo("HTTPS");
         }
     }
 

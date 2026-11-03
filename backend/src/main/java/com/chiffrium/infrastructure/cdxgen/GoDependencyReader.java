@@ -25,9 +25,12 @@ import java.util.regex.Pattern;
 final class GoDependencyReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(GoDependencyReader.class);
-    /** "module v1.2.3" éventuellement suivi de "// indirect". */
+    /**
+     * "module v1.2.3" éventuellement suivi de "// indirect". Pas de groupe répété dont les classes se
+     * recouvrent : un go.mod piégé ne doit pas pouvoir faire exploser le temps de reconnaissance.
+     */
     private static final Pattern REQUIREMENT = Pattern.compile(
-            "^\\s*(?:require\\s+)?(?<module>[\\w.~-]+(?:\\.[\\w.~-]+)*(?:/[\\w.~+-]+)+)\\s+"
+            "^\\s*(?:require\\s+)?(?<module>[\\w.~-]+(?:/[\\w.~+-]+)+)\\s+"
                     + "(?<version>v[\\w.+-]+)\\s*(?<comment>//.*)?$");
     private static final Pattern SUM_LINE = Pattern.compile(
             "^(?<module>\\S+)\\s+(?<version>v[\\w.+-]+?)(?:/go\\.mod)?\\s+h1:\\S+$");

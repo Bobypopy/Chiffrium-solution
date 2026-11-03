@@ -2,6 +2,7 @@ package com.chiffrium.infrastructure.cdxgen;
 
 import com.chiffrium.infrastructure.cdxgen.DeclaredDependencies.Dependency;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
@@ -90,6 +91,16 @@ class NugetGoAndTransitiveReaderTest {
         // Vu pendant la résolution mais pas retenu : présent, mais pas donné comme embarqué.
         assertThat(deps.get("pkg:golang/golang.org/x/sys@v0.18.0").optional()).isTrue();
         assertThat(deps.get("pkg:golang/golang.org/x/crypto@v0.21.0").optional()).isFalse();
+    }
+
+    @Test
+    @Timeout(5)
+    void aCraftedGoModCannotStallTheAnalysis(@TempDir Path root) throws IOException {
+        // Motif qui faisait exploser l'ancienne expression (groupes répétés qui se recouvraient).
+        Files.writeString(root.resolve("go.mod"), "require " + "-.".repeat(5_000) + "!\n"
+                + "require golang.org/x/crypto v0.21.0\n");
+
+        assertThat(GoDependencyReader.read(root)).containsOnlyKeys("pkg:golang/golang.org/x/crypto@v0.21.0");
     }
 
     @Test

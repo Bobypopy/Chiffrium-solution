@@ -31,8 +31,8 @@ inputs:
     default: "false"
   version:
     description: >-
-      Version de Chiffrium ("1.2.8"...). Par défaut, celle de l'action si elle est appelée par un numéro de
-      version (@v1.2.8), sinon la dernière publiée.
+      Version de Chiffrium ("1.2.9"...). Par défaut, celle de l'action si elle est appelée par un numéro de
+      version (@v1.2.9), sinon la dernière publiée.
     default: ""
 
 outputs:

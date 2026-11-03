@@ -1,0 +1,9 @@
+# Actions épinglées par commit : Dependabot propose la mise à jour du SHA et de la version en commentaire.
+# Les dépendances npm et Maven ne sont pas suivies ici : cdxgen et ses dépendances ne changent qu'après
+# validation (publication/MAINTENANCE.md), les alertes de sécurité restent actives.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

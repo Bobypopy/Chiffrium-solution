@@ -5,6 +5,7 @@ import com.chiffrium.application.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedReader;
@@ -65,7 +66,6 @@ public final class SmtpMailSender implements MailSender {
                     + "identifiants ne seront pas envoyés en clair. Activez STARTTLS ou le port 465.");
         }
         try (Socket socket = connect()) {
-            socket.setSoTimeout(timeoutMillis);
             Session session = new Session(socket);
             session.expect(session.read(), "bannière");
             session.command("EHLO " + helo());
@@ -89,23 +89,29 @@ public final class SmtpMailSender implements MailSender {
     }
 
     private Socket connect() throws IOException {
-        if (config.port() == IMPLICIT_TLS_PORT) {
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            SSLSocket socket = (SSLSocket) factory.createSocket();
-            socket.connect(new InetSocketAddress(config.host(), config.port()), timeoutMillis);
-            socket.startHandshake();
-            return socket;
-        }
         Socket socket = new Socket();
         socket.connect(new InetSocketAddress(config.host(), config.port()), timeoutMillis);
-        return socket;
+        socket.setSoTimeout(timeoutMillis);
+        return config.port() == IMPLICIT_TLS_PORT ? upgrade(socket) : socket;
     }
 
     private Socket upgrade(Socket plain) throws IOException {
         SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        SSLSocket secured = (SSLSocket) factory.createSocket(plain, config.host(), config.port(), true);
+        SSLSocket secured = verifyHostName(
+                (SSLSocket) factory.createSocket(plain, config.host(), config.port(), true));
         secured.startHandshake();
         return secured;
+    }
+
+    /**
+     * Sans cela, un SSLSocket accepte tout certificat valide, même émis pour un autre domaine : n'importe qui
+     * placé entre Chiffrium et le relais pourrait recueillir les identifiants SMTP.
+     */
+    static SSLSocket verifyHostName(SSLSocket socket) {
+        SSLParameters parameters = socket.getSSLParameters();
+        parameters.setEndpointIdentificationAlgorithm("HTTPS");
+        socket.setSSLParameters(parameters);
+        return socket;
     }
 
     private boolean hasCredentials() {
@@ -128,9 +134,11 @@ public final class SmtpMailSender implements MailSender {
         }
         Base64.Encoder encoder = Base64.getEncoder();
         session.command("AUTH LOGIN");
-        session.command(encoder.encodeToString(config.username().getBytes(StandardCharsets.UTF_8)));
+        // Un libellé à la place de la valeur : en cas de refus, ni le log ni l'erreur ne contiennent le secret.
+        session.command(encoder.encodeToString(config.username().getBytes(StandardCharsets.UTF_8)),
+                "AUTH (identifiant)");
         session.command(encoder.encodeToString(
-                String.valueOf(config.password()).getBytes(StandardCharsets.UTF_8)));
+                String.valueOf(config.password()).getBytes(StandardCharsets.UTF_8)), "AUTH (mot de passe)");
     }
 
     private boolean isLoopback() {
@@ -199,9 +207,13 @@ public final class SmtpMailSender implements MailSender {
         }
 
         String command(String line) throws IOException {
+            return command(line, line.split(" ")[0]);
+        }
+
+        String command(String line, String step) throws IOException {
             write(line + "\r\n");
             String response = read();
-            expect(response, line.split(" ")[0]);
+            expect(response, step);
             return response;
         }
 
@@ -231,16 +243,18 @@ public final class SmtpMailSender implements MailSender {
         }
 
         void expect(String response, String step, int exactCode) {
+            // Texte venu du relais : ses caractères de contrôle ne doivent pas forger de fausses lignes de log.
+            String printable = response.replaceAll("\\p{Cntrl}", "?");
             int code;
             try {
                 code = Integer.parseInt(response.substring(0, 3));
             } catch (RuntimeException e) {
-                throw new IllegalStateException("réponse SMTP illisible après " + step + " : " + response);
+                throw new IllegalStateException("réponse SMTP illisible après " + step + " : " + printable);
             }
             boolean ok = exactCode > 0 ? code == exactCode : code >= OK_MIN && code <= OK_MAX;
             if (!ok) {
-                LOG.debug("SMTP : {} a répondu {}", step, response);
-                throw new IllegalStateException("le relais a refusé \"" + step + "\" : " + response);
+                LOG.debug("SMTP : {} a répondu {}", step, printable);
+                throw new IllegalStateException("le relais a refusé \"" + step + "\" : " + printable);
             }
         }
     }

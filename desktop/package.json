@@ -1,7 +1,7 @@
 {
   "name": "chiffrium-desktop",
   "productName": "Chiffrium",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Application de bureau Chiffrium : inventaire cryptographique (CBOM), constats de sécurité et préparation post-quantique, en local",
   "main": "src/main.js",
   "private": true,
@@ -23,6 +23,16 @@
   "devDependencies": {
     "electron": "44.9.1",
     "electron-builder": "26.15.3"
+  },
+  "overrides": {
+    "@cyclonedx/cdxgen": {
+      "body-parser": "2.4.0"
+    },
+    "fast-uri": "3.1.9",
+    "qs": "6.16.1",
+    "node-gyp": {
+      "undici": "6.29.1"
+    }
   },
   "engines": {
     "node": ">=20"

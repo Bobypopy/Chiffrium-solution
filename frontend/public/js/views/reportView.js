@@ -160,7 +160,9 @@ export async function renderReport(container, { id, tab = 'dashboard', selection
     steps: () => stepsTab(job, report),
   };
 
-  function renderTab(tabId) {
+  function renderTab(requested) {
+    // Onglet venu de l'adresse : seuls les onglets connus sont appelés, jamais une propriété héritée.
+    const tabId = Object.hasOwn(views, requested) ? requested : 'dashboard';
     for (const button of tabs.querySelectorAll('[role="tab"]')) {
       button.setAttribute('aria-selected', String(button.dataset.tab === tabId));
     }
@@ -180,7 +182,7 @@ export async function renderReport(container, { id, tab = 'dashboard', selection
   scrollBeforeNavigation = null;
   lastView = { id, tab: activeTab };
   mount(container, header(job, report, () => renderReport(container, { id, tab, selection, live: true })), tabs, body);
-  renderTab(views[activeTab] ? activeTab : 'dashboard');
+  renderTab(activeTab);
   if (scroll != null) window.scrollTo(0, scroll);
   if (isActiveJob(job)) {
     // Suivi en direct tant que l'utilisateur reste sur cette analyse.
