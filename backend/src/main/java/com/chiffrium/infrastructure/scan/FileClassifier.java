@@ -2,6 +2,7 @@ package com.chiffrium.infrastructure.scan;
 
 import com.chiffrium.domain.model.Language;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +33,11 @@ public final class FileClassifier {
             Map.entry("rb", Language.RUBY),
             Map.entry("rs", Language.RUST),
             Map.entry("swift", Language.SWIFT),
+            Map.entry("dart", Language.DART),
+            Map.entry("ex", Language.ELIXIR), Map.entry("exs", Language.ELIXIR),
+            Map.entry("pl", Language.PERL), Map.entry("pm", Language.PERL),
+            Map.entry("m", Language.OBJC), Map.entry("mm", Language.OBJC),
+            Map.entry("sql", Language.SQL),
             Map.entry("conf", Language.CONFIG), Map.entry("cnf", Language.CONFIG),
             Map.entry("properties", Language.CONFIG), Map.entry("yml", Language.CONFIG),
             Map.entry("yaml", Language.CONFIG), Map.entry("ini", Language.CONFIG),
@@ -64,11 +70,15 @@ public final class FileClassifier {
     private static final Set<String> DATA_FILE_NAMES = Set.of("kubeconfig");
     private static final String TERRAFORM_STATE_BACKUP = ".tfstate.backup";
 
+    /** Archives versionnées, ouvertes en mémoire pour y chercher clés et secrets (voir {@link ArchiveEntries}). */
+    private static final Set<String> ZIP_EXTENSIONS = Set.of("zip", "jar", "war", "ear", "aar", "apk", "whl", "nupkg");
+    private static final List<String> TAR_SUFFIXES = List.of(".tar", ".tar.gz", ".tgz");
+
     private static final Set<String> MANIFESTS = Set.of(
             "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "build.sbt",
             "package.json", "requirements.txt", "pyproject.toml", "setup.py", "pipfile", "go.mod",
             "packages.config", "cmakelists.txt", "conanfile.txt", "conanfile.py", "vcpkg.json", "composer.json",
-            "gemfile", "cargo.toml", "package.swift", "podfile");
+            "gemfile", "cargo.toml", "package.swift", "podfile", "pubspec.yaml", "mix.exs", "cpanfile");
 
     private static final Set<String> MANIFEST_EXTENSIONS = Set.of("csproj", "sln", "fsproj", "vbproj");
 
@@ -101,6 +111,21 @@ public final class FileClassifier {
         String lower = fileName.toLowerCase(Locale.ROOT);
         return DATA_FILE_NAMES.contains(lower) || lower.endsWith(TERRAFORM_STATE_BACKUP)
                 || extension(lower).map(DATA_EXTENSIONS::contains).orElse(false);
+    }
+
+    /** Fichier lu par les détecteurs : code ou configuration, matériel cryptographique, ou données. */
+    public static boolean isScanned(String fileName) {
+        return languageOf(fileName).isPresent() || isMaterial(fileName) || isData(fileName);
+    }
+
+    public static boolean isArchive(String fileName) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return isTarArchive(lower) || extension(lower).map(ZIP_EXTENSIONS::contains).orElse(false);
+    }
+
+    static boolean isTarArchive(String fileName) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return TAR_SUFFIXES.stream().anyMatch(lower::endsWith);
     }
 
     public static boolean isManifest(String fileName) {

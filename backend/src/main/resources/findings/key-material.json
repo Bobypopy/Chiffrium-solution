@@ -44,7 +44,7 @@
         "scala",
         "groovy"
       ],
-      "pattern": "new\\s+PBEKeySpec\\s*\\([^,]+,\\s*\\\"[^\\\"]*\\\"\\s*\\.(?:getBytes|toByteArray)",
+      "pattern": "new\\s+(?:PBEKeySpec\\s*\\([^,]+,|PBEParameterSpec\\s*\\()\\s*\\\"[^\\\"]*\\\"\\s*\\.(?:getBytes|toByteArray)",
       "title": "Sel constant",
       "description": "Sel de dérivation constant : les mêmes mots de passe donnent les mêmes clés (attaques par tables).",
       "recommendation": "Générer un sel aléatoire d'au moins 16 octets par mot de passe et le stocker avec l'empreinte."
@@ -158,7 +158,7 @@
         "scala",
         "groovy"
       ],
-      "pattern": "(?:static\\s+)?final\\s+(?:String|byte\\s*\\[\\s*\\])\\s+(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*\\\"(?<secret>[^\\\"\\n]{8,})\\\"[\\s\\S]{0,2000}?new\\s+SecretKeySpec\\s*\\(\\s*(?:\\k<nom>\\b|\\k<nom>\\s*\\.\\s*getBytes)",
+      "pattern": "(?:(?:static\\s+)?final\\s+)?(?:String|byte\\s*\\[\\s*\\])\\s+(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*\\\"(?<secret>[^\\\"\\n]{8,})\\\"[\\s\\S]{0,2000}?new\\s+SecretKeySpec\\s*\\(\\s*(?:\\k<nom>\\b|\\k<nom>\\s*\\.\\s*getBytes)",
       "secretGroup": "secret",
       "minEntropy": 2.0,
       "title": "Clé symétrique en dur (constante)",
@@ -210,6 +210,54 @@
       "title": "Clé symétrique en dur (constante)",
       "description": "La clé vient d'une constante de la classe : elle est dans le dépôt et dans l'assembly livré.",
       "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la stocker dans un coffre (DPAPI, Key Vault)."
+    },
+    {
+      "id": "key-java-byte-array",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bbyte\\s*(?:\\[\\s*\\]\\s*)?(?<nom>[A-Za-z_$][\\w$]*)\\s*(?:\\[\\s*\\]\\s*)?=\\s*(?:\\{[^}]{4,}\\}|\"[^\"\\n]{4,}\"\\s*\\.\\s*getBytes\\s*\\([^)]*\\))\\s*;(?:(?!\\b(?:nextBytes|read|readFully|arraycopy|fill)\\s*\\([^;]*\\b\\k<nom>\\b|\\b\\k<nom>\\s*=(?!=)(?!\\s*Arrays\\s*\\.\\s*copyOf(?:Range)?\\s*\\(\\s*\\k<nom>\\b))[\\s\\S]){0,2000}?new\\s+SecretKeySpec\\s*\\(\\s*\\k<nom>\\b",
+      "title": "Clé symétrique en dur (constante)",
+      "description": "La clé vient d'une constante du fichier : elle est dans le dépôt et dans le binaire livré, donc connue de quiconque y a accès.",
+      "recommendation": "Générer la clé aléatoirement ou la dériver d'un secret (KDF), et la stocker dans un coffre ou une variable d'environnement."
+    },
+    {
+      "id": "iv-java-variable",
+      "category": "hardcoded-key-material",
+      "severity": "high",
+      "cwe": "CWE-329",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bbyte\\s*(?:\\[\\s*\\]\\s*)?(?<nom>[A-Za-z_$][\\w$]*)\\s*(?:\\[\\s*\\]\\s*)?=\\s*(?:\\{[^}]*\\}|\"[^\"\\n]*\"\\s*\\.\\s*getBytes\\s*\\([^)]*\\)|new\\s+byte\\s*\\[\\s*\\d+\\s*\\])\\s*;(?:(?!\\b(?:nextBytes|read|readFully|arraycopy|fill)\\s*\\([^;]*\\b\\k<nom>\\b|\\b\\k<nom>\\s*=(?!=)(?!\\s*Arrays\\s*\\.\\s*copyOf(?:Range)?\\s*\\(\\s*\\k<nom>\\b))[\\s\\S]){0,2000}?new\\s+(?:IvParameterSpec\\s*\\(|GCMParameterSpec\\s*\\(\\s*\\w+\\s*,)\\s*\\k<nom>\\b",
+      "title": "IV ou nonce constant",
+      "description": "IV/nonce constant ou nul : même chiffré pour un même message, et en GCM perte totale de sécurité.",
+      "recommendation": "Générer un IV/nonce aléatoire et unique à chaque chiffrement (et le transmettre avec le chiffré) ; en GCM, ne jamais réutiliser un nonce avec la même clé."
+    },
+    {
+      "id": "salt-java-variable",
+      "category": "hardcoded-key-material",
+      "severity": "medium",
+      "cwe": "CWE-760",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bbyte\\s*(?:\\[\\s*\\]\\s*)?(?<nom>[A-Za-z_$][\\w$]*)\\s*(?:\\[\\s*\\]\\s*)?=\\s*(?:\\{[^}]*\\}|\"[^\"\\n]*\"\\s*\\.\\s*getBytes\\s*\\([^)]*\\)|new\\s+byte\\s*\\[\\s*\\d+\\s*\\])\\s*;(?:(?!\\b(?:nextBytes|read|readFully|arraycopy|fill)\\s*\\([^;]*\\b\\k<nom>\\b|\\b\\k<nom>\\s*=(?!=)(?!\\s*Arrays\\s*\\.\\s*copyOf(?:Range)?\\s*\\(\\s*\\k<nom>\\b))[\\s\\S]){0,2000}?new\\s+(?:PBEParameterSpec\\s*\\(|PBEKeySpec\\s*\\([^,]+,)\\s*\\k<nom>\\b",
+      "title": "Sel constant",
+      "description": "Sel de dérivation constant : les mêmes mots de passe donnent les mêmes clés (attaques par tables).",
+      "recommendation": "Générer un sel aléatoire d'au moins 16 octets par mot de passe et le stocker avec l'empreinte."
     }
   ]
 }

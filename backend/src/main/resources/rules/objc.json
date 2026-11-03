@@ -1,0 +1,44 @@
+{
+  "id": "objc",
+  "languages": ["objc"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^\\s*[-+]\\s*\\([^)]*\\)\\s*(?<name>\\w+)",
+    "^\\s*(?:static\\s+)?(?:inline\\s+)?[\\w\\s\\*]+?\\b(?<name>[A-Za-z_]\\w*)\\s*\\([^;]*\\)\\s*\\{?\\s*$"
+  ],
+  "classPatterns": [
+    "@(?:implementation|interface)\\s+(?<name>\\w+)"
+  ],
+  "rules": [
+    { "id": "objc.commoncrypto.digest", "pattern": "\\bCC_(?<name>MD2|MD4|MD5|SHA1|SHA224|SHA256|SHA384|SHA512)\\s*\\(", "functions": ["digest"] },
+    { "id": "objc.commoncrypto.hmac", "pattern": "\\bkCCHmacAlg(?<name>MD5|SHA1|SHA224|SHA256|SHA384|SHA512)\\b", "template": "HMAC-{name}", "functions": ["tag"] },
+    {
+      "id": "objc.commoncrypto.cipher",
+      "pattern": "\\bkCCAlgorithm(?<name>AES128|AES|DES|3DES|CAST|RC4|RC2|Blowfish)\\b",
+      "map": { "aes128": "AES", "cast": "CAST5" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    { "id": "objc.commoncrypto.ecb", "kind": "mode", "pattern": "\\bkCCOption(?<mode>ECB)Mode\\b" },
+    { "id": "objc.commoncrypto.keysize", "kind": "keysize", "pattern": "\\bkCCKeySizeAES(?<size>128|192|256)\\b" },
+    { "id": "objc.commoncrypto.pbkdf2", "pattern": "\\bCCKeyDerivationPBKDF\\s*\\(", "algorithm": "PBKDF2", "functions": ["keyderive"] },
+    {
+      "id": "objc.security.keytype",
+      "pattern": "\\bkSecAttrKeyType(?<name>RSA|ECSECPrimeRandom|EC)\\b",
+      "map": { "ecsecprimerandom": "EC" },
+      "functions": ["keygen"]
+    },
+    { "id": "objc.security.keysize", "kind": "keysize", "pattern": "\\bkSecAttrKeySizeInBits[^\\n,;]*?@\\(?\\s*{SIZE}" },
+    {
+      "id": "objc.security.algorithm",
+      "pattern": "\\bkSecKeyAlgorithm(?<name>\\w+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "objc.tls.version",
+      "pattern": "\\b(?:kTLSProtocol|tls_protocol_version_)(?<name>SSL3|1|11|12|13|TLSv10|TLSv11|TLSv12|TLSv13)\\b",
+      "map": { "ssl3": "SSLv3", "1": "TLSv1", "11": "TLSv1.1", "12": "TLSv1.2", "13": "TLSv1.3" },
+      "functions": ["other"]
+    }
+  ]
+}

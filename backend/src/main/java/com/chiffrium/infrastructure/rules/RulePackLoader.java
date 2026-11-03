@@ -30,7 +30,7 @@ import java.util.stream.StreamSupport;
  *   <li>{@code {ARG}} : argument (littéral, identifiant, concaténation) dans le groupe {@code algo} ;</li>
  *   <li>{@code {STR}} : littéral chaîne uniquement, groupe {@code algo} ;</li>
  *   <li>{@code {FILE}} : argument "chemin de fichier", groupe {@code file} ;</li>
- *   <li>{@code {SIZE}} : taille de clé (2 à 5 chiffres), groupe {@code size}.</li>
+ *   <li>{@code {SIZE}} : taille de clé (2 à 5 chiffres, ou variable numérique du fichier), groupe {@code size}.</li>
  * </ul>
  */
 public final class RulePackLoader {
@@ -48,7 +48,8 @@ public final class RulePackLoader {
             "{ARG}", "(?<algo>" + ARGUMENT + ")",
             "{STR}", "(?<algo>" + STRING_LITERAL + ")",
             "{FILE}", "(?<file>" + ARGUMENT + ")",
-            "{SIZE}", "(?<size>\\d{2,5})");
+            // Nombre, ou variable / constante numérique résolue dans le fichier (int keysize = 1024).
+            "{SIZE}", "(?<size>\\d{2,5}|[A-Za-z_$][\\w$.]*)");
 
     private final ObjectMapper mapper;
 

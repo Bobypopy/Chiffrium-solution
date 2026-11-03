@@ -1,0 +1,99 @@
+{
+  "id": "dart",
+  "languages": ["dart"],
+  "commentPrefixes": ["//", "/*", "*"],
+  "functionPatterns": [
+    "^(?!\\s*(?:return|new|else|throw|case|if|for|while|switch|catch|do|try|await|yield)\\b)\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:(?:static|final|const|external|factory|abstract)\\s+)*(?:[\\w<>?,\\[\\]]+\\s+)?(?<name>[A-Za-z_]\\w*)\\s*\\([^=;]*$"
+  ],
+  "classPatterns": [
+    "\\b(?:class|mixin|extension|enum)\\s+(?<name>[A-Za-z_]\\w*)"
+  ],
+  "rules": [
+    {
+      "id": "dart.crypto.hmac",
+      "pattern": "\\bHmac\\s*\\(\\s*(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\s*,",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "dart.crypto.hash",
+      "pattern": "\\b(?<name>md5|sha1|sha224|sha256|sha384|sha512)\\s*\\.\\s*convert\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "dart.cryptography.aes",
+      "pattern": "\\bAes(?<mode>Gcm|Cbc|Ctr)\\s*\\.\\s*with(?<size>128|192|256)bits\\s*\\(",
+      "algorithm": "AES",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "dart.cryptography.chacha",
+      "pattern": "\\b(?<name>Chacha20|Xchacha20)\\s*\\.\\s*poly1305Aead\\s*\\(",
+      "template": "{name}-Poly1305",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "dart.cryptography.ecdsa",
+      "pattern": "\\bEcdsa\\s*\\.\\s*(?<curve>p256|p384|p521)\\s*\\(",
+      "algorithm": "ECDSA",
+      "map": { "p256": "P-256", "p384": "P-384", "p521": "P-521" },
+      "functions": ["sign", "verify"]
+    },
+    {
+      "id": "dart.cryptography.curves",
+      "pattern": "\\b(?<name>Ed25519|X25519)\\s*\\(\\s*\\)",
+      "functions": ["other"]
+    },
+    {
+      "id": "dart.cryptography.kdf",
+      "pattern": "\\b(?<name>Pbkdf2|Argon2id|Hkdf)\\s*\\(",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "dart.pointycastle.registry",
+      "pattern": "\\b(?<api>BlockCipher|PaddedBlockCipher|StreamCipher|AsymmetricBlockCipher|Digest|Mac|Signer|KeyDerivator|KeyGenerator)\\s*\\(\\s*{STR}",
+      "functionsByApi": {
+        "BlockCipher": ["encrypt", "decrypt"],
+        "PaddedBlockCipher": ["encrypt", "decrypt"],
+        "StreamCipher": ["encrypt", "decrypt"],
+        "AsymmetricBlockCipher": ["encrypt", "decrypt"],
+        "Digest": ["digest"],
+        "Mac": ["tag"],
+        "Signer": ["sign", "verify"],
+        "KeyDerivator": ["keyderive"],
+        "KeyGenerator": ["keygen"]
+      },
+      "primitiveByApi": { "Signer": "signature", "Mac": "mac", "Digest": "hash" },
+      "keyByApi": { "KeyGenerator": "auto" }
+    },
+    {
+      "id": "dart.encrypt.aes",
+      "pattern": "\\bEncrypter\\s*\\(\\s*AES\\s*\\(\\s*\\w+\\s*(?:,\\s*mode\\s*:\\s*AESMode\\s*\\.\\s*(?<mode>\\w+))?",
+      "algorithm": "AES",
+      "map": { "sic": "CTR" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "dart.pointycastle.rsa-keysize",
+      "kind": "keysize",
+      "pattern": "\\bRSAKeyGeneratorParameters\\s*\\(\\s*BigInt\\s*\\.\\s*\\w+\\s*\\(\\s*\\d+\\s*\\)\\s*,\\s*{SIZE}"
+    },
+    {
+      "id": "dart.random-key-bytes",
+      "kind": "keybytes",
+      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*(?:enc\\s*\\.\\s*)?Key\\s*\\.\\s*fromSecureRandom\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
+    },
+    {
+      "id": "dart.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bFile\\s*\\(\\s*{FILE}\\s*\\)\\s*\\.\\s*(?:writeAsString|writeAsBytes|openWrite)\\w*\\s*\\("
+    },
+    {
+      "id": "dart.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\bFile\\s*\\(\\s*{FILE}\\s*\\)\\s*\\.\\s*(?:readAsString|readAsBytes|readAsLines|openRead)\\w*\\s*\\("
+    }
+  ]
+}

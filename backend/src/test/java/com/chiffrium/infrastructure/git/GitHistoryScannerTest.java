@@ -64,6 +64,39 @@ class GitHistoryScannerTest {
     }
 
     @Test
+    void otherBranchesTagsAndSubmodulesAreSearchedToo(@TempDir Path dir) throws Exception {
+        Path library = dir.resolve("library");
+        try (Git git = Git.init().setDirectory(library.toFile()).call()) {
+            TestSupport.write(library, "lib.properties", "lib.secret=Pw3xK8qL1zVb\n");
+            commit(git, "secret de la bibliothèque");
+            TestSupport.write(library, "lib.properties", "lib.secret=${LIB_SECRET}\n");
+            commit(git, "variable");
+        }
+        Path repo = dir.resolve("app");
+        try (Git git = Git.init().setDirectory(repo.toFile()).call()) {
+            TestSupport.write(repo, "README.txt", "application\n");
+            commit(git, "départ");
+            String main = git.getRepository().getBranch();
+            git.checkout().setCreateBranch(true).setName("feature/essai").call();
+            TestSupport.write(repo, "branch.properties", "branch.secret=Mn4tY7uI2oPq\n");
+            commit(git, "secret sur une branche");
+            git.checkout().setName(main).call();
+            git.checkout().setCreateBranch(true).setName("version").call();
+            TestSupport.write(repo, "tag.properties", "tag.secret=Zq8vR2pL9wXk\n");
+            git.tag().setName("v1").setAnnotated(true).setMessage("v1").setObjectId(commit(git, "secret étiqueté")).call();
+            git.checkout().setName(main).call();
+            git.branchDelete().setBranchNames("version").setForce(true).call();
+            git.submoduleAdd().setPath("libs/library").setURI(library.toUri().toString()).call().close();
+            commit(git, "sous-module");
+        }
+
+        List<SecurityFinding> findings = new GitHistoryScanner(DETECTOR, 1_000_000).scan(repo).findings();
+
+        assertThat(findings).extracting(SecurityFinding::file)
+                .containsExactlyInAnyOrder("branch.properties", "tag.properties", "libs/library/lib.properties");
+    }
+
+    @Test
     void subfolderPathsAreRelativeToTheAnalysedFolder(@TempDir Path repo) throws Exception {
         try (Git git = Git.init().setDirectory(repo.toFile()).call()) {
             TestSupport.write(repo, "services/api/app.properties", "api.secret=Zq8vR2pL9wXk\n");

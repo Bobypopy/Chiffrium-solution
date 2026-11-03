@@ -9,6 +9,11 @@
   "ruby.json",
   "rust.json",
   "swift.json",
+  "dart.json",
+  "elixir.json",
+  "perl.json",
+  "objc.json",
+  "sql.json",
   "config.json",
   "jwt.json",
   "cloud-kms.json"

@@ -106,6 +106,20 @@ class PolicyEvaluatorTest {
     }
 
     @Test
+    void postQuantumLevelsFollowAnssiBsiAndCnsa() {
+        assertThat(verdict("ML-DSA-44").status()).isEqualTo(PolicyStatus.DEPRECATED);
+        // Niveau 3 : recommandé par l'ANSSI et le BSI, l'exigence CNSA 2.0 est signalée sans dégrader le statut.
+        PolicyVerdict mlDsa65 = verdict("ML-DSA-65");
+        assertThat(mlDsa65.status()).isEqualTo(PolicyStatus.RECOMMENDED);
+        assertThat(mlDsa65.reasons()).anyMatch(r -> r.startsWith("ML-DSA-65 : CNSA 2.0"));
+        assertThat(verdict("ML-DSA-87").reasons()).noneMatch(r -> r.contains("CNSA"));
+        assertThat(verdict("ML-KEM-512").status()).isEqualTo(PolicyStatus.DEPRECATED);
+        assertThat(verdict("ML-KEM-768").reasons()).anyMatch(r -> r.startsWith("ML-KEM-768 : CNSA 2.0"));
+        assertThat(verdict("ML-KEM-1024").status()).isEqualTo(PolicyStatus.RECOMMENDED);
+        assertThat(verdict("ML-KEM").reasons()).anyMatch(r -> r.contains("niveau de sécurité non déterminé"));
+    }
+
+    @Test
     void generatedKeyIsJudgedByItsAlgorithmNotAsACommittedKey() {
         AlgorithmSpec rsa1024 = TestSupport.NORMALIZER.normalize("RSA").withKeySize(1024);
         CryptoAsset key = TestSupport.ASSETS.generatedKey("private-key", rsa1024, occurrence("src/Keys.java"));

@@ -87,6 +87,28 @@
     "config": [
       "#",
       ";"
+    ],
+    "dart": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "elixir": [
+      "#"
+    ],
+    "perl": [
+      "#"
+    ],
+    "objc": [
+      "//",
+      "/*",
+      "*"
+    ],
+    "sql": [
+      "--",
+      "/*",
+      "*",
+      "#"
     ]
   },
   "testPathPattern": "(^|/)(src/test|[Tt]ests?|[Ss]pecs?|__tests__|__mocks__|testdata|test-data|[Ff]ixtures?|[Mm]ocks?|[Ee]xamples?|[Ss]amples?|[Dd]emos?)(/|$)|[._-](test|spec)s?\\.[A-Za-z0-9]+$|[a-z0-9]Tests?\\.[A-Za-z]+$",

@@ -133,6 +133,14 @@ export const CATALOGUE_B = {
     'unauthenticated mode (used by MTProto): prefer an AEAD mode.',
   'mode obsolète.': 'outdated mode.',
   'moins de 112 bits de sécurité.': 'less than 112-bit security.',
+  'niveau 1 seulement : l\'ANSSI et le BSI demandent au moins ML-KEM-768.':
+    'level 1 only: ANSSI and BSI require at least ML-KEM-768.',
+  'CNSA 2.0 exige ML-KEM-1024 pour les systèmes de sécurité nationale.':
+    'CNSA 2.0 requires ML-KEM-1024 for national security systems.',
+  'niveau 2 seulement : l\'ANSSI et le BSI demandent au moins ML-DSA-65.':
+    'level 2 only: ANSSI and BSI require at least ML-DSA-65.',
+  'CNSA 2.0 exige ML-DSA-87 pour les systèmes de sécurité nationale.':
+    'CNSA 2.0 requires ML-DSA-87 for national security systems.',
   'neutre : attendu pour les modes AEAD (GCM, CCM) et flux (CTR).':
     'neutral: expected for AEAD modes (GCM, CCM) and stream modes (CTR).',
   'nonce unique impératif.': 'a unique nonce is mandatory.',

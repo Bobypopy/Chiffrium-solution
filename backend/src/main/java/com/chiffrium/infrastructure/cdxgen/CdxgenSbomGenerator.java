@@ -67,7 +67,8 @@ public final class CdxgenSbomGenerator implements SbomGenerator {
             Map.entry(Language.GO, "go"), Map.entry(Language.CSHARP, "dotnet"),
             Map.entry(Language.C, "c"), Map.entry(Language.CPP, "c"),
             Map.entry(Language.PHP, "php"), Map.entry(Language.RUBY, "ruby"),
-            Map.entry(Language.RUST, "rust"), Map.entry(Language.SWIFT, "swift")));
+            Map.entry(Language.RUST, "rust"), Map.entry(Language.SWIFT, "swift"),
+            Map.entry(Language.DART, "dart"), Map.entry(Language.ELIXIR, "elixir")));
 
     private final String command;
     private final Set<Language> cryptoLanguages;

@@ -268,7 +268,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             Set<CryptoFunction> functions = functionsOf(rule, api);
             Primitive primitiveHint = api != null && rule.primitiveByApi().containsKey(api)
                     ? rule.primitiveByApi().get(api) : rule.primitive();
-            Integer keySize = parseSize(group(matcher, "size"));
+            Integer keySize = sizeOf(group(matcher, "size"));
             int column = text.columnOf(matcher.start());
             String function = functionAt(line);
             String key = api != null && rule.keyByApi().containsKey(api) ? rule.keyByApi().get(api) : rule.key();
@@ -295,7 +295,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
 
         private void onModifier(Rule rule, Matcher matcher, int line) {
             String value = switch (rule.kind()) {
-                case KEYSIZE, KEYBYTES -> group(matcher, "size");
+                case KEYSIZE -> Optional.ofNullable(sizeOf(group(matcher, "size"))).map(String::valueOf).orElse(null);
+                case KEYBYTES -> group(matcher, "size");
                 case MODE -> Optional.ofNullable(group(matcher, "mode")).orElse(rule.algorithm());
                 case PADDING -> Optional.ofNullable(group(matcher, "padding")).orElse(rule.algorithm());
                 case CURVE -> group(matcher, "curve");
@@ -471,6 +472,15 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 return EnumSet.copyOf(declared);
             }
             return CryptoFunctionHints.fromCallName(api);
+        }
+
+        /** Taille littérale, ou portée par une variable ou une constante numérique du fichier. */
+        private Integer sizeOf(String raw) {
+            Integer literal = parseSize(raw);
+            if (literal != null || raw == null) {
+                return literal;
+            }
+            return resolver.resolveNumber(raw, text.content()).filter(size -> size > 0).orElse(null);
         }
 
         private String functionAt(int line) {

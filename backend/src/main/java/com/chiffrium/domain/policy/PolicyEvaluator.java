@@ -39,6 +39,7 @@ public final class PolicyEvaluator {
     private static final String ENCRYPTED_FORMAT_MARKER = "ENCRYPTED";
     private static final Set<Primitive> ASYMMETRIC = EnumSet.of(Primitive.PUBLIC_KEY_ENCRYPTION, Primitive.SIGNATURE,
             Primitive.KEY_AGREEMENT, Primitive.OTHER, Primitive.KEM);
+    private static final Set<Primitive> POST_QUANTUM_PRIMITIVES = EnumSet.of(Primitive.SIGNATURE, Primitive.KEM);
 
     private final AlgorithmCatalog catalog;
     private final Clock clock;
@@ -190,19 +191,28 @@ public final class PolicyEvaluator {
             if (def.keySizeRules().isEmpty()) {
                 return;
             }
+            boolean securityLevel = isSecurityLevel(def);
             if (keySize == null) {
                 // Seule la taille des clés asymétriques varie en pratique au point de changer le verdict.
                 if (ASYMMETRIC.contains(def.primitive())) {
-                    reasons.add(def.name() + " : taille de clé non déterminée statiquement, à vérifier.");
+                    reasons.add(def.name() + (securityLevel ? " : niveau de sécurité non déterminé statiquement, à vérifier."
+                            : " : taille de clé non déterminée statiquement, à vérifier."));
                 }
                 return;
             }
+            String sized = securityLevel ? def.name() + "-" + keySize : def.name() + " " + keySize + " bits";
             for (AlgorithmDefinition.KeySizeRule rule : def.keySizeRules()) {
                 if (keySize >= rule.below()) {
                     continue;
                 }
                 if (rule.fromYear() == null || year >= rule.fromYear()) {
-                    degrade(rule.status(), def.name() + " " + keySize + " bits : " + rule.reason(), def.recommendation());
+                    // Une règle qui ne dégrade pas (exigence CNSA 2.0 au-delà des recommandations ANSSI/BSI) n'est
+                    // pas une faiblesse, mais elle doit se lire : degrade() ne garde que les raisons d'un recul.
+                    if (rule.status().ordinal() <= PolicyStatus.ACCEPTABLE.ordinal()
+                            && status.ordinal() <= PolicyStatus.ACCEPTABLE.ordinal()) {
+                        reasons.add(sized + " : " + rule.reason());
+                    }
+                    degrade(rule.status(), sized + " : " + rule.reason(), def.recommendation());
                 } else {
                     limitValidity(rule.fromYear() - 1);
                 }
@@ -226,6 +236,11 @@ public final class PolicyEvaluator {
                 }
             }
             status = PolicyStatus.worst(status, candidate);
+        }
+
+        /** ML-KEM-768, ML-DSA-65 : la "taille" d'un schéma post-quantique est un niveau, pas un nombre de bits. */
+        private static boolean isSecurityLevel(AlgorithmDefinition def) {
+            return !def.quantumVulnerable() && POST_QUANTUM_PRIMITIVES.contains(def.primitive());
         }
 
         private void limitValidity(Integer lastYear) {

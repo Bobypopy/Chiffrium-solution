@@ -26,6 +26,11 @@ public enum Language {
     RUBY("ruby"),
     RUST("rust"),
     SWIFT("swift"),
+    DART("dart"),
+    ELIXIR("elixir"),
+    PERL("perl"),
+    OBJC("objc"),
+    SQL("sql"),
     CONFIG("config"),
     UNKNOWN("unknown");
 

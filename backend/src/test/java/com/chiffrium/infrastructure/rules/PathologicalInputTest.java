@@ -29,7 +29,7 @@ class PathologicalInputTest {
     /** Code ordinaire autour des lignes géantes, comme dans un vrai fichier (sinon il serait classé minifié). */
     private static final int ORDINARY_LINES = 2_000;
     private static final List<String> EXTENSIONS = List.of("java", "py", "js", "ts", "go", "cs", "c", "cpp", "php",
-            "rb", "rs", "swift", "kt", "yaml", "conf", "properties", "json", "xml");
+            "rb", "rs", "swift", "kt", "yaml", "conf", "properties", "json", "xml", "dart", "ex", "pl", "m", "sql");
 
     @Test
     void hugeLinesDoNotBreakAnyDetector(@TempDir Path project) {

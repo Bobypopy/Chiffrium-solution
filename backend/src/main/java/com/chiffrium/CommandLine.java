@@ -9,9 +9,11 @@ import com.chiffrium.domain.model.CryptoAsset;
 import com.chiffrium.domain.model.PolicyStatus;
 import com.chiffrium.infrastructure.db.Database;
 import com.chiffrium.infrastructure.db.DatabaseMigrator;
+import com.chiffrium.infrastructure.sarif.SarifReportExporter;
 import org.slf4j.MDC;
 
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.UUID;
@@ -19,8 +21,8 @@ import java.util.UUID;
 /**
  * Mode ligne de commande :
  * <pre>
- * java -jar chiffrium-backend.jar analyze &lt;url|chemin&gt; [--no-cdxgen] [--no-vulns]
- *      [--branch nom] [--fail-on disallowed|deprecated]
+ * java -jar chiffrium-backend.jar analyze &lt;url|chemin&gt; [--no-cdxgen] [--no-vulns] [--history]
+ *      [--branch nom] [--fail-on disallowed|deprecated] [--sarif fichier]
  * java -jar chiffrium-backend.jar migrate-db --to &lt;url jdbc&gt; [--user u] [--password p] [--force]
  * </pre>
  * La première intègre l'analyse dans une chaîne CI/CD, la seconde recopie la base locale vers PostgreSQL.
@@ -33,7 +35,7 @@ final class CommandLine {
     static final int EXIT_USAGE = 2;
     static final int EXIT_FAILURE = 3;
     private static final String USAGE = "Usage : analyze <url|chemin> [--no-cdxgen] [--no-vulns] [--history] "
-            + "[--branch nom] [--fail-on disallowed|deprecated]";
+            + "[--branch nom] [--fail-on disallowed|deprecated] [--sarif fichier]";
     private static final String MIGRATE_USAGE =
             "Usage : migrate-db --to <url jdbc> [--user utilisateur] [--password mot de passe] [--force]";
     static final String COMMAND_ANALYZE = "analyze";
@@ -67,6 +69,7 @@ final class CommandLine {
         boolean scanGitHistory = false;
         String branch = null;
         PolicyStatus failOn = null;
+        Path sarif = null;
         for (int i = 2; i < args.length; i++) {
             switch (args[i]) {
                 case "--no-cdxgen" -> runCdxgen = false;
@@ -75,6 +78,7 @@ final class CommandLine {
                 case "--branch" -> branch = i + 1 < args.length ? args[++i] : null;
                 case "--fail-on" -> failOn = i + 1 < args.length
                         ? PolicyStatus.fromId(args[++i].toUpperCase(Locale.ROOT)) : null;
+                case "--sarif" -> sarif = i + 1 < args.length ? Path.of(args[++i]) : null;
                 default -> {
                     out.println("Option inconnue : " + args[i] + System.lineSeparator() + USAGE);
                     return EXIT_USAGE;
@@ -91,6 +95,12 @@ final class CommandLine {
             AnalysisReport report = application.pipeline.run(job, step -> out.println("... " + step), metric -> { });
             application.repository.save(job.succeeded(report.summary(), application.clock.instant()));
             printSummary(report);
+            // Les artefacts de l'analyse sont chiffrés sur disque : le SARIF demandé (revue de code, GitHub code
+            // scanning) est écrit en clair, à l'endroit indiqué.
+            if (sarif != null) {
+                new SarifReportExporter(application.mapper).export(report, sarif);
+                out.println("SARIF : " + sarif.toAbsolutePath());
+            }
             return exceedsThreshold(report, failOn) ? EXIT_POLICY_VIOLATION : EXIT_OK;
         } catch (RuntimeException e) {
             out.println("Échec de l'analyse : " + e.getMessage());

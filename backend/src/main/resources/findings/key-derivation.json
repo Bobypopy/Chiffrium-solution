@@ -137,6 +137,42 @@
       "title": "Dérivation de clé : paramètre trop faible dans la configuration",
       "description": "Le nombre d'itérations configuré est trop bas face aux attaques par force brute sur GPU ; un mot de passe dérivé avec ce réglage se retrouve vite.",
       "recommendation": "Argon2id de préférence ; sinon PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) ou 210 000 (HMAC-SHA512), selon l'OWASP."
+    },
+    {
+      "id": "kdf-java-pbe-parameter-iterations",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+PBEParameterSpec\\s*\\([^,]+,\\s*(?<iterations>\\d[\\d_]*)",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
+    },
+    {
+      "id": "kdf-java-iterations-variable",
+      "category": "weak-key-derivation",
+      "severity": "medium",
+      "cwe": "CWE-916",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bint\\s+(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*(?<iterations>\\d[\\d_]*)\\s*;[\\s\\S]{0,2000}?new\\s+PBE(?:ParameterSpec\\s*\\([^,;]+,|KeySpec\\s*\\([^,;]+,[^,;]+,)\\s*\\k<nom>\\b",
+      "numberGroup": "iterations",
+      "below": 210000,
+      "title": "PBKDF2 : itérations insuffisantes",
+      "description": "Nombre d'itérations trop faible face aux attaques par force brute sur GPU.",
+      "recommendation": "Utiliser Argon2id (ou scrypt), ou PBKDF2 avec au moins 600 000 itérations (HMAC-SHA256) / 210 000 (HMAC-SHA512) selon l'OWASP."
     }
   ]
 }

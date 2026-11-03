@@ -88,6 +88,18 @@ jobs:
           npx electron-builder --config electron-builder.config.cjs --publish always \
             -c.extraMetadata.version="${GITHUB_REF_NAME#v}"
 
+      # Le moteur seul, téléchargé par l'action GitHub (docs/releases-repo/action) et la ligne de commande.
+      - name: Moteur en ligne de commande
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GH_TOKEN="${RELEASES_TOKEN:-$REPO_TOKEN}" gh release upload "$GITHUB_REF_NAME" \
+            backend/target/chiffrium-backend.jar --repo "${RELEASES_REPO:-$GITHUB_REPOSITORY}" --clobber
+
       # Les pages de release sont les seules pages publiques du produit, donc les premières indexées : on y
       # écrit ce que fait l'outil et ce que contient la version, au lieu de les laisser vides.
       - name: Notes de version

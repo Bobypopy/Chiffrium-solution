@@ -63,7 +63,8 @@
       "cwe": "CWE-338",
       "languages": [
         "c",
-        "cpp"
+        "cpp",
+        "objc"
       ],
       "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\b(?:rand|random|drand48|lrand48)\\s*\\(\\s*\\)",
       "title": "rand() pour un secret",
@@ -121,10 +122,81 @@
         "groovy",
         "csharp"
       ],
-      "pattern": "\\.setSeed\\s*\\(\\s*\\d+L?\\s*\\)|new\\s+SecureRandom\\s*\\(\\s*(?:\\\"[^\\\"]*\\\"\\s*\\.getBytes|new\\s+byte\\s*\\[\\s*\\]\\s*\\{)",
+      "pattern": "\\.setSeed\\s*\\(\\s*(?:\\d+L?|new\\s+byte\\s*\\[\\s*\\]\\s*\\{[^}]*\\}|\"[^\"]*\"\\s*\\.\\s*getBytes\\s*\\([^)]*\\))\\s*\\)|new\\s+SecureRandom\\s*\\(\\s*(?:\\\"[^\\\"]*\\\"\\s*\\.getBytes|new\\s+byte\\s*\\[\\s*\\]\\s*\\{)",
       "title": "Graine fixe",
       "description": "Générateur initialisé avec une graine constante : toute la suite est reproductible.",
       "recommendation": "Ne jamais fixer la graine d'un générateur utilisé pour la sécurité (laisser SecureRandom s'initialiser seul)."
+    },
+    {
+      "id": "random-dart-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "dart"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?\\bRandom\\s*\\(\\s*\\d*\\s*\\)",
+      "title": "Random() pour un secret",
+      "description": "Random() sans .secure() est prévisible.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-elixir-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "elixir"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?::rand\\s*\\.\\s*(?:uniform|bytes)|\\bEnum\\s*\\.\\s*random)\\s*\\(",
+      "title": ":rand pour un secret",
+      "description": ":rand et Enum.random sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-perl-insecure",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "perl"
+      ],
+      "pattern": "(?m)^(?=[^\\n]*(?i:token|secret|passw|pwd|salt|nonce|\\biv\\b|otp|session|csrf|reset|api_?key|\\bkey\\b|captcha|verification|code_?verifier))[^\\n]*?(?<![\\w:$>])rand\\s*\\(",
+      "title": "rand pour un secret",
+      "description": "rand de Perl est prévisible.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
+    },
+    {
+      "id": "random-fixed-seed-variable",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-337",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\bbyte\\s*(?:\\[\\s*\\]\\s*)?(?<nom>[A-Za-z_$][\\w$]*)\\s*(?:\\[\\s*\\]\\s*)?=\\s*(?:\\{[^}]*\\}|\"[^\"\\n]*\"\\s*\\.\\s*getBytes\\s*\\([^)]*\\))\\s*;(?:(?!\\b(?:nextBytes|read|readFully|arraycopy|fill)\\s*\\([^;]*\\b\\k<nom>\\b|\\b\\k<nom>\\s*=(?!=)(?!\\s*Arrays\\s*\\.\\s*copyOf(?:Range)?\\s*\\(\\s*\\k<nom>\\b))[\\s\\S]){0,2000}?\\.\\s*setSeed\\s*\\(\\s*\\k<nom>\\b",
+      "title": "Graine fixe",
+      "description": "Générateur initialisé avec une graine constante : toute la suite est reproductible.",
+      "recommendation": "Ne jamais fixer la graine d'un générateur utilisé pour la sécurité (laisser SecureRandom s'initialiser seul)."
+    },
+    {
+      "id": "random-java-random-bytes",
+      "category": "weak-random",
+      "severity": "medium",
+      "cwe": "CWE-338",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?<![\\w$.])(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*new\\s+(?:java\\.util\\.)?Random\\s*\\(\\s*\\)[\\s\\S]{0,2000}?\\b\\k<nom>\\s*\\.\\s*nextBytes\\s*\\(",
+      "title": "Aléa non cryptographique pour un secret",
+      "description": "java.util.Random / Math.random / RandomStringUtils sont prévisibles.",
+      "recommendation": "Utiliser le générateur cryptographique du langage (SecureRandom, secrets, crypto.randomBytes/getRandomValues, crypto/rand, RandomNumberGenerator, random_bytes)."
     }
   ]
 }

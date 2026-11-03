@@ -28,6 +28,9 @@ final class ConstantResolver {
     /** NOM = config.getOrDefault("clé", "défaut") et variantes getProperty / get / getenv. */
     private static final String DEFAULT_VALUE_TEMPLATE =
             "(?<![\\w$])%s\\s*=\\s*[\\w.()\\[\\]]*?\\.(?:getOrDefault|getProperty|get|getenv|getString)\\s*\\(\\s*[\"'][^\"']*[\"']\\s*,\\s*[\"']([^\"'\\n]{1,200})[\"']";
+    /** NOM = 2048 (Java, Kotlin, C#, Go :=, Python...), avec un type éventuel. */
+    private static final String NUMBER_TEMPLATE =
+            "(?<![\\w$.])%s\\s*(?::\\s*[\\w<>?]+)?\\s*(?::=|=)\\s*(\\d{2,5})(?![\\w.])";
     private static final Pattern GLOBAL_ASSIGNMENT = Pattern.compile(
             "(?<![\\w$])([A-Za-z_$][\\w$]*)\\s*(?::\\s*[\\w<>\\[\\], .&']+)?\\s*(?::=|=)\\s*[bBrRuUfF@]{0,2}([\"'`])([^\"'`\\n]{1,200})\\2");
 
@@ -57,6 +60,29 @@ final class ConstantResolver {
             value.append(resolved.get());
         }
         return value.length() > MAX_VALUE_LENGTH ? Optional.empty() : Optional.of(value.toString());
+    }
+
+    /**
+     * Taille passée par une variable ou une constante numérique du fichier ({@code int keysize = 1024;}) ;
+     * vide si elle n'est jamais affectée d'un nombre, ou l'est de plusieurs valeurs différentes.
+     */
+    Optional<Integer> resolveNumber(String identifier, String fileContent) {
+        String name = lastSegment(identifier.trim());
+        if (name.isEmpty() || !Character.isJavaIdentifierStart(name.charAt(0))) {
+            return Optional.empty();
+        }
+        Pattern pattern = patternCache.computeIfAbsent(NUMBER_TEMPLATE + name,
+                k -> Pattern.compile(String.format(NUMBER_TEMPLATE, Pattern.quote(name))));
+        Matcher matcher = pattern.matcher(fileContent);
+        Integer value = null;
+        while (matcher.find()) {
+            int found = Integer.parseInt(matcher.group(1));
+            if (value != null && value != found) {
+                return Optional.empty();
+            }
+            value = found;
+        }
+        return Optional.ofNullable(value);
     }
 
     static boolean isLiteral(String expression) {

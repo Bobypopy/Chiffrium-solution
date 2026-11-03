@@ -199,6 +199,11 @@ export const REGLES = {
     'rand, mt_rand, uniqid and str_shuffle are predictable.',
   'rand/random/drand48 sont prévisibles.': 'rand, random and drand48 are predictable.',
   'Kernel#rand et Random sont prévisibles.': 'Kernel#rand and Random are predictable.',
+  'Random() pour un secret': 'Random() for a secret',
+  'Random() sans .secure() est prévisible.': 'Random() without .secure() is predictable.',
+  ':rand pour un secret': ':rand for a secret',
+  ':rand et Enum.random sont prévisibles.': ':rand and Enum.random are predictable.',
+  'rand de Perl est prévisible.': 'Perl rand is predictable.',
   'java.util.Random / Math.random / RandomStringUtils sont prévisibles.':
     'java.util.Random, Math.random and RandomStringUtils are predictable.',
   'math/rand importé': 'math/rand imported',
@@ -229,6 +234,10 @@ export const REGLES = {
     + 'man-in-the-middle attack trivial.',
   'Vérification du nom d\'hôte désactivée': 'Hostname verification disabled',
   'Le nom d\'hôte du certificat n\'est pas vérifié.': 'The certificate hostname is not checked.',
+  ['SSLSocket créé directement : Java ne vérifie pas que le certificat correspond au serveur contacté sans '
+    + 'setEndpointIdentificationAlgorithm("HTTPS").']:
+    'SSLSocket created directly: Java does not check that the certificate matches the server it talks to '
+    + 'without setEndpointIdentificationAlgorithm("HTTPS").',
   'verify=False': 'verify=False',
   ['Requête HTTPS sans vérification du certificat : désactive la vérification du certificat serveur : une '
     + 'attaque de l\'homme du milieu devient triviale.']:
@@ -265,6 +274,14 @@ export const REGLES = {
   ['Connexion TLS Ruby sans vérification : désactive la vérification du certificat serveur : une attaque de '
     + 'l\'homme du milieu devient triviale.']:
     'Ruby TLS connection without verification: disables server certificate verification, making a '
+    + 'man-in-the-middle attack trivial.',
+  ['Connexion TLS Erlang/Elixir sans vérification : désactive la vérification du certificat serveur : une '
+    + 'attaque de l\'homme du milieu devient triviale.']:
+    'Erlang/Elixir TLS connection without verification: disables server certificate verification, making a '
+    + 'man-in-the-middle attack trivial.',
+  ['Connexion TLS Perl sans vérification : désactive la vérification du certificat serveur : une attaque de '
+    + 'l\'homme du milieu devient triviale.']:
+    'Perl TLS connection without verification: disables server certificate verification, making a '
     + 'man-in-the-middle attack trivial.',
   'SSL_VERIFY_NONE / VERIFYPEER 0': 'SSL_VERIFY_NONE / VERIFYPEER 0',
   'Contexte SSL non vérifié': 'Unverified SSL context',

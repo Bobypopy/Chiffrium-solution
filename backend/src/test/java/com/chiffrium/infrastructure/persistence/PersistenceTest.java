@@ -149,6 +149,32 @@ class PersistenceTest {
     }
 
     @Test
+    void existingPostQuantumEntriesReceiveTheirLevelRulesOnce(@TempDir Path dir) {
+        Path file = dir.resolve("catalog/algorithms.json");
+        AlgorithmCatalog defaults = FileCatalogRepository.loadDefault(TestSupport.MAPPER);
+        // Catalogue d'une version antérieure : ML-DSA présent, mais sans règles de niveau.
+        List<AlgorithmDefinition> old = defaults.algorithms().stream()
+                .map(a -> !a.id().equals("ml-dsa") ? a : new AlgorithmDefinition(a.id(), a.name(), a.primitive(),
+                        a.assetType(), a.aliases(), a.tokens(), a.oids(), a.status(), a.quantumVulnerable(), List.of(),
+                        null, null, a.note(), a.recommendation(), a.references()))
+                .toList();
+        AtomicFiles.writeJson(TestSupport.MAPPER, file,
+                new AlgorithmCatalog(defaults.schemaVersion(), old, defaults.modes(), defaults.paddings(),
+                        defaults.curves()));
+
+        FileCatalogRepository repository = new FileCatalogRepository(file, TestSupport.MAPPER);
+        AlgorithmCatalog upgraded = repository.load();
+        assertThat(upgraded.findAlgorithm("ml-dsa").orElseThrow().keySizeRules())
+                .isEqualTo(defaults.findAlgorithm("ml-dsa").orElseThrow().keySizeRules());
+
+        // Retirées ensuite par l'organisation, elles ne reviennent pas.
+        repository.save(new AlgorithmCatalog(upgraded.schemaVersion(), old, upgraded.modes(), upgraded.paddings(),
+                upgraded.curves()));
+        assertThat(new FileCatalogRepository(file, TestSupport.MAPPER).load().findAlgorithm("ml-dsa").orElseThrow()
+                .keySizeRules()).isEmpty();
+    }
+
+    @Test
     void corruptedJobFilesAreIgnored(@TempDir Path dir) throws Exception {
         FileSystemAnalysisRepository repository = repository(dir);
         String id = UUID.randomUUID().toString();

@@ -1,0 +1,100 @@
+{
+  "id": "sql",
+  "languages": ["sql"],
+  "commentPrefixes": ["--", "/*", "*", "#"],
+  "functionPatterns": [],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "sql.pgcrypto.digest",
+      "pattern": "(?i)\\bdigest\\s*\\([^;]*?,\\s*'(?<name>md5|sha1|sha224|sha256|sha384|sha512)'\\s*\\)",
+      "functions": ["digest"]
+    },
+    {
+      "id": "sql.pgcrypto.hmac",
+      "pattern": "(?i)\\bhmac\\s*\\([^;]*?,\\s*'(?<name>md5|sha1|sha224|sha256|sha384|sha512)'\\s*\\)",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "sql.pgcrypto.raw",
+      "pattern": "(?i)\\b(?<op>encrypt_iv|decrypt_iv|encrypt|decrypt)\\s*\\([^;]*?,\\s*'(?<name>aes|bf|des|3des)(?:-(?<mode>cbc|ecb))?",
+      "map": { "bf": "Blowfish" }
+    },
+    {
+      "id": "sql.pgcrypto.pgp",
+      "pattern": "(?i)\\bpgp_(?:sym|pub)_(?<op>encrypt|decrypt)\\w*\\s*\\(",
+      "algorithm": "AES-128"
+    },
+    {
+      "id": "sql.pgcrypto.crypt",
+      "pattern": "(?i)\\bgen_salt\\s*\\(\\s*'(?<name>md5|xdes|des|bf)'",
+      "map": { "bf": "bcrypt", "xdes": "DES" },
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "sql.mysql.sha2",
+      "pattern": "(?i)\\bSHA2\\s*\\([^;)]*,\\s*(?<bits>224|256|384|512)\\s*\\)",
+      "template": "SHA-{bits}",
+      "functions": ["digest"]
+    },
+    {
+      "id": "sql.mysql.digest",
+      "pattern": "(?i)(?<![\\w.])(?<name>md5|sha1)\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "sql.mysql.aes",
+      "pattern": "(?i)\\bAES_(?<op>ENCRYPT|DECRYPT)\\s*\\(",
+      "algorithm": "AES-128-ECB"
+    },
+    {
+      "id": "sql.mysql.block-encryption-mode",
+      "pattern": "(?i)\\bblock_encryption_mode\\s*=\\s*'(?<name>aes-\\d+-\\w+)'",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "sql.mysql.des",
+      "pattern": "(?i)\\bDES_(?<op>ENCRYPT|DECRYPT)\\s*\\(",
+      "algorithm": "DES"
+    },
+    {
+      "id": "sql.mssql.hashbytes",
+      "pattern": "(?i)\\bHASHBYTES\\s*\\(\\s*'(?<name>MD2|MD4|MD5|SHA|SHA1|SHA2_256|SHA2_512)'",
+      "map": { "sha": "SHA-1", "sha2_256": "SHA-256", "sha2_512": "SHA-512" },
+      "functions": ["digest"]
+    },
+    {
+      "id": "sql.mssql.symmetric-key",
+      "pattern": "(?i)\\bCREATE\\s+(?:SYMMETRIC\\s+KEY\\s+[\\w\\[\\]#]+|DATABASE\\s+ENCRYPTION\\s+KEY)\\s+WITH\\s+ALGORITHM\\s*=\\s*(?<name>AES_128|AES_192|AES_256|TRIPLE_DES_3KEY|TRIPLE_DES|DESX|DES|RC2|RC4_128|RC4)\\b",
+      "map": { "triple_des": "3DES", "triple_des_3key": "3DES", "desx": "DES", "rc4_128": "RC4" },
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
+      "id": "sql.mssql.asymmetric-key",
+      "pattern": "(?i)\\bCREATE\\s+ASYMMETRIC\\s+KEY\\s+[\\w\\[\\]#]+\\s+WITH\\s+ALGORITHM\\s*=\\s*(?<name>RSA_\\d{3,4})\\b",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "sql.oracle.dbms-crypto",
+      "pattern": "(?i)\\bDBMS_CRYPTO\\s*\\.\\s*(?<name>HASH_MD4|HASH_MD5|HASH_SH1|HASH_SH256|HASH_SH384|HASH_SH512|HMAC_MD5|HMAC_SH1|HMAC_SH256|HMAC_SH384|HMAC_SH512|ENCRYPT_AES128|ENCRYPT_AES192|ENCRYPT_AES256|ENCRYPT_DES|ENCRYPT_3DES_2KEY|ENCRYPT_3DES|ENCRYPT_RC4)\\b",
+      "map": {
+        "hash_md4": "MD4", "hash_md5": "MD5", "hash_sh1": "SHA-1", "hash_sh256": "SHA-256", "hash_sh384": "SHA-384",
+        "hash_sh512": "SHA-512", "hmac_md5": "HMAC-MD5", "hmac_sh1": "HMAC-SHA-1", "hmac_sh256": "HMAC-SHA-256",
+        "hmac_sh384": "HMAC-SHA-384", "hmac_sh512": "HMAC-SHA-512", "encrypt_aes128": "AES-128",
+        "encrypt_aes192": "AES-192", "encrypt_aes256": "AES-256", "encrypt_des": "DES", "encrypt_3des_2key": "3DES",
+        "encrypt_3des": "3DES", "encrypt_rc4": "RC4"
+      },
+      "functions": ["other"]
+    },
+    { "id": "sql.oracle.chain", "kind": "mode", "pattern": "(?i)\\bDBMS_CRYPTO\\s*\\.\\s*CHAIN_(?<mode>CBC|ECB|CFB|OFB)\\b" },
+    {
+      "id": "sql.oracle.obfuscation-toolkit",
+      "pattern": "(?i)\\bDBMS_OBFUSCATION_TOOLKIT\\s*\\.\\s*(?<name>DES3Encrypt|DES3Decrypt|DESEncrypt|DESDecrypt|MD5)\\b",
+      "map": { "des3encrypt": "3DES", "des3decrypt": "3DES", "desencrypt": "DES", "desdecrypt": "DES" },
+      "functions": ["other"]
+    }
+  ]
+}

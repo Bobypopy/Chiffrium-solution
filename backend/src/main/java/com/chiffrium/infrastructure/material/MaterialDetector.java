@@ -8,6 +8,7 @@ import com.chiffrium.domain.model.CryptoAsset;
 import com.chiffrium.domain.model.DetectionSource;
 import com.chiffrium.domain.model.MaterialInfo;
 import com.chiffrium.domain.model.Occurrence;
+import com.chiffrium.infrastructure.scan.ArchiveEntries;
 import com.chiffrium.infrastructure.scan.FileClassifier;
 import com.chiffrium.infrastructure.scan.FileFailures;
 import org.slf4j.Logger;
@@ -92,6 +93,10 @@ public final class MaterialDetector implements CryptoDetector {
         for (ScannedFile file : context.scan().files()) {
             Path path = context.projectRoot().resolve(file.path());
             try {
+                if (FileClassifier.isArchive(file.path())) {
+                    assets.addAll(fromArchive(file.path(), path));
+                    continue;
+                }
                 byte[] bytes = Files.readAllBytes(path);
                 if (file.material()) {
                     assets.addAll(fromMaterialFile(file.path(), bytes));
@@ -103,6 +108,21 @@ public final class MaterialDetector implements CryptoDetector {
             }
         }
         return new DetectionResult(assets, List.of(), failures.warnings());
+    }
+
+    /** Clés et certificats d'une archive versionnée, nommés "archive.zip!/chemin/dans/l/archive". */
+    private List<CryptoAsset> fromArchive(String file, Path path) throws IOException {
+        List<CryptoAsset> assets = new ArrayList<>();
+        ArchiveEntries.forEach(path, entry -> {
+            String shown = file + ArchiveEntries.SEPARATOR + entry.path();
+            String name = shown.substring(shown.lastIndexOf('/') + 1);
+            if (FileClassifier.isMaterial(name)) {
+                assets.addAll(fromMaterialFile(shown, entry.content()));
+            } else if (FileClassifier.isScanned(name)) {
+                assets.addAll(fromText(shown, new String(entry.content(), StandardCharsets.UTF_8)));
+            }
+        });
+        return assets;
     }
 
     private List<CryptoAsset> fromMaterialFile(String file, byte[] bytes) {

@@ -1,0 +1,96 @@
+{
+  "id": "elixir",
+  "languages": ["elixir"],
+  "blockStyle": "indent",
+  "commentPrefixes": ["#"],
+  "functionPatterns": [
+    "^\\s*defp?\\s+(?<name>[a-z_]\\w*[?!]?)"
+  ],
+  "classPatterns": [
+    "^\\s*defmodule\\s+(?<name>[\\w.]+)"
+  ],
+  "rules": [
+    {
+      "id": "elixir.crypto.hash",
+      "pattern": ":crypto\\s*\\.\\s*hash\\s*\\(\\s*:(?<name>md4|md5|sha|sha224|sha256|sha384|sha512|sha3_256|sha3_384|sha3_512|blake2b|blake2s)\\b",
+      "map": { "sha": "SHA-1" },
+      "functions": ["digest"]
+    },
+    {
+      "id": "elixir.crypto.hmac",
+      "pattern": ":crypto\\s*\\.\\s*(?:mac\\s*\\(\\s*:hmac\\s*,|hmac\\s*\\()\\s*:(?<name>md5|sha|sha224|sha256|sha384|sha512)\\b",
+      "template": "HMAC-{name}",
+      "map": { "sha": "SHA-1" },
+      "functions": ["tag"]
+    },
+    {
+      "id": "elixir.crypto.cipher",
+      "pattern": ":crypto\\s*\\.\\s*(?<op>crypto_one_time_aead|crypto_one_time|crypto_init|block_encrypt|block_decrypt)\\s*\\(\\s*:(?<name>\\w+)",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "elixir.crypto.sign",
+      "pattern": ":crypto\\s*\\.\\s*(?<op>sign|verify)\\s*\\(\\s*:(?<name>rsa|ecdsa|eddsa|dss)\\b",
+      "map": { "dss": "DSA" },
+      "primitive": "signature",
+      "functionsByApi": { "sign": ["sign"], "verify": ["verify"] }
+    },
+    {
+      "id": "elixir.crypto.pbkdf2",
+      "pattern": ":crypto\\s*\\.\\s*pbkdf2_hmac\\s*\\(\\s*:(?<name>sha|sha256|sha384|sha512)\\b",
+      "template": "PBKDF2WithHmac{name}",
+      "map": { "sha": "SHA1" },
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "elixir.crypto.generate-rsa",
+      "pattern": ":crypto\\s*\\.\\s*generate_key\\s*\\(\\s*:rsa\\s*,\\s*\\{\\s*{SIZE}",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "elixir.crypto.generate-curve",
+      "pattern": ":crypto\\s*\\.\\s*generate_key\\s*\\(\\s*:(?:ecdh|eddsa)\\s*,\\s*:(?<name>\\w+)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "elixir.public-key.generate-rsa",
+      "pattern": ":public_key\\s*\\.\\s*generate_key\\s*\\(\\s*\\{\\s*:rsa\\s*,\\s*{SIZE}",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "elixir.public-key.generate-ec",
+      "pattern": ":public_key\\s*\\.\\s*generate_key\\s*\\(\\s*\\{\\s*:namedCurve\\s*,\\s*:(?<curve>\\w+)",
+      "algorithm": "EC",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "elixir.password-hash",
+      "pattern": "\\b(?<name>Bcrypt|Argon2|Pbkdf2)\\s*\\.\\s*(?:hash_pwd_salt|verify_pass|add_hash)\\b",
+      "map": { "argon2": "Argon2id" },
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "elixir.random-key-bytes",
+      "kind": "keybytes",
+      "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*:crypto\\s*\\.\\s*strong_rand_bytes\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
+    },
+    {
+      "id": "elixir.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bFile\\s*\\.\\s*write!?\\s*\\(\\s*{FILE}"
+    },
+    {
+      "id": "elixir.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\bFile\\s*\\.\\s*read!?\\s*\\(\\s*{FILE}"
+    }
+  ]
+}

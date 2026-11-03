@@ -39,6 +39,12 @@ public final class FileCatalogRepository implements CatalogRepository {
     private static final String MODE = "mode:";
     private static final String PADDING = "padding:";
     private static final String CURVE = "curve:";
+    private static final String KEY_SIZES = "keysizes:";
+    /**
+     * Entrées par défaut existantes qui ont reçu des règles de taille dans une version ultérieure (niveaux CNSA
+     * 2.0 de ML-KEM et ML-DSA) : ces règles sont reprises une seule fois, si l'organisation n'en a pas défini.
+     */
+    private static final Set<String> KEY_SIZE_RULES_ADDED = Set.of("ml-kem", "ml-dsa");
 
     private final Path file;
     private final ObjectMapper mapper;
@@ -100,7 +106,7 @@ public final class FileCatalogRepository implements CatalogRepository {
         if (!Files.exists(file)) {
             LOG.info("Initialisation du catalogue d'algorithmes dans {}", file);
             AtomicFiles.writeJson(mapper, file, defaults);
-            writeKnownDefaults(idsOf(defaults));
+            writeKnownDefaults(withKeySizeMigrations(idsOf(defaults)));
             return;
         }
         AlgorithmCatalog current = load();
@@ -115,11 +121,13 @@ public final class FileCatalogRepository implements CatalogRepository {
                 + addNew(defaults.modes(), ParameterDefinition::id, MODE, present, known, modes)
                 + addNew(defaults.paddings(), ParameterDefinition::id, PADDING, present, known, paddings)
                 + addNew(defaults.curves(), ParameterDefinition::id, CURVE, present, known, curves);
-        if (added > 0) {
+        int completed = completeKeySizeRules(defaults, known, algorithms);
+        if (added + completed > 0) {
             save(new AlgorithmCatalog(current.schemaVersion(), algorithms, modes, paddings, curves));
-            LOG.info("Catalogue mis à niveau : {} entrée(s) ajoutée(s) depuis le catalogue par défaut", added);
+            LOG.info("Catalogue mis à niveau : {} entrée(s) ajoutée(s), {} complétée(s) depuis le catalogue par défaut",
+                    added, completed);
         }
-        Set<String> updated = new HashSet<>(known);
+        Set<String> updated = withKeySizeMigrations(new HashSet<>(known));
         updated.addAll(idsOf(defaults));
         if (!updated.equals(known)) {
             writeKnownDefaults(updated);
@@ -137,6 +145,33 @@ public final class FileCatalogRepository implements CatalogRepository {
             }
         }
         return added;
+    }
+
+    /** Reprend une seule fois les règles de taille par défaut des entrées listées, sans écraser celles en place. */
+    private static int completeKeySizeRules(AlgorithmCatalog defaults, Set<String> known,
+                                            List<AlgorithmDefinition> algorithms) {
+        int completed = 0;
+        for (int i = 0; i < algorithms.size(); i++) {
+            AlgorithmDefinition local = algorithms.get(i);
+            if (!KEY_SIZE_RULES_ADDED.contains(local.id()) || known.contains(KEY_SIZES + local.id())
+                    || !local.keySizeRules().isEmpty()) {
+                continue;
+            }
+            Optional<AlgorithmDefinition> reference = defaults.findAlgorithm(local.id());
+            if (reference.isPresent() && !reference.get().keySizeRules().isEmpty()) {
+                algorithms.set(i, new AlgorithmDefinition(local.id(), local.name(), local.primitive(),
+                        local.assetType(), local.aliases(), local.tokens(), local.oids(), local.status(),
+                        local.quantumVulnerable(), reference.get().keySizeRules(), local.deprecatedAfter(),
+                        local.disallowedAfter(), local.note(), local.recommendation(), local.references()));
+                completed++;
+            }
+        }
+        return completed;
+    }
+
+    private static Set<String> withKeySizeMigrations(Set<String> ids) {
+        KEY_SIZE_RULES_ADDED.forEach(id -> ids.add(KEY_SIZES + id));
+        return ids;
     }
 
     private static Set<String> idsOf(AlgorithmCatalog catalog) {

@@ -283,6 +283,57 @@
       "title": "État Terraform versionné",
       "description": "L'état Terraform contient en clair les secrets des ressources gérées : clés privées de tls_private_key, mots de passe de bases de données, jetons.",
       "recommendation": "Retirer le fichier du dépôt (et de l'historique), stocker l'état dans un backend distant chiffré (S3 avec KMS, Terraform Cloud...) et renouveler les secrets qu'il contient."
+    },
+    {
+      "id": "secret-java-pbe-password",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-259",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "new\\s+PBEKeySpec\\s*\\(\\s*\"(?<secret>[^\"\\n]{1,128})\"\\s*\\.\\s*toCharArray\\s*\\(",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-java-pbe-password-variable",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-259",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?<![\\w$.])(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*\"(?<secret>[^\"\\n]{1,128})\"\\s*;[\\s\\S]{0,2000}?new\\s+PBEKeySpec\\s*\\(\\s*\\k<nom>\\s*\\.\\s*toCharArray\\s*\\(",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-java-keystore-password-variable",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "(?<![\\w$.])(?<nom>[A-Za-z_$][\\w$]*)\\s*=\\s*\"(?<secret>[^\"\\n]{1,128})\"\\s*;[\\s\\S]{0,2000}?\\.\\s*(?:store|load|getKey|setKeyEntry)\\s*\\([^;]{0,200}?\\b\\k<nom>\\s*\\.\\s*toCharArray\\s*\\(",
+      "secretGroup": "secret",
+      "title": "Mot de passe de clé ou de magasin de clés en dur",
+      "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
+      "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
     }
   ]
 }

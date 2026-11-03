@@ -8,6 +8,7 @@ import com.chiffrium.domain.model.SecurityFinding;
 import com.chiffrium.domain.model.Severity;
 import com.chiffrium.infrastructure.findings.FindingRuleLoader.FindingRuleSet;
 import com.chiffrium.infrastructure.rules.SourceText;
+import com.chiffrium.infrastructure.scan.ArchiveEntries;
 import com.chiffrium.infrastructure.scan.FileClassifier;
 import com.chiffrium.infrastructure.scan.FileFailures;
 
@@ -66,6 +67,19 @@ public final class SecurityFindingDetector implements CryptoDetector {
         List<String> warnings = new ArrayList<>();
         FileFailures failures = new FileFailures(name());
         for (ScannedFile file : context.scan().files()) {
+            if (FileClassifier.isArchive(file.path())) {
+                try {
+                    ArchiveEntries.forEach(context.projectRoot().resolve(file.path()), entry -> {
+                        String shown = file.path() + ArchiveEntries.SEPARATOR + entry.path();
+                        if (FileClassifier.isScanned(fileName(shown))) {
+                            contentFindings(shown, entry.content(), null, ALL_CATEGORIES).forEach(f -> add(findings, f));
+                        }
+                    });
+                } catch (IOException | RuntimeException | StackOverflowError e) {
+                    failures.record(file.path(), e);
+                }
+                continue;
+            }
             Source source = source(file.path(), file.language(), null);
             fileFindings(source, ALL_CATEGORIES).forEach(f -> add(findings, f));
             if (file.material() && file.language() == null && !isTextMaterial(fileName(file.path()))) {
@@ -98,12 +112,18 @@ public final class SecurityFindingDetector implements CryptoDetector {
      * @param commit commit où cette version du fichier a été vue
      */
     public List<SecurityFinding> historyFindings(String path, byte[] content, String commit) {
+        return contentFindings(path, content, commit, HISTORY_CATEGORIES);
+    }
+
+    /** Fichier lu ailleurs que sur le disque (version de l'historique, entrée d'archive). */
+    private List<SecurityFinding> contentFindings(String path, byte[] content, String commit,
+                                                  Set<FindingCategory> categories) {
         String name = fileName(path);
         Language language = FileClassifier.languageOf(name).orElse(null);
         Source source = source(path, language, commit);
-        List<SecurityFinding> result = new ArrayList<>(fileFindings(source, HISTORY_CATEGORIES));
+        List<SecurityFinding> result = new ArrayList<>(fileFindings(source, categories));
         if (!FileClassifier.isMaterial(name) || language != null || isTextMaterial(name)) {
-            SourceText.of(content).ifPresent(t -> result.addAll(analyze(source, t, HISTORY_CATEGORIES)));
+            SourceText.of(content).ifPresent(t -> result.addAll(analyze(source, t, categories)));
         }
         return result;
     }

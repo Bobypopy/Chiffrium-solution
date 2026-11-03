@@ -171,7 +171,8 @@
       "cwe": "CWE-295",
       "languages": [
         "c",
-        "cpp"
+        "cpp",
+        "objc"
       ],
       "pattern": "SSL_CTX_set_verify\\s*\\([^,]+,\\s*SSL_VERIFY_NONE|CURLOPT_SSL_VERIFY(?:PEER|HOST)\\s*,\\s*0L?\\b",
       "title": "SSL_VERIFY_NONE / VERIFYPEER 0",
@@ -199,6 +200,61 @@
       "pattern": "\\bcurl\\b[^\\n]*\\s(?:-k|--insecure)(?:\\s|$)|--no-check-certificate|http\\.sslVerify\\s*(?:=|\\s)\\s*false|GIT_SSL_NO_VERIFY\\s*=\\s*(?:1|true)",
       "title": "Outil en ligne de commande sans vérification TLS",
       "description": "curl -k, wget --no-check-certificate ou git sslVerify=false : les téléchargements peuvent être falsifiés.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-dart-bad-certificate",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "dart"
+      ],
+      "pattern": "\\bbadCertificateCallback\\s*=\\s*\\([^)]*\\)\\s*(?:=>\\s*true|\\{\\s*return\\s+true\\s*;)",
+      "title": "Callback de certificat permissif",
+      "description": "La validation du certificat renvoie toujours vrai : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-elixir-verify-none",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "elixir"
+      ],
+      "pattern": "\\bverify\\s*:\\s*:verify_none\\b",
+      "title": "VERIFY_NONE",
+      "description": "Connexion TLS Erlang/Elixir sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-perl-verify-none",
+      "category": "certificate-validation",
+      "severity": "high",
+      "cwe": "CWE-295",
+      "languages": [
+        "perl"
+      ],
+      "pattern": "\\bSSL_verify_mode\\s*=>\\s*(?:SSL_VERIFY_NONE|0x0*0|0)\\b|\\bverify_hostname\\s*=>\\s*0\\b",
+      "title": "VERIFY_NONE",
+      "description": "Connexion TLS Perl sans vérification : désactive la vérification du certificat serveur : une attaque de l'homme du milieu devient triviale.",
+      "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
+    },
+    {
+      "id": "tls-java-sslsocket-hostname",
+      "category": "certificate-validation",
+      "severity": "medium",
+      "cwe": "CWE-297",
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "groovy"
+      ],
+      "pattern": "\\(\\s*SSLSocket\\s*\\)\\s*[\\w$.()]+\\s*\\.\\s*createSocket\\s*\\(\\s*[^)\\s](?![\\s\\S]{0,3000}?setEndpointIdentificationAlgorithm)",
+      "title": "Vérification du nom d'hôte désactivée",
+      "description": "SSLSocket créé directement : Java ne vérifie pas que le certificat correspond au serveur contacté sans setEndpointIdentificationAlgorithm(\"HTTPS\").",
       "recommendation": "Conserver la validation par défaut ; pour une autorité interne, l'ajouter au magasin de confiance plutôt que désactiver la vérification."
     }
   ]

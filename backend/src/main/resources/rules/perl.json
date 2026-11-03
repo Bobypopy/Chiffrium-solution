@@ -1,0 +1,85 @@
+{
+  "id": "perl",
+  "languages": ["perl"],
+  "commentPrefixes": ["#"],
+  "functionPatterns": [
+    "^\\s*sub\\s+(?<name>\\w+)"
+  ],
+  "classPatterns": [
+    "^\\s*package\\s+(?<name>[\\w:]+)"
+  ],
+  "rules": [
+    {
+      "id": "perl.digest-sha-object",
+      "pattern": "\\bDigest::SHA\\s*->\\s*new\\s*\\(\\s*(?<bits>1|224|256|384|512)\\s*\\)",
+      "template": "SHA-{bits}",
+      "functions": ["digest"]
+    },
+    {
+      "id": "perl.hmac",
+      "pattern": "\\bhmac_(?<name>md5|sha1|sha224|sha256|sha384|sha512)(?:_hex|_base64)?\\s*\\(",
+      "template": "HMAC-{name}",
+      "functions": ["tag"]
+    },
+    {
+      "id": "perl.digest",
+      "pattern": "(?<![\\w:$>])(?<name>md5|sha1|sha224|sha256|sha384|sha512)(?:_hex|_base64)?\\s*\\(",
+      "functions": ["digest"]
+    },
+    {
+      "id": "perl.crypt-cbc",
+      "pattern": "\\bCrypt::CBC\\s*->\\s*new\\s*\\([^;]*?-cipher\\s*=>\\s*['\"](?:Crypt::)?(?:Cipher::)?(?<name>[\\w:]+)['\"]",
+      "template": "{name}/CBC",
+      "map": { "rijndael": "AES", "des_ede3": "3DES" },
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "perl.cryptx.mode",
+      "pattern": "\\bCrypt::(?:Mode|AuthEnc)::(?<mode>CBC|ECB|CTR|CFB|OFB|GCM|CCM|EAX|OCB)\\s*->\\s*new\\s*\\(\\s*['\"](?<name>\\w+)['\"]",
+      "functions": ["encrypt", "decrypt"]
+    },
+    {
+      "id": "perl.openssl-rsa",
+      "pattern": "\\bCrypt::OpenSSL::RSA\\s*->\\s*(?<api>generate_key|new_private_key|new_public_key)\\s*\\(\\s*{SIZE}?",
+      "algorithm": "RSA",
+      "functionsByApi": { "generate_key": ["keygen"], "new_private_key": ["other"], "new_public_key": ["other"] },
+      "keyByApi": { "generate_key": "private-key" }
+    },
+    {
+      "id": "perl.cryptx.pk",
+      "pattern": "\\bCrypt::PK::(?<name>RSA|DSA|ECC|Ed25519|X25519|DH)\\b",
+      "map": { "ecc": "EC" },
+      "functions": ["other"]
+    },
+    {
+      "id": "perl.pbkdf2",
+      "pattern": "\\bCrypt::PBKDF2\\s*->\\s*new\\b",
+      "algorithm": "PBKDF2",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "perl.bcrypt",
+      "pattern": "\\b(?:Crypt::Eksblowfish::Bcrypt|Crypt::Bcrypt)\\b",
+      "algorithm": "bcrypt",
+      "functions": ["keyderive"]
+    },
+    {
+      "id": "perl.ssl-version",
+      "pattern": "\\bSSL_version\\s*=>\\s*['\"](?<list>[^'\"]+)['\"]",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "perl.io.read",
+      "kind": "file",
+      "direction": "read",
+      "pattern": "\\bopen\\s*\\(\\s*(?:my\\s+)?[$\\w]+\\s*,\\s*['\"]<['\"]\\s*,\\s*{FILE}"
+    },
+    {
+      "id": "perl.io.write",
+      "kind": "file",
+      "direction": "write",
+      "pattern": "\\bopen\\s*\\(\\s*(?:my\\s+)?[$\\w]+\\s*,\\s*['\"]>>?['\"]\\s*,\\s*{FILE}"
+    }
+  ]
+}

@@ -411,6 +411,10 @@
       "aliases": ["mlkem", "kyber", "crystalskyber"],
       "oids": [{ "oid": "2.16.840.1.101.3.4.4.2", "description": "id-alg-ml-kem-768" }],
       "status": "recommended", "quantumVulnerable": false,
+      "keySizeRules": [
+        { "below": 768, "status": "deprecated", "reason": "niveau 1 seulement : l'ANSSI et le BSI demandent au moins ML-KEM-768." },
+        { "below": 1024, "status": "recommended", "reason": "CNSA 2.0 exige ML-KEM-1024 pour les systèmes de sécurité nationale." }
+      ],
       "note": "KEM post-quantique standardisé (niveaux 512, 768 et 1024). L'ANSSI et le BSI recommandent un usage hybride avec ECDH pendant la transition ; préférer ML-KEM-768 ou ML-KEM-1024 (CNSA 2.0).", "references": ["FIPS 203", "CNSA 2.0"]
     },
     {
@@ -418,6 +422,10 @@
       "aliases": ["mldsa", "dilithium", "crystalsdilithium"],
       "oids": [{ "oid": "2.16.840.1.101.3.4.3.18", "description": "id-ml-dsa-65" }],
       "status": "recommended", "quantumVulnerable": false,
+      "keySizeRules": [
+        { "below": 65, "status": "deprecated", "reason": "niveau 2 seulement : l'ANSSI et le BSI demandent au moins ML-DSA-65." },
+        { "below": 87, "status": "recommended", "reason": "CNSA 2.0 exige ML-DSA-87 pour les systèmes de sécurité nationale." }
+      ],
       "note": "Signature post-quantique standardisée (ML-DSA-44/65/87). ML-DSA-87 exigé par CNSA 2.0 ; signatures hybrides (composites) recommandées par l'ANSSI pendant la transition.", "references": ["FIPS 204", "CNSA 2.0"]
     },
     {
