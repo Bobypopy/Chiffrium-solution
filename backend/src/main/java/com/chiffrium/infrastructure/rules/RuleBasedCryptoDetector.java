@@ -807,11 +807,4 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         int size = Integer.parseInt(value);
         return size > 0 ? size : null;
     }
-
-    /** Pour les tests : langages couverts par les règles chargées. */
-    Set<Language> coveredLanguages() {
-        Set<Language> languages = EnumSet.noneOf(Language.class);
-        packs.forEach(p -> languages.addAll(p.languages()));
-        return languages;
-    }
 }

@@ -204,9 +204,11 @@ public final class SecurityFindingDetector implements CryptoDetector {
                                           Analysis analysis) {
         Language language = source.language();
         List<String> comments = ruleSet.commentPrefixes().getOrDefault(language, List.of());
+        boolean translation = ruleSet.translationPath().matcher(source.path()).find();
         List<SecurityFinding> result = new ArrayList<>();
         for (FindingRule rule : ruleSet.rules()) {
             if (rule.pattern() == null || !rule.appliesTo(language) || !categories.contains(rule.category())
+                    || translation && rule.category() == FindingCategory.SECRET
                     || rule.traceGroup() != null && (analysis == null || analysis.traces() == null)
                     || rule.excludeFileName() != null && rule.excludeFileName().matcher(fileName(source.path())).find()) {
                 continue;

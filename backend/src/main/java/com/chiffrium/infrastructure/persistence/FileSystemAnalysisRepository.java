@@ -2,6 +2,7 @@ package com.chiffrium.infrastructure.persistence;
 
 import com.chiffrium.application.port.AnalysisRepository;
 import com.chiffrium.application.port.SecretCipher;
+import com.chiffrium.domain.model.AnalysisIds;
 import com.chiffrium.domain.model.AnalysisJob;
 import com.chiffrium.domain.model.AnalysisReport;
 import com.chiffrium.infrastructure.crypto.SecureFiles;
@@ -16,7 +17,6 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -36,8 +36,6 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
     private static final Logger LOG = LoggerFactory.getLogger(FileSystemAnalysisRepository.class);
     private static final String JOB_FILE = "analysis.json";
     private static final String RAW_DIR = "raw";
-    /** Les identifiants sont des UUID : toute autre valeur est refusée (protection contre "../"). */
-    private static final Pattern ID_PATTERN = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
 
     private final Path root;
     private final ObjectMapper mapper;
@@ -55,10 +53,6 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
         }
     }
 
-    public static boolean isValidId(String id) {
-        return id != null && ID_PATTERN.matcher(id).matches();
-    }
-
     @Override
     public void save(AnalysisJob job) {
         writeEncrypted(dir(job.id()).resolve(JOB_FILE), job);
@@ -66,7 +60,7 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
 
     @Override
     public Optional<AnalysisJob> find(String id) {
-        if (!isValidId(id)) {
+        if (!AnalysisIds.isValid(id)) {
             return Optional.empty();
         }
         return readJob(dir(id).resolve(JOB_FILE));
@@ -76,7 +70,7 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
     public List<AnalysisJob> findAll() {
         try (Stream<Path> dirs = Files.list(root)) {
             return dirs.filter(Files::isDirectory)
-                    .filter(d -> isValidId(d.getFileName().toString()))
+                    .filter(d -> AnalysisIds.isValid(d.getFileName().toString()))
                     .map(d -> readJob(d.resolve(JOB_FILE)))
                     .flatMap(Optional::stream)
                     .sorted(Comparator.comparing(AnalysisJob::createdAt).reversed())
@@ -109,7 +103,7 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
 
     @Override
     public Optional<byte[]> readArtifact(String id, Artifact artifact) {
-        if (!isValidId(id)) {
+        if (!AnalysisIds.isValid(id)) {
             return Optional.empty();
         }
         Path file = dir(id).resolve(artifact.fileName());
@@ -192,7 +186,7 @@ public final class FileSystemAnalysisRepository implements AnalysisRepository {
     }
 
     private Path dir(String id) {
-        if (!isValidId(id)) {
+        if (!AnalysisIds.isValid(id)) {
             throw new IllegalArgumentException("Identifiant d'analyse invalide : " + id);
         }
         return root.resolve(id);

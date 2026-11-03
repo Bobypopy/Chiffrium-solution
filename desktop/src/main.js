@@ -56,7 +56,7 @@ const AFFAIRES = ['data', 'bin', 'desktop-config.json', 'desktop.log', 'desktop.
  * Reprend les données de l'ancien nom du produit, sans quoi une installation existante repart vide.
  * Se fait avant que Chromium n'écrive son "Local State", qui écraserait celui qu'on déplace.
  */
-function reprendreDonneesAnciennes() {
+function migrateLegacyData() {
   try {
     const cible = userDir();
     const ancien = path.join(path.dirname(cible), ANCIEN_PRODUIT);
@@ -527,7 +527,7 @@ if (!app.requestSingleInstanceLock()) {
   });
   // Avant que Chromium ne s'installe dans le dossier utilisateur : il y écrit son "Local State", qu'il ne
   // faut surtout pas laisser prendre la place de celui qui porte la clé de déchiffrement.
-  reprendreDonneesAnciennes();
+  migrateLegacyData();
   app.whenReady().then(start);
   app.on('window-all-closed', () => app.quit());
   app.on('before-quit', (event) => {

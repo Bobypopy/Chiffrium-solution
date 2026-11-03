@@ -5,7 +5,6 @@ import com.chiffrium.application.port.CallEdgeExtractor.CallEdge;
 import com.chiffrium.application.port.CryptoDetector.DetectionContext;
 import com.chiffrium.application.port.CryptoDetector.DetectionResult;
 import com.chiffrium.application.port.SbomGenerator.SbomResult;
-import com.chiffrium.domain.model.CryptoAsset;
 import com.chiffrium.domain.model.Occurrence;
 import com.chiffrium.infrastructure.scan.FileSystemProjectScanner;
 import org.junit.jupiter.api.BeforeAll;

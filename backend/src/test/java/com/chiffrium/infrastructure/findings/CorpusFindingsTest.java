@@ -233,9 +233,31 @@ class CorpusFindingsTest {
                 "helper/serverconfig/config_test_helpers.go", "api/test-fixtures/keys/key.pem",
                 "vectors/cryptography_vectors/pkcs12/cert.p12", "test_vectors/wycheproof/ecdh.json",
                 "fuzz/client.c", "pkg/x/y_test.go", "src/test/java/A.java", "test.sql",
-                "molecule/mysql_hardening/converge.yml"))
+                "molecule/mysql_hardening/converge.yml", "testsuite/integration-arquillian/keystore/client.key",
+                "libs/importer/src/importers/spec-data/keeper-json/testdata.json.ts"))
                 .allSatisfy(path -> assertThat(testPath.matcher(path).find()).as(path).isTrue());
         assertThat(List.of("src/latest/app.py", "attest/verify.go", "lib/contest.rb", "src/main/java/Testing.java"))
                 .allSatisfy(path -> assertThat(testPath.matcher(path).find()).as(path).isFalse());
+    }
+
+    /**
+     * Applications ordinaires (Keycloak, Mastodon, Gitea, Home Assistant) : dans un fichier de traduction,
+     * "password" est le libellé d'un champ, et "[%key:...%]" une référence vers un autre libellé.
+     */
+    @Test
+    void translationsLabelsAndIdentifiersAreNotSecrets(@TempDir Path root) {
+        TestSupport.write(root, "themes/base/login/messages/messages_ja.properties",
+                "invalidPasswordConfirmMessage=パスワード確認が一致しません\n"
+                        + "accessTokenLifespan=Durée de vie du jeton\n");
+        TestSupport.write(root, "config/locales/simple_form.de.yml", "de:\n  password: Sicheres Passwort\n"
+                + "  sign_in_token_attempt: Sicherheitscode\n");
+        TestSupport.write(root, "options/locale/locale_es-ES.json", "{ \"password\": \"Contraseña123\" }\n");
+        TestSupport.write(root, "homeassistant/components/slack/strings.json",
+                "{ \"api_key\": \"[%key:common::config_flow::data::api_key%]\" }\n");
+        // Une vraie configuration reste analysée, même nommée comme un profil.
+        TestSupport.write(root, "src/main/resources/application_dev.properties", "db.password=Xq7pL2v9Kz!w\n");
+
+        assertThat(detect(root)).extracting(SecurityFinding::file)
+                .containsExactly("src/main/resources/application_dev.properties");
     }
 }

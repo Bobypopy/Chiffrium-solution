@@ -14,8 +14,6 @@ const COMPARATORS = Object.freeze({
     || a.name.localeCompare(b.name, 'fr'),
 });
 
-export const SORT_KEYS = Object.freeze(Object.keys(COMPARATORS));
-
 function statusRank(status) {
   const index = STATUSES.findIndex((s) => s.id === status);
   return index < 0 ? STATUSES.length : index;

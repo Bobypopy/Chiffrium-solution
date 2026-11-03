@@ -34,15 +34,19 @@ public final class FindingRuleLoader {
         this.mapper = mapper;
     }
 
-    /** Ensemble des règles et paramètres partagés. */
+    /**
+     * Ensemble des règles et paramètres partagés.
+     *
+     * @param translationPath fichiers de traduction : "password" y est le libellé d'un champ, jamais un secret
+     */
     public record FindingRuleSet(List<FindingRule> rules, CipherSuitePolicy cipherSuites,
                                  Map<Language, List<String>> commentPrefixes, Pattern testPath,
-                                 Pattern placeholder, String suppressionMarker) {
+                                 Pattern translationPath, Pattern placeholder, String suppressionMarker) {
     }
 
     record IndexDocument(int schemaVersion, List<String> files, String cipherSuites,
                          Map<String, List<String>> commentPrefixes, String testPathPattern,
-                         String placeholderPattern, String suppressionMarker) {
+                         String translationPathPattern, String placeholderPattern, String suppressionMarker) {
     }
 
     record RulesDocument(List<RuleDocument> rules) {
@@ -82,7 +86,8 @@ public final class FindingRuleLoader {
         Map<Language, List<String>> comments = new EnumMap<>(Language.class);
         index.commentPrefixes().forEach((id, prefixes) -> comments.put(language(INDEX, id), List.copyOf(prefixes)));
         return new FindingRuleSet(List.copyOf(rules), new CipherSuitePolicy(weaknesses), Map.copyOf(comments),
-                regex(INDEX, index.testPathPattern(), false), regex(INDEX, index.placeholderPattern(), true),
+                regex(INDEX, index.testPathPattern(), false), regex(INDEX, index.translationPathPattern(), false),
+                regex(INDEX, index.placeholderPattern(), true),
                 index.suppressionMarker());
     }
 

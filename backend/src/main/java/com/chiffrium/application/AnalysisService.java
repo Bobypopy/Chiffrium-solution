@@ -82,10 +82,6 @@ public final class AnalysisService implements AutoCloseable {
 
     /** Activité de cette instance (arrêt ou mise à jour de l'application sans perdre d'analyse). */
     public record Activity(int running, int queued) {
-
-        public boolean idle() {
-            return running == 0 && queued == 0;
-        }
     }
 
     /**

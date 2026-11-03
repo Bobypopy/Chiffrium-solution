@@ -112,7 +112,8 @@ const VENDOR_DIRS = ['node_modules', 'vendor', 'third_party', 'thirdparty', 'ext
   '.venv', 'venv', 'bower_components', 'packages', 'dist-packages', '.gradle', '.m2'];
 /** Dossiers de test : un algorithme faible y est souvent volontaire (vecteurs de test). */
 const TEST_DIRS = ['test', 'tests', 'testing', 'spec', 'specs', '__tests__', 'testdata', 'test-data', 'fixtures',
-  'selftest', 'test-fixtures', 'test_fixtures', 'test-vectors', 'test_vectors', 'fuzz', 'fuzzing', 'molecule'];
+  'selftest', 'test-fixtures', 'test_fixtures', 'test-vectors', 'test_vectors', 'fuzz', 'fuzzing', 'molecule',
+  'testsuite', 'testsuites', 'spec-data', 'spec_data'];
 /**
  * Fichiers de test, mêmes conventions que l'analyse (FooTest.java, x_test.go, a.spec.ts, test_x.py,
  * config_test_helpers.go) : leurs constats y sont déjà abaissés.

@@ -6,6 +6,7 @@ import com.chiffrium.application.CatalogService;
 import com.chiffrium.application.port.AnalysisRepository.Artifact;
 import com.chiffrium.application.security.AccessDeniedException;
 import com.chiffrium.application.security.Actor;
+import com.chiffrium.domain.model.AnalysisIds;
 import com.chiffrium.domain.model.AnalysisJob;
 import com.chiffrium.domain.model.AnalysisRequest;
 import com.chiffrium.domain.model.AnalysisStatus;
@@ -89,7 +90,7 @@ class PersistenceTest {
     void refusesPathTraversalIdentifiers(@TempDir Path dir) {
         FileSystemAnalysisRepository repository = repository(dir);
         assertThat(repository.find("../../etc")).isEmpty();
-        assertThat(FileSystemAnalysisRepository.isValidId("../x")).isFalse();
+        assertThat(AnalysisIds.isValid("../x")).isFalse();
         assertThatThrownBy(() -> repository.artifactsDir("..")).isInstanceOf(IllegalArgumentException.class);
     }
 

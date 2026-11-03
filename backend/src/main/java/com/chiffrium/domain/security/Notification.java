@@ -18,8 +18,4 @@ public record Notification(String id, String userId, String kind, String title, 
 
     public static final int MAX_TITLE_LENGTH = 200;
     public static final int MAX_BODY_LENGTH = 1_000;
-
-    public boolean isRead() {
-        return readAt != null;
-    }
 }
