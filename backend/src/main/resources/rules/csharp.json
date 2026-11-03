@@ -161,6 +161,12 @@
       "functions": ["other"]
     },
     {
+      "id": "cs.name-literal",
+      "pattern": "\\\"(?<name>MD5|SHA1|SHA256|SHA384|SHA512|TripleDES|3DES|DES|RC2|Rijndael|AES|HMACMD5|HMACSHA1|HMACSHA256|HMACSHA384|HMACSHA512)\\\"",
+      "skipUnrecognized": true,
+      "fallback": true
+    },
+    {
       "id": "cs.io.write",
       "kind": "file",
       "direction": "write",

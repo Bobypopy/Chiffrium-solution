@@ -302,6 +302,12 @@
       "functions": ["other"]
     },
     {
+      "id": "python.name-literal",
+      "pattern": "(?<q>['\\\"])(?<name>(?i:(?:aes-(?:128|192|256)|des-ede3|des-ede|des|bf|blowfish|rc2|cast5|camellia-(?:128|192|256)|aria-(?:128|192|256)|sm4|idea|seed)-(?:ecb|cbc|cfb|cfb1|cfb8|ofb|ctr|gcm|ccm|ocb|xts)|des-ede3|rc4(?:-40)?|chacha20(?:-poly1305)?))\\k<q>",
+      "skipUnrecognized": true,
+      "fallback": true
+    },
+    {
       "id": "python.random-key-bytes",
       "kind": "keybytes",
       "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*(?:os\\s*\\.\\s*urandom|(?:secrets\\s*\\.\\s*)?token_bytes|(?:Random\\s*\\.\\s*)?get_random_bytes)\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"

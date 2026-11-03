@@ -130,14 +130,19 @@ final class ConstantResolver {
     static Map<String, List<String>> buildIndex(Iterable<String> contents) {
         Map<String, List<String>> index = new HashMap<>();
         for (String content : contents) {
-            Matcher matcher = GLOBAL_ASSIGNMENT.matcher(content);
-            while (matcher.find()) {
-                List<String> values = index.computeIfAbsent(matcher.group(1), k -> new ArrayList<>());
-                if (!values.contains(matcher.group(3))) {
-                    values.add(matcher.group(3));
-                }
-            }
+            indexInto(index, content);
         }
         return index;
+    }
+
+    /** Ajoute à l'index les constantes d'un contenu (lecture fichier par fichier, sans tout garder en mémoire). */
+    static void indexInto(Map<String, List<String>> index, String content) {
+        Matcher matcher = GLOBAL_ASSIGNMENT.matcher(content);
+        while (matcher.find()) {
+            List<String> values = index.computeIfAbsent(matcher.group(1), k -> new ArrayList<>());
+            if (!values.contains(matcher.group(3))) {
+                values.add(matcher.group(3));
+            }
+        }
     }
 }

@@ -143,6 +143,11 @@ public final class CdxgenSbomGenerator implements SbomGenerator {
                 LOG.warn("Lecture des dépendances Maven/Gradle impossible dans {}", projectRoot, e);
             }
         }
+        try {
+            warnings.addAll(ComputedDependencies.warnings(projectRoot));
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Recherche des dépendances calculées impossible dans {}", projectRoot, e);
+        }
         deleteQuietly(cdxgenTemp);
         deleteAtomFiles(outputDir);
         return new SbomResult(boms, usages, reachables, warnings);

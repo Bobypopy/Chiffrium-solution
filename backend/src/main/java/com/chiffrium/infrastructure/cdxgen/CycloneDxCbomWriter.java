@@ -260,8 +260,12 @@ public final class CycloneDxCbomWriter implements CbomWriter {
         if (occurrence.column() != null) {
             node.put("offset", occurrence.column());
         }
-        if (occurrence.snippet() != null) {
-            node.put("additionalContext", occurrence.snippet());
+        // CycloneDX n'a pas de champ pour le trajet d'une valeur : il complète l'extrait de code.
+        String trace = occurrence.trace().isEmpty() ? null
+                : "valeur venue de : " + String.join(" -> ", occurrence.trace());
+        if (occurrence.snippet() != null || trace != null) {
+            node.put("additionalContext", occurrence.snippet() == null ? trace
+                    : trace == null ? occurrence.snippet() : occurrence.snippet() + " (" + trace + ")");
         }
         return node;
     }

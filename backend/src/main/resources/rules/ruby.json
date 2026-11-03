@@ -39,6 +39,7 @@
     { "id": "ruby.bcrypt", "pattern": "\\bBCrypt\\s*::\\s*Password\\s*\\.\\s*(?:create|new)\\b", "algorithm": "bcrypt", "functions": ["keyderive"] },
     { "id": "ruby.ssl.version", "pattern": "\\b(?:ssl_version|min_version|max_version)\\s*=\\s*:(?<name>\\w+)", "skipUnrecognized": true, "functions": ["other"] },
     { "id": "ruby.ssl.constant", "pattern": "\\bOpenSSL\\s*::\\s*SSL\\s*::\\s*(?<name>TLS1_VERSION|TLS1_1_VERSION|TLS1_2_VERSION|TLS1_3_VERSION|SSL3_VERSION)\\b", "functions": ["other"] },
+    { "id": "ruby.name-literal", "pattern": "(?<q>['\\\"])(?<name>(?i:(?:aes-(?:128|192|256)|des-ede3|des-ede|des|bf|blowfish|rc2|cast5|camellia-(?:128|192|256)|aria-(?:128|192|256)|sm4|idea|seed)-(?:ecb|cbc|cfb|cfb1|cfb8|ofb|ctr|gcm|ccm|ocb|xts)|des-ede3|rc4(?:-40)?|chacha20(?:-poly1305)?))\\k<q>", "skipUnrecognized": true, "fallback": true },
     { "id": "ruby.io.write", "kind": "file", "direction": "write", "pattern": "\\bFile\\s*\\.\\s*(?:write|binwrite)\\s*\\(\\s*{FILE}" },
     { "id": "ruby.io.read", "kind": "file", "direction": "read", "pattern": "\\bFile\\s*\\.\\s*(?:read|binread|readlines)\\s*\\(\\s*{FILE}" },
     { "id": "ruby.io.open", "kind": "file", "pattern": "\\bFile\\s*\\.\\s*open\\s*\\(\\s*{FILE}\\s*,\\s*(?<mode>['\"][^'\"]*['\"])" }

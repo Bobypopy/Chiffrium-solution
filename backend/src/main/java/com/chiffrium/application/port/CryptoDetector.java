@@ -30,15 +30,22 @@ public interface CryptoDetector {
      * @param fileFlows lectures/écritures de fichiers de matériel cryptographique
      * @param warnings  problèmes non bloquants
      * @param findings  constats de sécurité (secrets, validation TLS désactivée...)
+     * @param callEdges appels entre fonctions du projet trouvés dans le code (complètent ceux de cdxgen)
      */
     record DetectionResult(List<CryptoAsset> assets, List<FileFlow> fileFlows, List<String> warnings,
-                           List<SecurityFinding> findings) {
+                           List<SecurityFinding> findings, List<CallEdgeExtractor.CallEdge> callEdges) {
 
         public DetectionResult {
             assets = List.copyOf(assets);
             fileFlows = List.copyOf(fileFlows);
             warnings = List.copyOf(warnings);
             findings = List.copyOf(findings);
+            callEdges = List.copyOf(callEdges);
+        }
+
+        public DetectionResult(List<CryptoAsset> assets, List<FileFlow> fileFlows, List<String> warnings,
+                               List<SecurityFinding> findings) {
+            this(assets, fileFlows, warnings, findings, List.of());
         }
 
         public DetectionResult(List<CryptoAsset> assets, List<FileFlow> fileFlows, List<String> warnings) {

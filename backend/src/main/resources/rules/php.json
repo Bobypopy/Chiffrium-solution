@@ -56,6 +56,7 @@
         "pwhash": "Argon2id", "kx": "X25519", "scalarmult": "X25519", "aead_aes256gcm": "AES-256-GCM", "auth": "HMAC-SHA512"
       }
     },
+    { "id": "php.name-literal", "pattern": "(?<q>['\\\"])(?<name>(?i:(?:aes-(?:128|192|256)|des-ede3|des-ede|des|bf|blowfish|rc2|cast5|camellia-(?:128|192|256)|aria-(?:128|192|256)|sm4|idea|seed)-(?:ecb|cbc|cfb|cfb1|cfb8|ofb|ctr|gcm|ccm|ocb|xts)|des-ede3|rc4(?:-40)?|chacha20(?:-poly1305)?))\\k<q>", "skipUnrecognized": true, "fallback": true },
     { "id": "php.io.write", "kind": "file", "direction": "write", "pattern": "\\b(?:file_put_contents|openssl_pkey_export_to_file|openssl_x509_export_to_file)\\s*\\(\\s*(?:[^,]+,\\s*)?{FILE}" },
     { "id": "php.io.read", "kind": "file", "direction": "read", "pattern": "\\bfile_get_contents\\s*\\(\\s*{FILE}" },
     { "id": "php.io.fopen", "kind": "file", "pattern": "\\bfopen\\s*\\(\\s*{FILE}\\s*,\\s*(?<mode>'[^']*'|\"[^\"]*\")" }

@@ -1,7 +1,9 @@
 package com.chiffrium.infrastructure.rules;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,12 +12,16 @@ import java.util.regex.Pattern;
  * contient encore la ligne</b> (profondeur d'accolades pour les langages à accolades, indentation pour
  * Python et Ruby), qualifiée par la classe (ou, à défaut, par le nom du fichier) : "Classe.méthode".
  * Une ligne au niveau du module (constante, variable globale, attribut de classe) n'a pas de fonction.
+ *
+ * <p>Une instance est liée à un seul fichier : déclarations et profondeurs sont calculées une fois.
  */
 final class ScopeResolver {
 
     static final int MAX_LOOKBACK_LINES = 400;
     /** Nombre de lignes tolérées entre une déclaration et l'accolade qui ouvre son bloc. */
     static final int MAX_SIGNATURE_LINES = 5;
+    /** Une déclaration n'est jamais aussi longue : au-delà, la ligne n'est pas soumise aux motifs. */
+    static final int MAX_DECLARATION_LINE_LENGTH = 1_000;
     private static final String NAME_GROUP = "name";
     /**
      * Forme "déroulée" et possessive : la récursion du moteur ne dépend que du nombre d'échappements, pas de la
@@ -37,10 +43,26 @@ final class ScopeResolver {
         }
     }
 
+    /**
+     * Déclaration de fonction.
+     *
+     * @param line      ligne de la déclaration (1-based)
+     * @param container classe ou module, à défaut nom du fichier
+     * @param name      nom de la fonction
+     */
+    record Declaration(int line, String container, String name) {
+
+        String qualified() {
+            return container + "." + name;
+        }
+    }
+
     private final List<Pattern> functionPatterns;
     private final List<Pattern> classPatterns;
     private final BlockStyle style;
     private int[] depthAtLineStart;
+    private TreeMap<Integer, String> functionLines;
+    private TreeMap<Integer, String> classLines;
 
     ScopeResolver(List<Pattern> functionPatterns, List<Pattern> classPatterns, BlockStyle style) {
         this.functionPatterns = functionPatterns;
@@ -53,23 +75,69 @@ final class ScopeResolver {
      * @return "Conteneur.fonction", ou null si aucune fonction n'englobe la ligne
      */
     String qualifiedFunction(SourceText text, int line, String fileStem) {
-        int lowest = Math.max(1, line - MAX_LOOKBACK_LINES);
-        for (int i = line; i >= lowest; i--) {
-            String function = find(functionPatterns, text.line(i));
-            if (function == null) {
-                continue;
-            }
-            if (!encloses(text, i, line)) {
-                return null;
-            }
-            String container = null;
-            int lowestClass = Math.max(1, i - MAX_LOOKBACK_LINES);
-            for (int c = i; c >= lowestClass && container == null; c--) {
-                container = find(classPatterns, text.line(c));
-            }
-            return (container != null ? container : fileStem) + "." + function;
+        Declaration declaration = enclosing(text, line, fileStem);
+        return declaration == null ? null : declaration.qualified();
+    }
+
+    /** Déclaration dont le bloc contient la ligne, ou null. */
+    Declaration enclosing(SourceText text, int line, String fileStem) {
+        var function = functionLines(text).floorEntry(line);
+        if (function == null || line - function.getKey() > MAX_LOOKBACK_LINES
+                || !encloses(text, function.getKey(), line)) {
+            return null;
         }
-        return null;
+        return declarationAt(text, function.getKey(), function.getValue(), fileStem);
+    }
+
+    /** Toutes les déclarations de fonctions du fichier, dans l'ordre. */
+    List<Declaration> declarations(SourceText text, String fileStem) {
+        List<Declaration> declarations = new ArrayList<>();
+        functionLines(text).forEach((line, name) -> declarations.add(declarationAt(text, line, name, fileStem)));
+        return declarations;
+    }
+
+    /**
+     * Le conteneur est la classe la plus proche dont le bloc contient encore la déclaration : un type déclaré et
+     * refermé plus haut ({@code record Requete(...) {}}) n'est pas le conteneur des méthodes qui le suivent.
+     */
+    private Declaration declarationAt(SourceText text, int line, String name, String fileStem) {
+        TreeMap<Integer, String> classes = classLines(text);
+        for (var container = classes.floorEntry(line);
+             container != null && line - container.getKey() <= MAX_LOOKBACK_LINES;
+             container = classes.lowerEntry(container.getKey())) {
+            if (encloses(text, container.getKey(), line)) {
+                return new Declaration(line, container.getValue(), name);
+            }
+        }
+        return new Declaration(line, fileStem, name);
+    }
+
+    private TreeMap<Integer, String> functionLines(SourceText text) {
+        if (functionLines == null) {
+            functionLines = scan(text, functionPatterns);
+        }
+        return functionLines;
+    }
+
+    private TreeMap<Integer, String> classLines(SourceText text) {
+        if (classLines == null) {
+            classLines = scan(text, classPatterns);
+        }
+        return classLines;
+    }
+
+    private static TreeMap<Integer, String> scan(SourceText text, List<Pattern> patterns) {
+        TreeMap<Integer, String> found = new TreeMap<>();
+        for (int i = 1; i <= text.lineCount(); i++) {
+            String line = text.line(i);
+            if (line.length() <= MAX_DECLARATION_LINE_LENGTH) {
+                String name = find(patterns, line);
+                if (name != null) {
+                    found.put(i, name);
+                }
+            }
+        }
+        return found;
     }
 
     /** Vrai si le bloc ouvert par la déclaration de la ligne {@code declaration} contient {@code line}. */

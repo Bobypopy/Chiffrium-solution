@@ -103,7 +103,8 @@ public record CryptoAsset(
                 kept.language() != null ? kept.language() : candidate.language(),
                 kept.source(),
                 kept.ruleId(),
-                functions);
+                functions,
+                kept.trace().isEmpty() ? candidate.trace() : kept.trace());
     }
 
     private static AlgorithmSpec richerAlgorithm(AlgorithmSpec a, AlgorithmSpec b) {

@@ -291,6 +291,7 @@ button.bar-row:hover { background: var(--surface-2); }
 .occurrence-group ul { list-style: none; margin: 4px 0 0; padding-left: 12px; border-left: 2px solid var(--border); }
 .occurrence-group li { margin-bottom: 6px; }
 .line-number { font-family: var(--mono); font-weight: 700; }
+.trace { margin: 2px 0; overflow-wrap: anywhere; }
 .snippet { margin: 2px 0; padding: 6px 8px; background: var(--surface-2); border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .graph-link { margin-left: 6px; }
 .oid-help a { white-space: nowrap; }

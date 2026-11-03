@@ -179,6 +179,7 @@ public final class AnalysisPipeline {
             DetectionContext context = new DetectionContext(source.root(), scan, sbom);
             List<CryptoAsset> detected = new ArrayList<>();
             List<FileFlow> fileFlows = new ArrayList<>();
+            List<CallEdgeExtractor.CallEdge> codeCallEdges = new ArrayList<>();
             Map<String, SecurityFinding> findings = new LinkedHashMap<>();
             for (CryptoDetector detector : detectorProvider.detectors(assetFactory)) {
                 DetectionResult result = steps.optional(STEP_DETECT_PREFIX + detector.name(),
@@ -187,6 +188,7 @@ public final class AnalysisPipeline {
                         DetectionResult.of(List.of()));
                 detected.addAll(result.assets());
                 fileFlows.addAll(result.fileFlows());
+                codeCallEdges.addAll(result.callEdges());
                 result.findings().forEach(f -> findings.putIfAbsent(f.id(), f));
                 steps.warn(result.warnings());
             }
@@ -202,8 +204,10 @@ public final class AnalysisPipeline {
             List<Library> libraries = collectLibraries(request, sbom, steps);
 
             CallGraph graph = steps.optional(STEP_GRAPH, () -> {
-                CallGraphBuilder.Result result = new CallGraphBuilder()
-                        .build(assets, fileFlows, callEdgeExtractor.extract(sbom));
+                // Appels vus par atom (Java, Python) et appels retrouvés dans le code (tous langages, sans cdxgen).
+                List<CallEdgeExtractor.CallEdge> callEdges = new ArrayList<>(callEdgeExtractor.extract(sbom));
+                callEdges.addAll(codeCallEdges);
+                CallGraphBuilder.Result result = new CallGraphBuilder().build(assets, fileFlows, callEdges);
                 steps.warn(result.warnings());
                 return result.graph();
             }, g -> g.nodes().size() + " nœud(s), " + g.edges().size() + " arête(s)", CallGraph.empty());
