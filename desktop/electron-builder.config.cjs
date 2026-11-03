@@ -11,8 +11,10 @@ module.exports = {
   productName: 'Chiffrium',
   directories: { output: 'dist', buildResources: 'build' },
   // Les binaires optionnels de cdxgen (trivy, osquery...) servent à l'analyse d'images conteneur, pas du code
-  // source : exclus (environ 45 Mo de moins).
-  files: ['src/**/*', 'package.json', 'node_modules/**/*', '!node_modules/@cyclonedx/cdxgen-plugins-bin*/**'],
+  // source : exclus (environ 230 Mo de moins). cdxgen 12 les publie sous @cdxgen, les versions précédentes sous
+  // @cyclonedx.
+  files: ['src/**/*', 'package.json', 'node_modules/**/*', '!node_modules/@cyclonedx/cdxgen-plugins-bin*/**',
+    '!node_modules/@cdxgen/cdxgen-plugins-bin*/**'],
   extraFiles: [
     { from: '../LICENSE', to: 'LICENSE.txt' },
     { from: '../THIRD-PARTY-NOTICES.md', to: 'THIRD-PARTY-NOTICES.md' },

@@ -13,7 +13,13 @@ import java.util.Set;
  */
 public interface SbomGenerator {
 
-    SbomResult generate(Path projectRoot, Set<Language> languages, Path outputDir, Duration timeout);
+    /**
+     * @param fetchPackageMetadata autorise l'interrogation des registres de paquets (licences des dépendances
+     *                             Python...) : seulement quand l'utilisateur accepte déjà d'envoyer les noms et
+     *                             versions de ses dépendances (recherche des vulnérabilités connues)
+     */
+    SbomResult generate(Path projectRoot, Set<Language> languages, Path outputDir, Duration timeout,
+                        boolean fetchPackageMetadata);
 
     /** Version de l'outil, pour la traçabilité du rapport ; "indisponible" si l'outil est absent. */
     String version();

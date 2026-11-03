@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests sur de vraies sorties de cdxgen 11.7 (projet crypto-package, fichiers copiés de output/Base74).
+ * Tests sur de vraies sorties de cdxgen : 11.7 (projet crypto-package) et 12.9 (petit projet Maven chiffrant en
+ * AES-GCM avec Bouncy Castle), pour vérifier que les lecteurs suivent les changements de version.
  */
 class CdxgenAdaptersTest {
 
@@ -39,9 +40,19 @@ class CdxgenAdaptersTest {
             Map.of(Language.JAVA, TestSupport.fixture("cdxgen/java-reachables.slices.json")),
             List.of());
 
+    private static final SbomResult SBOM_12 = new SbomResult(
+            List.of(TestSupport.fixture("cdxgen/12.9.0/bom-java.json")),
+            Map.of(Language.JAVA, TestSupport.fixture("cdxgen/12.9.0/java-usages.slices.json")),
+            Map.of(Language.JAVA, TestSupport.fixture("cdxgen/12.9.0/java-reachables.slices.json")),
+            List.of());
+
     private List<CryptoAsset> detect() {
+        return detect(SBOM);
+    }
+
+    private static List<CryptoAsset> detect(SbomResult sbom) {
         var detector = new CdxgenCryptoDetector(TestSupport.ASSETS, TestSupport.MAPPER);
-        var context = new DetectionContext(Path.of("."), new ScanResult(List.of(), List.of(), 0), SBOM);
+        var context = new DetectionContext(Path.of("."), new ScanResult(List.of(), List.of(), 0), sbom);
         return AssetMerger.merge(detector.detect(context).assets());
     }
 
@@ -85,6 +96,47 @@ class CdxgenAdaptersTest {
             assertThat(e.external()).isTrue();
         });
         assertThat(edges).anySatisfy(e -> assertThat(e.external()).isFalse());
+    }
+
+    @Test
+    void cdxgen12OutputsAreReadLikeThePreviousOnes() {
+        CryptoAsset aes = detect(SBOM_12).stream().filter(a -> a.name().equals("AES")).findFirst().orElseThrow();
+        assertThat(aes.occurrences()).isNotEmpty().allSatisfy(o -> {
+            assertThat(o.file()).endsWith("Coffre.java");
+            assertThat(o.line()).isBetween(19, 21);
+        });
+
+        List<Library> libraries = new CycloneDxLibraryReader(TestSupport.MAPPER,
+                LicensePolicyLoader.loadBuiltIn(TestSupport.MAPPER)).read(SBOM_12);
+        assertThat(libraries).singleElement().satisfies(lib -> {
+            assertThat(lib.name()).isEqualTo("bcprov-jdk18on");
+            assertThat(lib.cryptoLibrary()).isTrue();
+            assertThat(lib.licenses()).containsExactly("Bouncy Castle Licence");
+        });
+
+        assertThat(new SliceCallEdgeExtractor(TestSupport.MAPPER).extract(SBOM_12))
+                .anySatisfy(e -> assertThat(e.callee()).startsWith("javax.crypto.Cipher"));
+    }
+
+    @Test
+    void projectInstalledFromItsOwnPathIsNotADependency() throws Exception {
+        // "-e .[socks]" dans un requirements.txt : cdxgen 12 produit un composant pkg:pypi/.
+        assertThat(CycloneDxLibraryReader.isLocalPath(TestSupport.MAPPER.readTree(
+                "{\"type\":\"library\",\"name\":\".\",\"purl\":\"pkg:pypi/.\"}"))).isTrue();
+        assertThat(CycloneDxLibraryReader.isLocalPath(TestSupport.MAPPER.readTree(
+                "{\"type\":\"library\",\"name\":\"requests\",\"purl\":\"pkg:pypi/requests@2.32.3\"}"))).isFalse();
+    }
+
+    @Test
+    void registriesAreQueriedOnlyWhenTheUserAcceptsIt() {
+        Map<String, String> offline = CdxgenSbomGenerator.environment(Path.of("tmp"), false, false, null);
+        assertThat(offline).containsEntry("FETCH_LICENSE", "false")
+                .containsEntry("CDXGEN_FETCH_PKG_METADATA", "false")
+                .containsEntry("CDXGEN_ALLOWED_COMMANDS", "atom,node,go,jar");
+        assertThat(CdxgenSbomGenerator.environment(Path.of("tmp"), false, true, null))
+                .containsEntry("CDXGEN_FETCH_PKG_METADATA", "true");
+        assertThat(CdxgenSbomGenerator.environment(Path.of("tmp"), true, false, null))
+                .doesNotContainKey("CDXGEN_ALLOWED_COMMANDS");
     }
 
     @Test

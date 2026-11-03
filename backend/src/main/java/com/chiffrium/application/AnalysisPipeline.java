@@ -275,7 +275,7 @@ public final class AnalysisPipeline {
         }
         SbomResult sbom = steps.optional(STEP_SBOM,
                 () -> sbomGenerator.generate(source.root(), languages, rawDir,
-                        settings.cdxgenTimeout(request.cdxgenTimeoutSeconds())),
+                        settings.cdxgenTimeout(request.cdxgenTimeoutSeconds()), request.scanVulnerabilities()),
                 r -> r.boms().size() + " BOM, " + r.reachablesSlices().size() + " slice(s) de flux",
                 SbomResult.empty());
         steps.warn(sbom.warnings());

@@ -69,7 +69,7 @@ public final class CycloneDxLibraryReader implements LibraryReader {
             try {
                 JsonNode root = mapper.readTree(bom.toFile());
                 JsonNodes.array(root, "components")
-                        .filter(c -> LIBRARY_TYPES.contains(JsonNodes.text(c, "type")))
+                        .filter(c -> LIBRARY_TYPES.contains(JsonNodes.text(c, "type")) && !isLocalPath(c))
                         .map(c -> toLibrary(c, licensePolicy))
                         .forEach(lib -> byKey.putIfAbsent(lib.purl() != null ? lib.purl() : lib.bomRef(), lib));
             } catch (IOException e) {
@@ -80,6 +80,15 @@ public final class CycloneDxLibraryReader implements LibraryReader {
                 .sorted(Comparator.comparing(Library::cryptoLibrary).reversed()
                         .thenComparing(l -> l.name() == null ? "" : l.name()))
                 .toList();
+    }
+
+    /**
+     * Le projet lui-même installé depuis un chemin ({@code -e .[socks]} dans un requirements.txt) : cdxgen 12
+     * en fait un composant {@code pkg:pypi/.}, qui n'est pas une dépendance.
+     */
+    static boolean isLocalPath(JsonNode component) {
+        String name = JsonNodes.text(component, "name");
+        return ".".equals(name) || "..".equals(name);
     }
 
     static Library toLibrary(JsonNode component, LicensePolicy licensePolicy) {

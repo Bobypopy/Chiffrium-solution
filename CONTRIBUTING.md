@@ -5,7 +5,7 @@ For anything large, open an issue first so we can agree on the approach.
 
 ## Build and run
 
-You need JDK 21, Maven 3.9 and Node.js 20 or later. cdxgen (`npm i -g @cyclonedx/cdxgen@11.7.0`) is optional;
+You need JDK 21, Maven 3.9 and Node.js 20 or later. cdxgen (`npm i -g @cyclonedx/cdxgen@12.9.0`) is optional;
 without it, everything but the dependency inventory works.
 
 ```bash

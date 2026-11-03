@@ -1,0 +1,42 @@
+name: CodeQL
+
+# Analyse de sécurité du code de Chiffrium. Les tests sont exclus : leurs échantillons contiennent volontairement
+# de la cryptographie faible et des secrets factices, que CodeQL signalerait à tort.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "30 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL (${{ matrix.language }})
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, javascript-typescript, actions, python]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+          config: |
+            paths-ignore:
+              - backend/src/test
+              - frontend/tests
+              - desktop/test
+              - frontend/public/vendor
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}

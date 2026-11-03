@@ -1,0 +1,32 @@
+name: Bug
+description: Something does not work as expected.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown in the title bar and on the About page.
+      placeholder: "1.2.8"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How you run Chiffrium
+      options: [Desktop application (Windows), Desktop application (Linux), Team server (Docker or Kubernetes), Command line or GitHub Action]
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The relevant lines of `desktop.log` (see the user guide). It holds errors, never your code.
+      render: text

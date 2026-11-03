@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # Version de cdxgen épinglée (déclarée avant le premier FROM pour être utilisable dans les FROM).
-ARG CDXGEN_VERSION=v11.7.0
+ARG CDXGEN_VERSION=12.9.0
 
 # ---------------------------------------------------------------------------------------------
 # Étape 1 : compilation et tests du backend.
@@ -19,7 +19,7 @@ RUN mvn -B -q package -DskipTests=${SKIP_TESTS}
 # cdxgen, atom et les outils de résolution de dépendances (Maven, Gradle, Python, Node, Go, .NET...).
 # Changer de version de cdxgen = changer CDXGEN_VERSION et relancer les tests (voir docs/architecture.md).
 # ---------------------------------------------------------------------------------------------
-FROM ghcr.io/cyclonedx/cdxgen:${CDXGEN_VERSION}
+FROM ghcr.io/cdxgen/cdxgen:${CDXGEN_VERSION}
 
 LABEL org.opencontainers.image.title="chiffrium-backend" \
       org.opencontainers.image.description="API d'inventaire cryptographique (CBOM) multi-langages"

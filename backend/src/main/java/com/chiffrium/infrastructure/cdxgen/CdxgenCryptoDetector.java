@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Exploite les sorties cdxgen :
@@ -83,7 +85,11 @@ public final class CdxgenCryptoDetector implements CryptoDetector {
 
     List<CryptoAsset> fromReachables(JsonNode root, Language language) {
         List<CryptoAsset> assets = new ArrayList<>();
-        JsonNodes.array(root, "reachables").forEach(reachable -> {
+        // cdxgen 11 enveloppe les flux dans {"reachables": [...]}, cdxgen 12 écrit directement le tableau.
+        Stream<JsonNode> reachables = root.isArray()
+                ? StreamSupport.stream(root.spliterator(), false)
+                : JsonNodes.array(root, "reachables");
+        reachables.forEach(reachable -> {
             List<JsonNode> flows = JsonNodes.array(reachable, "flows").toList();
             Set<CryptoFunction> functions = functionsOf(flows);
             for (JsonNode flow : flows) {

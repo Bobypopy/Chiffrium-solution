@@ -84,7 +84,7 @@ Security is covered in [security.md](security.md).
 
 cdxgen lists the dependencies of every ecosystem and, through atom, follows data flows in Java and Python. It
 produces no cryptographic inventory for the other languages, and its findings often lack a file and line: the
-rule engine and the key material detector cover that. cdxgen is pinned (11.7.0 in `backend/Dockerfile`,
+rule engine and the key material detector cover that. cdxgen is pinned (12.9.0 in `backend/Dockerfile`,
 `docker-compose.yml` and `desktop/package.json`) and its readers are tested against real outputs
 (`backend/src/test/resources/fixtures/cdxgen/`).
 

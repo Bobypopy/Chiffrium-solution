@@ -86,20 +86,15 @@ public final class CdxgenSbomGenerator implements SbomGenerator {
     }
 
     @Override
-    public SbomResult generate(Path projectRoot, Set<Language> languages, Path outputDir, Duration timeout) {
+    public SbomResult generate(Path projectRoot, Set<Language> languages, Path outputDir, Duration timeout,
+                               boolean fetchPackageMetadata) {
         List<Path> boms = new ArrayList<>();
         Map<Language, Path> usages = new EnumMap<>(Language.class);
         Map<Language, Path> reachables = new EnumMap<>(Language.class);
         List<String> warnings = new ArrayList<>();
         Path cdxgenTemp = createPrivateTempDir(outputDir);
-        Map<String, String> environment = new HashMap<>(Map.of(
-                "FETCH_LICENSE", "false",
-                // cdxgen (evinser.js) supprime récursivement le dossier des slices s'il est sous son répertoire
-                // temporaire : on lui en impose un dédié, frère (et non parent) du dossier de sortie.
-                "CDXGEN_TEMP_DIR", cdxgenTemp.toString()));
-        if (!installDeps) {
-            environment.put("CDXGEN_ALLOWED_COMMANDS", allowedCommands(System.getenv("ATOM_CMD")));
-        }
+        Map<String, String> environment = environment(cdxgenTemp, installDeps, fetchPackageMetadata,
+                System.getenv("ATOM_CMD"));
 
         for (Map.Entry<String, Language> entry : typesFor(languages).entrySet()) {
             String type = entry.getKey();
@@ -152,6 +147,24 @@ public final class CdxgenSbomGenerator implements SbomGenerator {
         deleteQuietly(cdxgenTemp);
         deleteAtomFiles(outputDir);
         return new SbomResult(boms, usages, reachables, warnings);
+    }
+
+    /**
+     * Environnement de cdxgen. Aucun registre de paquets n'est interrogé, sauf accord ({@code fetchMetadata}) :
+     * cdxgen 12 y lit alors les licences que les fichiers du dépôt ne donnent pas (dépendances Python).
+     */
+    static Map<String, String> environment(Path cdxgenTemp, boolean installDeps, boolean fetchMetadata,
+                                           String atomCommand) {
+        Map<String, String> environment = new HashMap<>(Map.of(
+                "FETCH_LICENSE", "false",
+                "CDXGEN_FETCH_PKG_METADATA", String.valueOf(fetchMetadata),
+                // cdxgen (evinser.js) supprime récursivement le dossier des slices s'il est sous son répertoire
+                // temporaire : on lui en impose un dédié, frère (et non parent) du dossier de sortie.
+                "CDXGEN_TEMP_DIR", cdxgenTemp.toString()));
+        if (!installDeps) {
+            environment.put("CDXGEN_ALLOWED_COMMANDS", allowedCommands(atomCommand));
+        }
+        return environment;
     }
 
     /** Liste blanche de cdxgen ; un ATOM_CMD personnalisé (premier mot, comme le découpe cdxgen) y est ajouté. */

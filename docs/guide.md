@@ -30,8 +30,9 @@ Three options are worth knowing:
 
 - **Dependency inventory** reads the project's dependency files (`pom.xml`, `package-lock.json`, `go.mod`...).
   No build tool is ever run.
-- **Known vulnerabilities** sends library names and versions to the public OSV database. Never any code. Untick
-  it on an isolated machine.
+- **Known vulnerabilities** sends library names and versions to the public OSV database, and to the package
+  registries (PyPI, npm...) for the licences the dependency files do not give. Never any code. Untick it on an
+  isolated machine.
 - **Git history** also searches old commits for secrets that were deleted from the code but are still readable.
   The repository is then cloned in full, which is slower.
 
@@ -78,6 +79,7 @@ only outgoing requests are the ones you allow:
 |---|---|---|
 | Git clone | you analyse a remote repository | your request to that Git server |
 | OSV, CISA KEV, EPSS, NVD | *Known vulnerabilities* is ticked | package names and versions, CVE identifiers |
+| Package registries (PyPI, npm...) | *Known vulnerabilities* is ticked | package names and versions |
 | Update check | at start-up, then every six hours | one request to github.com |
 
 There is no telemetry. Reports and the database are encrypted (AES-256-GCM), and the master key is protected by

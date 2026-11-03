@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: Bobypopy/Chiffrium-solution/action@v1.2.7
+      - uses: Bobypopy/Chiffrium-solution/action@v1.2.8
         id: chiffrium
       - uses: github/codeql-action/upload-sarif@v4
         if: always()           # publish the results even when the policy fails the job
