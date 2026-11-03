@@ -116,7 +116,12 @@ public final class Main {
     /** Usages des sous-clés dérivées de la clé maîtresse (les changer rend les données existantes illisibles). */
     private static final String KEY_ARTIFACTS = "artifacts";
     private static final String PRODUCT_NAME = "Chiffrium";
-    private static final String LICENSE_SUMMARY = "Logiciel propriétaire, usage interne uniquement (voir LICENSE).";
+    private static final String LICENSE_SUMMARY = "Logiciel libre sous licence GNU AGPL-3.0 (voir LICENSE).";
+    /**
+     * Code source correspondant (AGPL-3.0, article 13) : proposé à toute personne qui utilise l'outil, y compris
+     * à travers le réseau. Une version modifiée déployée en serveur doit pointer vers son propre code.
+     */
+    static final String SOURCE_URL = "https://github.com/Bobypopy/CryptoAnalyzer-solution";
     private static final String THIRD_PARTY_RESOURCE = "/legal/third-party.json";
     private static final String KEY_SETTINGS = "settings";
     private static final String KEY_DB_FILE = "h2-file";
@@ -409,6 +414,7 @@ public final class Main {
             about.put("product", PRODUCT_NAME);
             about.put("version", version);
             about.put("license", LICENSE_SUMMARY);
+            about.put("sourceUrl", SOURCE_URL);
             about.put("thirdParty", readResource(THIRD_PARTY_RESOURCE));
             return about;
         }

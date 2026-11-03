@@ -21,8 +21,8 @@ export const COMPLEMENTS = {
   // --- Page À propos (services et sources décrits par le serveur)
   'Dépôts Git analysés (clonage à la demande)': 'Git repositories analysed (cloned on demand)',
   'OpenJDK (JRE embarqué)': 'OpenJDK (bundled JRE)',
-  'Logiciel propriétaire, usage interne uniquement (voir LICENSE).':
-    'Proprietary software, internal use only (see LICENSE).',
+  'Logiciel libre sous licence GNU AGPL-3.0 (voir LICENSE).': 'Free software under the GNU AGPL-3.0 (see LICENSE).',
+  'Code source :': 'Source code:',
   '- Publications du gouvernement américain, domaine public':
     '- United States government publications, public domain',
   '- Utilisation libre avec attribution (FIRST.org)': '- Free to use with attribution (FIRST.org)',

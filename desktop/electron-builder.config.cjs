@@ -30,6 +30,9 @@ module.exports = {
     icon: 'build/icon.ico',
   },
   nsis: {
+    // Nom sans espaces, identique à celui de la release GitHub et de latest.yml : l'installateur signé par
+    // SignPath (scripts/after-sign.mjs) se retrouve ainsi sous le même nom partout.
+    artifactName: '${productName}-Setup-${version}.${ext}',
     // Licence affichée (et à accepter) pendant l'installation ; copiée par scripts/prepare.mjs.
     license: 'resources/license.txt',
     oneClick: false,

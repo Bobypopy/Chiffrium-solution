@@ -18,6 +18,8 @@ export async function renderAbout(container) {
     h('section', { class: 'card' },
       h('h1', {}, `${about.product} ${about.version}`),
       h('p', {}, about.license),
+      about.sourceUrl ? h('p', {}, 'Code source : ',
+        h('a', { href: about.sourceUrl, target: '_blank', rel: 'noopener noreferrer' }, about.sourceUrl)) : null,
       organization.name ? h('p', {}, 'Outil mis à disposition par ', h('strong', {}, organization.name), '.') : null),
     organization.usageNotice ? h('section', { class: 'card' }, h('h2', {}, 'Charte d\'utilisation'),
       h('p', { class: 'prewrap' }, organization.usageNotice)) : null,

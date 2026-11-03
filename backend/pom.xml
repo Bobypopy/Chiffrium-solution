@@ -11,9 +11,16 @@
   <version>${revision}</version>
   <name>Chiffrium backend</name>
   <description>API d'analyse cryptographique multi-langages produisant des CBOM CycloneDX 1.6</description>
+  <url>https://github.com/Bobypopy/CryptoAnalyzer-solution</url>
+  <licenses>
+    <license>
+      <name>GNU Affero General Public License v3.0 only</name>
+      <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+    </license>
+  </licenses>
 
   <properties>
-    <revision>1.1.7</revision>
+    <revision>1.2.0</revision>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 

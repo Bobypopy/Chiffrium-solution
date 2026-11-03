@@ -4,9 +4,10 @@ name: Release
 # Construit l'installateur Windows et les paquets Linux, puis les publie dans une release GitHub où les
 # applications installées vont chercher leurs mises à jour.
 #
-# Le code peut rester privé : si la variable RELEASES_REPO (ex. Bobypopy/Chiffrium-releases) et le secret
-# RELEASES_TOKEN sont définis, les releases partent dans ce dépôt public. Sinon, elles restent dans ce dépôt
-# (qui doit alors être public pour que les mises à jour automatiques fonctionnent).
+# Si la variable RELEASES_REPO (ex. Bobypopy/Chiffrium-releases) et le secret RELEASES_TOKEN sont définis, les
+# releases partent dans ce dépôt public. Sinon, elles restent dans ce dépôt (qui doit alors être public pour
+# que les mises à jour automatiques fonctionnent). La signature SignPath demande que ce workflow tourne dans le
+# dépôt public du code (voir docs/code-signing.md).
 
 on:
   push:
@@ -73,7 +74,9 @@ jobs:
           RELEASES_REPO: ${{ vars.RELEASES_REPO }}
           RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Signature Windows : activée automatiquement si les secrets existent (voir docs/code-signing.md).
+          # Signature Windows (voir docs/code-signing.md) : par SignPath si la variable SIGNPATH_ORGANIZATION_ID
+          # est définie, sinon par le certificat des secrets WINDOWS_CSC_*, s'ils existent.
+          SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           WIN_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
         run: |
@@ -87,8 +90,57 @@ jobs:
           else
             export GH_TOKEN="$REPO_TOKEN"
           fi
-          npx electron-builder --config electron-builder.config.cjs --publish always \
+          # Avec SignPath, l'installateur Windows est publié après sa signature (étapes suivantes).
+          publication=always
+          if [ "$RUNNER_OS" = "Windows" ] && [ -n "$SIGNPATH_ORGANIZATION_ID" ]; then
+            publication=never
+            unset WIN_CSC_LINK WIN_CSC_KEY_PASSWORD
+          fi
+          npx electron-builder --config electron-builder.config.cjs --publish "$publication" \
             -c.extraMetadata.version="${GITHUB_REF_NAME#v}"
+
+      - name: Installateur à signer
+        id: non-signe
+        if: runner.os == 'Windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: installateur-non-signe
+          path: desktop/dist/Chiffrium-Setup-*.exe
+          if-no-files-found: error
+          retention-days: 1
+      - name: Signature SignPath
+        if: runner.os == 'Windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: SignPath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'Chiffrium' }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG || 'release-signing' }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG || 'installateur' }}
+          github-artifact-id: ${{ steps.non-signe.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: desktop/signe
+      # La signature change le fichier : empreinte de latest.yml et blockmap recalculées avant publication.
+      - name: Publication de l'installateur signé
+        if: runner.os == 'Windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
+        working-directory: desktop
+        shell: bash
+        env:
+          RELEASES_REPO: ${{ vars.RELEASES_REPO }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          installateur="Chiffrium-Setup-$version.exe"
+          node scripts/after-sign.mjs "signe/$installateur" dist
+          export GH_TOKEN="${RELEASES_TOKEN:-$REPO_TOKEN}"
+          depot="${RELEASES_REPO:-$GITHUB_REPOSITORY}"
+          # La release peut déjà exister (créée par le job Linux) : on ne la crée que si elle manque.
+          gh release view "$GITHUB_REF_NAME" --repo "$depot" > /dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --repo "$depot" --title "$version" --notes "" \
+            || gh release view "$GITHUB_REF_NAME" --repo "$depot" > /dev/null
+          gh release upload "$GITHUB_REF_NAME" "dist/$installateur" "dist/$installateur.blockmap" dist/latest.yml \
+            --repo "$depot" --clobber
 
       # Le moteur seul, téléchargé par l'action GitHub (docs/releases-repo/action) et la ligne de commande.
       - name: Moteur en ligne de commande

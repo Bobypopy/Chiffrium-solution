@@ -324,7 +324,9 @@ class ApiIntegrationTest {
                 "{\"approve\":false,\"comment\":\"Pas maintenant\"}")).path("status").asText()).isEqualTo("rejected");
 
         JsonNode about = json(send("GET", "/api/about", null, null));
-        assertThat(about.path("license").asText()).contains("propriétaire");
+        assertThat(about.path("license").asText()).contains("AGPL-3.0");
+        // AGPL-3.0, article 13 : le code source est proposé à qui utilise l'outil à travers le réseau.
+        assertThat(about.path("sourceUrl").asText()).startsWith("https://");
         assertThat(about.path("thirdParty").path("components").size()).isPositive();
     }
 
