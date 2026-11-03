@@ -30,7 +30,7 @@ public interface ProjectScanner {
 
     /**
      * @param modules sous-projets détectés (dont les dépôts Git imbriqués / sous-modules)
-     * @param files   fichiers retenus (sources, configuration, matériel)
+     * @param files   fichiers retenus (sources, configuration, matériel, données lues pour les clés et secrets)
      * @param skipped nombre de fichiers ignorés car trop volumineux
      */
     record ScanResult(List<ProjectModule> modules, List<ScannedFile> files, int skipped) {

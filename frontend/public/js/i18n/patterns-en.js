@@ -66,6 +66,10 @@ export const PATTERNS_EN = [
     'Longer than usual ($1: $2). A large repository or a slow clone usually explains the gap.'],
   [/^Recommandation : (.+)$/, 'Recommendation: $1'],
   [/^Valide jusqu'en (\d+)$/, 'Valid until $1'],
+  [/^Clé (privée |secrète |)générée, algorithme non déterminé \((.+)\)$/,
+    (type, fichier) => `${{ 'privée ': 'Private key', 'secrète ': 'Secret key' }[type] ?? 'Key'} generated, `
+      + `algorithm not determined (${fichier})`],
+  [/^Clé non identifiée \((.+)\)$/, 'Unidentified key ($1)'],
   [/^Clé (privée|secrète) (.+) générée \((.+)\)$/,
     (type, algorithme, fichier) => `${type === 'privée' ? 'Private' : 'Secret'} key ${algorithme} generated `
       + `(${fichier})`],

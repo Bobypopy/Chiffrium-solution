@@ -25,6 +25,8 @@ public final class AssetFactory {
     private static final String PROTOCOL_PREFIX = "crypto/protocol/";
     private static final String CERTIFICATE_PREFIX = "crypto/certificate/";
     private static final String MATERIAL_PREFIX = "crypto/related-crypto-material/";
+    /** Type CycloneDX d'une clé dont on ne sait pas si elle est privée, publique ou secrète. */
+    public static final String UNIDENTIFIED_KEY = "key";
     private static final String GENERATED_KEY_PREFIX = MATERIAL_PREFIX + "generated/";
     private static final String UNRESOLVED_PREFIX = "crypto/unresolved/";
     private static final String GENERATED_KEY_DESCRIPTION = "Clé créée par le code ou l'outillage du dépôt (script, "
@@ -93,8 +95,11 @@ public final class AssetFactory {
      */
     public CryptoAsset generatedKey(String materialType, AlgorithmSpec spec, Occurrence occurrence) {
         String bomRef = GENERATED_KEY_PREFIX + materialType + "/" + spec.displayName() + "/" + occurrence.file();
-        String name = MATERIAL_LABELS.getOrDefault(materialType, materialType) + " " + spec.displayName()
-                + " générée (" + fileName(occurrence.file()) + ")";
+        String type = UNIDENTIFIED_KEY.equals(materialType) ? "Clé"
+                : MATERIAL_LABELS.getOrDefault(materialType, materialType);
+        String generated = spec.isRecognized() ? " " + spec.displayName() + " générée"
+                : " générée, algorithme non déterminé";
+        String name = type + generated + " (" + fileName(occurrence.file()) + ")";
         return new CryptoAsset(bomRef, name, AssetType.RELATED_CRYPTO_MATERIAL, spec,
                 MaterialInfo.generatedKey(materialType), GENERATED_KEY_DESCRIPTION, Set.of(CryptoFunction.KEYGEN),
                 Set.of(occurrence.source()), List.of(occurrence), null);
@@ -103,7 +108,8 @@ public final class AssetFactory {
     /** Libellés des types de matériel : "private-key (cle.pem)" ne parlait qu'aux initiés. */
     private static final Map<String, String> MATERIAL_LABELS = Map.of(
             "private-key", "Clé privée", "public-key", "Clé publique", "secret-key", "Clé secrète",
-            "certificate", "Certificat", "keystore", "Magasin de clés", "csr", "Demande de certificat");
+            "certificate", "Certificat", "keystore", "Magasin de clés", "csr", "Demande de certificat",
+            UNIDENTIFIED_KEY, "Clé non identifiée");
 
     /** Ex. "Clé privée RSA-1024 (serveur.pem)" : le type, l'algorithme s'il est connu, puis le fichier. */
     static String materialName(MaterialInfo material, AlgorithmSpec algorithm, String file) {

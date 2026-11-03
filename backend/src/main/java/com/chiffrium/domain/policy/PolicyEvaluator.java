@@ -34,6 +34,8 @@ public final class PolicyEvaluator {
     private static final String KEYSTORE_RECOMMENDATION =
             "Vérifier que le keystore ne contient aucune clé privée de production ; sinon le retirer du dépôt.";
     private static final String CERTIFICATE_RENEW_RECOMMENDATION = "Renouveler le certificat.";
+    private static final String UNIDENTIFIED_KEY_RECOMMENDATION = "Ouvrir le fichier pour l'identifier ; s'il "
+            + "contient une clé privée ou secrète, le retirer du dépôt et considérer la clé comme compromise.";
     private static final String ENCRYPTED_FORMAT_MARKER = "ENCRYPTED";
     private static final Set<Primitive> ASYMMETRIC = EnumSet.of(Primitive.PUBLIC_KEY_ENCRYPTION, Primitive.SIGNATURE,
             Primitive.KEY_AGREEMENT, Primitive.OTHER, Primitive.KEM);
@@ -108,6 +110,11 @@ public final class PolicyEvaluator {
         }
         if (asset.algorithm() != null && asset.algorithm().isRecognized()) {
             return evaluateAlgorithm(asset.algorithm());
+        }
+        if (material != null && !"public-key".equals(material.materialType())) {
+            return new PolicyVerdict(PolicyStatus.UNKNOWN, Severity.MEDIUM, false,
+                    List.of("Fichier de clé non identifié : son contenu n'a pas pu être lu, il peut contenir une clé "
+                            + "privée."), UNIDENTIFIED_KEY_RECOMMENDATION, null);
         }
         return new PolicyVerdict(PolicyStatus.ACCEPTABLE, Severity.INFO, false,
                 List.of("Matériel public (clé publique)."), null, null);

@@ -69,6 +69,10 @@ test('les phrases construites avec des valeurs sont reconnues', () => {
     ['Analyse terminée : config-demo', 'Analysis finished: config-demo'],
     ['Interdit par la politique interne dès 2026', 'Disallowed by the internal policy from 2026'],
     ['Clé privée RSA-2048 générée (Keys.java)', 'Private key RSA-2048 generated (Keys.java)'],
+    ['Clé générée, algorithme non déterminé (keys.js)', 'Key generated, algorithm not determined (keys.js)'],
+    ['Clé privée générée, algorithme non déterminé (A.java)',
+      'Private key generated, algorithm not determined (A.java)'],
+    ['Clé non identifiée (legacy.key)', 'Unidentified key (legacy.key)'],
     ['Hôte Git non autorisé : gitlab.com (autorisés : [github.com]).',
       'Git host not allowed: gitlab.com (allowed: [github.com]).'],
   ];

@@ -37,7 +37,8 @@ import java.util.regex.Pattern;
  *   <li>certificats X.509 (PEM ou DER) : sujet, émetteur, validité, algorithme de signature, taille de clé ;</li>
  *   <li>clés privées (PEM, OpenSSH, PGP, PuTTY), y compris embarquées dans du code source ;</li>
  *   <li>clés publiques (PEM, OpenSSH) avec algorithme et taille ;</li>
- *   <li>keystores (PKCS#12, JKS, BKS) signalés sans être ouverts (mot de passe inconnu).</li>
+ *   <li>keystores (PKCS#12, JKS, BKS) signalés sans être ouverts (mot de passe inconnu) ;</li>
+ *   <li>PEM encodé en Base64 (Secret Kubernetes, kubeconfig, valeurs Helm) et clés JWK (RFC 7517).</li>
  * </ul>
  */
 public final class MaterialDetector implements CryptoDetector {
@@ -55,8 +56,17 @@ public final class MaterialDetector implements CryptoDetector {
             "ssh-rsa", "RSA", "ssh-dss", "DSA", "ssh-ed25519", "Ed25519",
             "ecdsa-sha2-nistp256", "ECDSA-P256", "ecdsa-sha2-nistp384", "ECDSA-P384", "ecdsa-sha2-nistp521", "ECDSA-P521");
     private static final String PEM_MARKER = "-----BEGIN ";
+    /** "-----BEGIN" encodé en Base64. */
+    private static final String BASE64_PEM_MARKER = "LS0tLS1CRUdJTi";
+    private static final Pattern BASE64_PEM = Pattern.compile(BASE64_PEM_MARKER + "[A-Za-z0-9+/]+={0,2}");
+    private static final String JWK_MARKER = "\"kty\"";
+    private static final Pattern JWK = Pattern.compile("\\{[^{}]*\"kty\"\\s*:\\s*\"(?<kty>RSA|EC|OKP|oct)\"[^{}]*}");
+    private static final Pattern JWK_PRIVATE_PART = Pattern.compile("\"[dk]\"\\s*:\\s*\"");
+    private static final Pattern JWK_CURVE = Pattern.compile("\"crv\"\\s*:\\s*\"([\\w-]+)\"");
+    private static final Pattern JWK_MODULUS = Pattern.compile("\"n\"\\s*:\\s*\"([A-Za-z0-9_-]+)\"");
     private static final String ENCRYPTED = "ENCRYPTED";
     private static final String PRIVATE = "PRIVATE";
+    private static final String PUBLIC_KEY_EXTENSION = "pub";
 
     private final AssetFactory assetFactory;
     private final CertificateFactory certificateFactory;
@@ -86,7 +96,7 @@ public final class MaterialDetector implements CryptoDetector {
                 if (file.material()) {
                     assets.addAll(fromMaterialFile(file.path(), bytes));
                 } else {
-                    assets.addAll(fromEmbeddedPem(file, new String(bytes, StandardCharsets.UTF_8)));
+                    assets.addAll(fromText(file.path(), new String(bytes, StandardCharsets.UTF_8)));
                 }
             } catch (IOException | RuntimeException | StackOverflowError e) {
                 failures.record(file.path(), e);
@@ -103,7 +113,7 @@ public final class MaterialDetector implements CryptoDetector {
         }
         String text = new String(bytes, StandardCharsets.US_ASCII);
         if (text.contains(PEM_MARKER)) {
-            return fromPem(file, text, null);
+            return fromPem(file, text, null, 0, null);
         }
         Matcher ssh = SSH_PUBLIC_KEY.matcher(text);
         if (ssh.find()) {
@@ -118,24 +128,66 @@ public final class MaterialDetector implements CryptoDetector {
                     .map(cert -> List.of(certificate(file, 0, cert, "DER", 1)))
                     .orElse(List.of());
         }
-        return List.of(assetFactory.material(file, MaterialInfo.of("key", extension.toUpperCase(Locale.ROOT)), null,
+        // Contenu illisible : une clé publique si l'extension le dit, sinon une clé à identifier (peut-être privée).
+        String type = PUBLIC_KEY_EXTENSION.equals(extension) ? "public-key" : AssetFactory.UNIDENTIFIED_KEY;
+        return List.of(assetFactory.material(file, MaterialInfo.of(type, extension.toUpperCase(Locale.ROOT)), null,
                 occurrence(file, null, null)));
     }
 
-    private List<CryptoAsset> fromEmbeddedPem(ScannedFile file, String text) {
-        if (!text.contains(PEM_MARKER)) {
-            return List.of();
+    /** Matériel écrit dans un fichier de code, de configuration ou de données. */
+    private List<CryptoAsset> fromText(String file, String text) {
+        List<CryptoAsset> assets = new ArrayList<>();
+        if (text.contains(PEM_MARKER)) {
+            assets.addAll(fromPem(file, text, "embarqué", 0, null));
         }
-        return fromPem(file.path(), text, "embarqué");
+        if (text.contains(BASE64_PEM_MARKER)) {
+            Matcher encoded = BASE64_PEM.matcher(text);
+            while (encoded.find()) {
+                Optional<String> pem = decode(encoded.group()).map(b -> new String(b, StandardCharsets.US_ASCII));
+                if (pem.isPresent()) {
+                    assets.addAll(fromPem(file, pem.get(), "Base64", assets.size(), lineOf(text, encoded.start())));
+                }
+            }
+        }
+        if (text.contains(JWK_MARKER)) {
+            Matcher jwk = JWK.matcher(text);
+            while (jwk.find()) {
+                assets.add(jwk(file, jwk.group(), jwk.group("kty"), assets.size(), lineOf(text, jwk.start())));
+            }
+        }
+        return assets;
     }
 
-    private List<CryptoAsset> fromPem(String file, String text, String formatSuffix) {
+    /** JWK : clé privée si elle porte "d" (secrète pour "oct"), publique sinon ; RSA mesurée sur son module. */
+    private CryptoAsset jwk(String file, String json, String kty, int index, int line) {
+        boolean privatePart = JWK_PRIVATE_PART.matcher(json).find();
+        String type = "oct".equals(kty) ? "secret-key" : privatePart ? "private-key" : "public-key";
+        AlgorithmSpec spec = null;
+        Matcher curve = JWK_CURVE.matcher(json);
+        Matcher modulus = JWK_MODULUS.matcher(json);
+        if ("RSA".equals(kty)) {
+            spec = assetFactory.normalizer().normalize("RSA");
+            if (modulus.find()) {
+                spec = spec.withKeySize(modulus.group(1).length() * 6 / Byte.SIZE * Byte.SIZE);
+            }
+        } else if (curve.find()) {
+            spec = assetFactory.normalizer().normalize(("EC".equals(kty) ? "EC-" : "") + curve.group(1));
+        }
+        return assetFactory.material(file + (index > 0 ? "#" + index : ""), MaterialInfo.of(type, "JWK"), spec,
+                occurrence(file, line, "kty " + kty));
+    }
+
+    /**
+     * @param firstIndex numéro du premier élément (plusieurs blocs dans un même fichier)
+     * @param fixedLine  ligne à attribuer à tous les blocs (PEM décodé d'une valeur Base64), null pour la calculer
+     */
+    private List<CryptoAsset> fromPem(String file, String text, String formatSuffix, int firstIndex, Integer fixedLine) {
         List<CryptoAsset> assets = new ArrayList<>();
-        int index = 0;
+        int index = firstIndex;
         Matcher header = PEM_HEADER.matcher(text);
         while (header.find()) {
             String type = header.group(1).trim();
-            int line = lineOf(text, header.start());
+            int line = fixedLine != null ? fixedLine : lineOf(text, header.start());
             Matcher block = PEM_BLOCK.matcher(text);
             String body = block.find(header.start()) && block.start() == header.start() ? block.group(2) : null;
             String format = "PEM" + (formatSuffix == null ? "" : " (" + formatSuffix + ")");

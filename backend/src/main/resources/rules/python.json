@@ -104,7 +104,6 @@
     {
       "id": "python.tink.generate",
       "pattern": "\\bnew_keyset_handle\\s*\\(\\s*(?:\\w+\\s*\\.\\s*)*(?<name>[A-Z][A-Z0-9_]+)\\s*\\)",
-      "skipUnrecognized": true,
       "functions": ["keygen"],
       "key": "auto"
     },

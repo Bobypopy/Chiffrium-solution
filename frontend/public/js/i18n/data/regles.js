@@ -69,6 +69,25 @@ export const REGLES = {
     + 'an HSM.',
   'Stocker la clé hors du dépôt (coffre, HSM) et vérifier la robustesse de sa phrase de passe.':
     'Store the key outside the repository (vault, HSM) and check that its passphrase is strong.',
+  'Clé privée encodée en Base64': 'Base64-encoded private key',
+  ['Clé privée PEM encodée en Base64 (Secret Kubernetes, kubeconfig, valeurs Helm) : l\'encodage ne la protège '
+    + 'pas, quiconque lit le dépôt la décode.']:
+    'PEM private key encoded in Base64 (Kubernetes Secret, kubeconfig, Helm values): the encoding does not '
+    + 'protect it, anyone who reads the repository can decode it.',
+  'Clé privée JWK en clair': 'Plaintext JWK private key',
+  ['Clé JWK privée ou secrète (champ "d" ou "k") présente dans le dépôt : elle permet de signer ou de déchiffrer '
+    + 'à la place de son propriétaire.']:
+    'Private or secret JWK (field "d" or "k") present in the repository: it lets anyone sign or decrypt in '
+    + 'place of its owner.',
+  'État Terraform versionné': 'Terraform state committed',
+  ['L\'état Terraform contient en clair les secrets des ressources gérées : clés privées de tls_private_key, '
+    + 'mots de passe de bases de données, jetons.']:
+    'The Terraform state holds the secrets of the managed resources in clear text: tls_private_key private '
+    + 'keys, database passwords, tokens.',
+  ['Retirer le fichier du dépôt (et de l\'historique), stocker l\'état dans un backend distant chiffré (S3 avec '
+    + 'KMS, Terraform Cloud...) et renouveler les secrets qu\'il contient.']:
+    'Remove the file from the repository (and from its history), keep the state in an encrypted remote '
+    + 'backend (S3 with KMS, Terraform Cloud...) and renew the secrets it holds.',
   'Clé privée exportée sans chiffrement': 'Private key exported without encryption',
   ['La clé privée est écrite en clair : sur le disque ou en transit, elle n\'est protégée par rien d\'autre '
     + 'que les droits du fichier.']:

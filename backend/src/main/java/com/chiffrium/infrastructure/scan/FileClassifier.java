@@ -56,6 +56,14 @@ public final class FileClassifier {
     private static final Set<String> MATERIAL_FILE_NAMES = Set.of(
             "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519", "id_rsa.pub", "id_ecdsa.pub", "id_ed25519.pub");
 
+    /**
+     * Fichiers de données lus seulement pour y chercher des clés et des secrets (pas de règles d'algorithmes) :
+     * JSON de compte de service, JWK, état Terraform, notebook, kubeconfig, notes.
+     */
+    private static final Set<String> DATA_EXTENSIONS = Set.of("json", "jwk", "jwks", "ipynb", "tfstate", "txt");
+    private static final Set<String> DATA_FILE_NAMES = Set.of("kubeconfig");
+    private static final String TERRAFORM_STATE_BACKUP = ".tfstate.backup";
+
     private static final Set<String> MANIFESTS = Set.of(
             "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts", "build.sbt",
             "package.json", "requirements.txt", "pyproject.toml", "setup.py", "pipfile", "go.mod",
@@ -87,6 +95,12 @@ public final class FileClassifier {
     public static boolean isMaterial(String fileName) {
         String lower = fileName.toLowerCase(Locale.ROOT);
         return MATERIAL_FILE_NAMES.contains(lower) || extension(lower).map(MATERIAL_EXTENSIONS::contains).orElse(false);
+    }
+
+    public static boolean isData(String fileName) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return DATA_FILE_NAMES.contains(lower) || lower.endsWith(TERRAFORM_STATE_BACKUP)
+                || extension(lower).map(DATA_EXTENSIONS::contains).orElse(false);
     }
 
     public static boolean isManifest(String fileName) {

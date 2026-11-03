@@ -249,6 +249,40 @@
       "title": "Mot de passe de clé ou de magasin de clés en dur",
       "description": "Le mot de passe qui protège la clé ou le magasin est écrit dans le code : il ne protège plus rien pour qui lit le dépôt.",
       "recommendation": "Lire le mot de passe dans un coffre ou une variable d'environnement au déploiement, et changer celui du magasin existant."
+    },
+    {
+      "id": "secret-private-key-base64",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "pattern": "\\b(?<secret>LS0tLS1CRUdJTiB(?:QUklWQVRFIEtFWS|SU0EgUFJJVkFURSBLRVkt|FQyBQUklWQVRFIEtFWS|PUEVOU1NIIFBSSVZBVEUgS0VZ|EU0EgUFJJVkFURSBLRVkt|FTkNSWVBURUQgUFJJVkFURSBLRVkt)[A-Za-z0-9+/=]*)",
+      "secretGroup": "secret",
+      "includeComments": true,
+      "title": "Clé privée encodée en Base64",
+      "description": "Clé privée PEM encodée en Base64 (Secret Kubernetes, kubeconfig, valeurs Helm) : l'encodage ne la protège pas, quiconque lit le dépôt la décode.",
+      "recommendation": "Retirer la clé du dépôt, la considérer comme compromise, la régénérer et la stocker dans un coffre ou un HSM."
+    },
+    {
+      "id": "secret-jwk-private",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-321",
+      "pattern": "\\{(?=[^{}]*\"kty\"\\s*:\\s*\"(?:RSA|EC|OKP|oct)\")[^{}]*\"[dk]\"\\s*:\\s*\"(?<secret>[A-Za-z0-9_-]{16,})\"",
+      "secretGroup": "secret",
+      "includeComments": true,
+      "title": "Clé privée JWK en clair",
+      "description": "Clé JWK privée ou secrète (champ \"d\" ou \"k\") présente dans le dépôt : elle permet de signer ou de déchiffrer à la place de son propriétaire.",
+      "recommendation": "Retirer la clé du dépôt, la considérer comme compromise, la régénérer et la stocker dans un coffre ou un HSM."
+    },
+    {
+      "id": "secret-terraform-state",
+      "category": "secret",
+      "severity": "high",
+      "cwe": "CWE-312",
+      "fileName": ".+\\.tfstate(?:\\.backup)?",
+      "title": "État Terraform versionné",
+      "description": "L'état Terraform contient en clair les secrets des ressources gérées : clés privées de tls_private_key, mots de passe de bases de données, jetons.",
+      "recommendation": "Retirer le fichier du dépôt (et de l'historique), stocker l'état dans un backend distant chiffré (S3 avec KMS, Terraform Cloud...) et renouveler les secrets qu'il contient."
     }
   ]
 }

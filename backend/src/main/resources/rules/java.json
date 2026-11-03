@@ -82,7 +82,6 @@
     {
       "id": "java.tink.generate",
       "pattern": "\\bKeysetHandle\\s*\\.\\s*generateNew\\s*\\(\\s*(?:KeyTemplates\\s*\\.\\s*get\\s*\\(\\s*\\\"|(?:\\w+\\s*\\.\\s*)*)(?<name>[A-Z][A-Z0-9_]+)",
-      "skipUnrecognized": true,
       "functions": ["keygen"],
       "key": "auto"
     },

@@ -68,6 +68,12 @@
       "key": "private-key"
     },
     {
+      "id": "cloud.pulumi.tls-private-key",
+      "pattern": "\\b[Tt]ls\\s*\\.\\s*PrivateKey\\s*\\((?=[^;]{0,300}?\\b(?i:algorithm)\\s*[:=]\\s*['\\\"](?<name>RSA|ECDSA|ED25519)['\\\"])(?=(?:[^;]{0,300}?\\b(?:rsaBits|rsa_bits|RsaBits)\\s*[:=]\\s*(?<size>\\d{3,5}))?)(?=(?:[^;]{0,300}?\\b(?:ecdsaCurve|ecdsa_curve|EcdsaCurve)\\s*[:=]\\s*['\\\"](?<curve>P\\d{3})['\\\"])?)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
       "id": "cloud.gcp.symmetric",
       "pattern": "\\bGOOGLE_SYMMETRIC_ENCRYPTION\\b",
       "algorithm": "AES-256-GCM",

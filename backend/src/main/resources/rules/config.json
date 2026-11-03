@@ -103,6 +103,60 @@
       "pattern": "\\bprivateKey\\s*:[ \\t]*\\r?\\n(?=(?:[ \\t]+[^\\n]*\\n){0,6}?[ \\t]+algorithm\\s*:\\s*['\\\"]?(?<name>RSA|ECDSA|Ed25519)\\b)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,6}?[ \\t]+size\\s*:\\s*(?<size>\\d{3,5}))?)",
       "functions": ["keygen"],
       "key": "private-key"
+    },
+    {
+      "id": "config.powershell.self-signed-certificate",
+      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyAlgorithm\\s+['\\\"]?(?<name>[\\w-]+))(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
+      "map": { "ecdsa_nistp256": "ECDSA-P-256", "ecdsa_nistp384": "ECDSA-P-384", "ecdsa_nistp521": "ECDSA-P-521" },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.powershell.self-signed-certificate-default",
+      "pattern": "\\bNew-SelfSignedCertificate\\b(?=(?:(?:[^\\n|;`]|`\\r?\\n){0,400}?\\s-KeyLength\\s+(?<size>\\d{3,5}))?)",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.ansible.private-key",
+      "pattern": "\\b(?:community\\.crypto\\.)?(?:openssl_privatekey(?:_pipe)?|openssh_keypair)\\s*:[ \\t]*\\r?\\n(?=(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+type\\s*:\\s*['\\\"]?(?<name>RSA|DSA|ECC|ECDSA|Ed25519|Ed448|X25519|X448|rsa|dsa|ecdsa|ed25519)\\b)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+size\\s*:\\s*(?<size>\\d{3,5}))?)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+curve\\s*:\\s*['\\\"]?(?<curve>[\\w-]+))?)",
+      "map": { "ecc": "EC" },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.ansible.private-key-default",
+      "pattern": "\\b(?:community\\.crypto\\.)?(?:openssl_privatekey(?:_pipe)?|openssh_keypair)\\s*:[ \\t]*\\r?\\n(?=(?:(?:[ \\t]+[^\\n]*\\n){0,8}?[ \\t]+size\\s*:\\s*(?<size>\\d{3,5}))?)",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.vault.transit-key",
+      "pattern": "\\bvault\\s+write\\b[^\\n|;&]*?\\btransit/keys/[\\w.-]+(?![\\w./-])(?=[^\\n|;&]*?\\btype=['\\\"]?(?<name>[\\w-]+))",
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "config.vault.transit-key-default",
+      "pattern": "\\bvault\\s+write\\b[^\\n|;&]*?\\btransit/keys/[\\w.-]+(?![\\w./-])",
+      "algorithm": "AES-256-GCM",
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
+      "id": "config.terraform.vault-transit-key",
+      "pattern": "\\bresource\\s+\\\"vault_transit_secret_backend_key\\\"\\s+\\\"[\\w-]+\\\"\\s*\\{(?=[^}]*?\\btype\\s*=\\s*\\\"(?<name>[\\w-]+)\\\")",
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "config.terraform.vault-transit-key-default",
+      "pattern": "\\bresource\\s+\\\"vault_transit_secret_backend_key\\\"\\s+\\\"[\\w-]+\\\"\\s*\\{",
+      "algorithm": "AES-256-GCM",
+      "functions": ["keygen"],
+      "key": "secret-key"
     }
   ]
 }

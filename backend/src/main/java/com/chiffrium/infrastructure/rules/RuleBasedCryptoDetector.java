@@ -117,16 +117,19 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                     Occurrence occurrence = new Occurrence(file.path(), detection.line, detection.column,
                             detection.function, text.get().snippet(detection.line), file.language(),
                             DetectionSource.RULES, detection.ruleId, detection.functions);
+                    CryptoAsset algorithm;
                     if (detection.unresolvedApi != null) {
                         unresolved++;
-                        assets.add(assetFactory.unresolved(detection.unresolvedApi, occurrence, detection.functions));
+                        algorithm = assetFactory.unresolved(detection.unresolvedApi, occurrence, detection.functions);
                     } else {
-                        assets.add(assetFactory.fromSpec(detection.spec, occurrence, detection.functions,
-                                DetectionSource.RULES, null));
-                        if (detection.key != null && detection.spec.isRecognized()) {
-                            assets.add(assetFactory.generatedKey(keyType(detection.key, detection.spec),
-                                    detection.spec, occurrence));
-                        }
+                        algorithm = assetFactory.fromSpec(detection.spec, occurrence, detection.functions,
+                                DetectionSource.RULES, null);
+                    }
+                    assets.add(algorithm);
+                    // La clé est inventoriée même si son algorithme est inconnu ou non résolu : elle sera "à vérifier".
+                    if (detection.key != null) {
+                        assets.add(assetFactory.generatedKey(keyType(detection.key, algorithm.algorithm()),
+                                algorithm.algorithm(), occurrence));
                     }
                 }
                 flows.addAll(analysis.flows);
@@ -273,7 +276,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             for (Candidate candidate : candidates(rule, matcher)) {
                 if (candidate.raw == null) {
                     String apiName = api != null ? api : rule.id();
-                    detections.add(new Detection(null, line, column, function, functions, rule.id(), apiName, null));
+                    detections.add(new Detection(null, line, column, function, functions, rule.id(), apiName, key));
                     continue;
                 }
                 AlgorithmSpec spec = assetFactory.normalizer().normalize(candidate.raw);
@@ -513,6 +516,9 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
     private static String keyType(String declared, AlgorithmSpec spec) {
         if (!AUTO_KEY.equals(declared)) {
             return declared;
+        }
+        if (!spec.isRecognized()) {
+            return AssetFactory.UNIDENTIFIED_KEY;
         }
         return SYMMETRIC_KEY_PRIMITIVES.contains(spec.primitive()) ? SECRET_KEY : PRIVATE_KEY;
     }
