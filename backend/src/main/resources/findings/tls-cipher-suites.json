@@ -11,12 +11,12 @@
       "reason": "aucune authentification du serveur (anonyme)"
     },
     {
-      "pattern": "EXPORT|(^|[_-])EXP([_-]|$)|^EXP$",
+      "pattern": "(^|[_-])EXP(ORT)?(1024)?([_-]|$)",
       "severity": "critical",
       "reason": "chiffrement \"export\" 40/56 bits (FREAK, Logjam)"
     },
     {
-      "pattern": "RC4|ARCFOUR",
+      "pattern": "(^|[_-])RC4([_-]|$)|ARCFOUR",
       "severity": "high",
       "reason": "RC4 cassé, interdit par la RFC 7465"
     },
@@ -26,7 +26,7 @@
       "reason": "DES 56 bits cassable en quelques heures"
     },
     {
-      "pattern": "3DES|DES-CBC3|DES_EDE|BLOWFISH-CBC|CAST128-CBC",
+      "pattern": "(^|[_-])3DES([_-]|$)|DES-CBC3|DES_EDE|BLOWFISH-CBC|CAST128-CBC",
       "severity": "high",
       "reason": "blocs de 64 bits (Sweet32) ; 3DES retiré par le NIST fin 2023"
     },
@@ -36,7 +36,7 @@
       "reason": "classe OpenSSL incluant des suites faibles"
     },
     {
-      "pattern": "RC2|IDEA|(^|[_-])SEED([_-]|$)|[_-]MD5$",
+      "pattern": "(^|[_-])(RC2|IDEA)([_-]|$)|(^|[_-])SEED([_-]|$)|[_-]MD5$",
       "severity": "medium",
       "reason": "algorithme obsolète (RC2, IDEA, SEED ou MAC MD5)"
     },

@@ -28,6 +28,8 @@ export const CATALOGUE_B = {
     'PKCS#5 v1 schemes built on MD5/SHA-1 and DES/RC2.',
   'Schémas homomorphes sur réseaux (BFV, CKKS) pour le long terme.':
     'Lattice-based homomorphic schemes (BFV, CKKS) for the long term.',
+  'Signature RSA au format ANSI X9.31 (SHA1withRSA/X9.31) : génération de signatures interdite par le NIST depuis 2024.':
+    'RSA signature in the ANSI X9.31 format (SHA1withRSA/X9.31): signature generation disallowed by NIST since 2024.',
   'Signature Schnorr sur secp256k1 (Bitcoin Taproot) ; cassable par Shor.':
     'Schnorr signature on secp256k1 (Bitcoin Taproot); breakable by Shor.',
   'Signature post-quantique (FIPS 206 en cours).': 'Post-quantum signature (FIPS 206 in progress).',

@@ -3,6 +3,8 @@ package com.chiffrium.domain.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Description normalisée d'un algorithme (ou d'un protocole) après analyse de son nom brut.
@@ -32,6 +34,10 @@ public record AlgorithmSpec(
         String curve,
         String oid) {
 
+    private static final Pattern PARENTHESIS = Pattern.compile("\\s*\\([^)]*\\)");
+    private static final Pattern VARIANTS = Pattern.compile("\\s+/\\s+");
+    private static final Pattern NOT_ALPHANUMERIC = Pattern.compile("[^a-z0-9]");
+
     public AlgorithmSpec {
         components = components == null ? List.of() : List.copyOf(components);
         componentNames = componentNames == null ? List.of() : List.copyOf(componentNames);
@@ -59,26 +65,48 @@ public record AlgorithmSpec(
      */
     @JsonProperty("name")
     public String displayName() {
-        String base = family == null ? rawName : family;
+        String family = this.family == null ? rawName : this.family;
+        boolean composed = !componentNames.isEmpty() || keySize != null || curve != null || mode != null
+                || padding != null;
+        String base = composed ? part(family) : family;
+        List<String> parts = componentNames.stream().map(this::part).toList();
         StringBuilder name = new StringBuilder();
-        if (primitive == Primitive.SIGNATURE && !componentNames.isEmpty()) {
-            name.append(String.join("-", componentNames)).append("with").append(base);
+        if (primitive == Primitive.SIGNATURE && !parts.isEmpty()) {
+            name.append(String.join("-", parts)).append("with").append(base);
         } else {
             name.append(base);
-            componentNames.forEach(component -> name.append('-').append(component));
+            parts.forEach(component -> name.append('-').append(component));
         }
         if (keySize != null) {
             name.append('-').append(keySize);
         }
         if (curve != null) {
-            name.append('-').append(curve);
+            name.append('-').append(part(curve));
         }
         if (mode != null) {
-            name.append('-').append(mode);
+            name.append('-').append(part(mode));
         }
         if (padding != null) {
-            name.append('-').append(padding);
+            name.append('-').append(part(padding));
         }
         return name.toString();
+    }
+
+    /**
+     * Libellé du catalogue dans un nom composé : sans sa précision entre parenthèses ("GOST R 34.10 (signature)"),
+     * et, pour une entrée qui regroupe des variantes ("RIPEMD-128 / RIPEMD-256"), la seule écrite dans le nom brut.
+     */
+    private String part(String label) {
+        String bare = PARENTHESIS.matcher(label).replaceAll("").trim();
+        if (bare.isEmpty()) {
+            return label;
+        }
+        String written = compact(rawName == null ? "" : rawName);
+        List<String> variants = VARIANTS.splitAsStream(bare).filter(v -> written.contains(compact(v))).toList();
+        return variants.size() == 1 ? variants.get(0) : bare;
+    }
+
+    private static String compact(String text) {
+        return NOT_ALPHANUMERIC.matcher(text.toLowerCase(Locale.ROOT)).replaceAll("");
     }
 }

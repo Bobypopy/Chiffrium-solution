@@ -396,6 +396,13 @@
       "recommendation": "Migrer vers ML-KEM."
     },
     {
+      "id": "etsi-kem", "name": "ETSI KEM (ECIES)", "primitive": "kem",
+      "aliases": ["etsikem"],
+      "status": "acceptable", "quantumVulnerable": true, "disallowedAfter": 2035,
+      "note": "KEM fondé sur ECIES des normes ETSI (TS 102 941, TS 103 097 : systèmes de transport intelligents).",
+      "recommendation": "Migrer vers ML-KEM (idéalement en hybride)."
+    },
+    {
       "id": "elgamal", "name": "ElGamal", "primitive": "pke",
       "aliases": ["elgamal"], "oids": [{ "oid": "1.3.14.7.2.1.1", "description": "elGamal" }],
       "status": "deprecated", "quantumVulnerable": true,
@@ -1031,6 +1038,14 @@
       "status": "disallowed", "quantumVulnerable": false,
       "note": "Retiré par le NIST (2016) ; attaque DUHK avec clé fixe.",
       "recommendation": "Générateurs SP 800-90A.",
+      "references": ["NIST SP 800-131A Rev.2"]
+    },
+    {
+      "id": "rsa-x931", "name": "RSA-X9.31", "primitive": "signature",
+      "aliases": ["rsax931"],
+      "status": "disallowed", "quantumVulnerable": true,
+      "note": "Signature RSA au format ANSI X9.31 (SHA1withRSA/X9.31) : génération de signatures interdite par le NIST depuis 2024.",
+      "recommendation": "RSA-PSS (ou PKCS#1 v1.5) avec SHA-256 et une clé d'au moins 3072 bits, puis ML-DSA.",
       "references": ["NIST SP 800-131A Rev.2"]
     },
     {

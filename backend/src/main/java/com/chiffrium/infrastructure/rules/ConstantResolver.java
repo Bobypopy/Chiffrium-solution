@@ -113,8 +113,10 @@ final class ConstantResolver {
             Pattern pattern = patternCache.computeIfAbsent(template + identifier,
                     k -> Pattern.compile(String.format(template, Pattern.quote(identifier))));
             Matcher matcher = pattern.matcher(content);
-            if (matcher.find()) {
-                return Optional.of(matcher.group(matcher.groupCount()));
+            while (matcher.find()) {
+                if (!StringLiterals.inside(content, matcher.start(), true)) {
+                    return Optional.of(matcher.group(matcher.groupCount()));
+                }
             }
         }
         return Optional.empty();
@@ -139,6 +141,10 @@ final class ConstantResolver {
     static void indexInto(Map<String, List<String>> index, String content) {
         Matcher matcher = GLOBAL_ASSIGNMENT.matcher(content);
         while (matcher.find()) {
+            // "Rsa{algorithmId=" + algorithmId + "}" : du texte affiché, pas une constante.
+            if (StringLiterals.inside(content, matcher.start(), true)) {
+                continue;
+            }
             List<String> values = index.computeIfAbsent(matcher.group(1), k -> new ArrayList<>());
             if (!values.contains(matcher.group(3))) {
                 values.add(matcher.group(3));

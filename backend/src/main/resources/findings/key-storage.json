@@ -12,6 +12,7 @@
         "groovy"
       ],
       "pattern": "\\b(?:write|writeString|print|println)\\s*\\([^;]{0,200}?(?:(?i:\\w{0,40}priv\\w{0,40})|getPrivate\\s*\\(\\s*\\))\\s*\\.\\s*getEncoded\\s*\\(|\\.\\s*writeObject\\s*\\(\\s*(?:(?i:\\w{0,40}priv\\w{0,40})|\\w+\\s*\\.\\s*getPrivate\\s*\\(\\s*\\))\\s*\\)",
+      "exclude": "(?:\\bc|[cC]ipher\\w*|[eE]nc\\w*|[cC]rypt\\w*)(?:Out|Output|Stream)\\w*\\s*\\.\\s*write\\w*\\s*\\(|CipherOutputStream",
       "title": "Clé privée exportée sans chiffrement",
       "description": "La clé privée est écrite en clair : sur le disque ou en transit, elle n'est protégée par rien d'autre que les droits du fichier.",
       "recommendation": "Chiffrer la clé à l'export (PKCS#8 chiffré par une phrase de passe forte) ou la garder dans un magasin protégé (keystore, trousseau du système, HSM, KMS)."

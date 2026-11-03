@@ -137,4 +137,26 @@ class AlgorithmNormalizerTest {
     void recognizesExtendedCatalogEntries(String raw, String catalogId) {
         assertThat(normalizer.normalize(raw).catalogId()).isEqualTo(catalogId);
     }
+
+    /** Noms de Bouncy Castle : "SIKE" n'est pas dans "ETSIKEM", X9.31 après RSA est un format de signature. */
+    @Test
+    void bouncyCastleNamesAreNotMistakenForOtherAlgorithms() {
+        assertThat(normalizer.normalize("ETSIKEMwithSHA256").catalogId()).isEqualTo("etsi-kem");
+        AlgorithmSpec x931 = normalizer.normalize("SHA1withRSA/X9.31");
+        assertThat(x931.catalogId()).isEqualTo("rsa-x931");
+        assertThat(x931.primitive()).isEqualTo(Primitive.SIGNATURE);
+        assertThat(x931.displayName()).isEqualTo("SHA-1withRSA-X9.31");
+        // Le générateur garde ses noms.
+        assertThat(normalizer.normalize("X931RNG").catalogId()).isEqualTo("x931-rng");
+    }
+
+    /** Un nom composé reprend la variante écrite, sans les précisions du libellé du catalogue. */
+    @Test
+    void composedNamesUseTheWrittenVariant() {
+        assertThat(normalizer.normalize("RIPEMD128WithRSAEncryption").displayName()).isEqualTo("RIPEMD-128withRSA");
+        assertThat(normalizer.normalize("GOST3411withECGOST3410").displayName()).doesNotContain("(", " / ");
+        assertThat(normalizer.normalize("AES/FF1/NoPadding").displayName()).doesNotContain("(");
+        // Seul, le libellé reste complet.
+        assertThat(normalizer.normalize("Keccak").displayName()).isEqualTo("Keccak (pré-standard)");
+    }
 }

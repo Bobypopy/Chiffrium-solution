@@ -190,6 +190,8 @@ export const CATALOGUE_A = {
     + 'hybride avec ECDH pendant la transition ; préférer ML-KEM-768 ou ML-KEM-1024 (CNSA 2.0).']:
     'Standardised post-quantum KEM (levels 512, 768 and 1024). ANSSI and the BSI recommend hybrid use with '
     + 'ECDH during the transition; prefer ML-KEM-768 or ML-KEM-1024 (CNSA 2.0).',
+  'KEM fondé sur ECIES des normes ETSI (TS 102 941, TS 103 097 : systèmes de transport intelligents).':
+    'ECIES-based KEM from the ETSI standards (TS 102 941, TS 103 097: intelligent transport systems).',
   'KEM post-quantique sélectionné par le NIST en 2025 (standard en préparation).':
     'Post-quantum KEM selected by NIST in 2025 (standard being drafted).',
   ['KEM post-quantique très conservateur (codes correcteurs), recommandé par le BSI ; clés publiques de '
@@ -221,6 +223,7 @@ export const CATALOGUE_A = {
     'Migrate to ML-KEM (FIPS 203); X25519+ML-KEM hybrid during the transition.',
   'Migrer vers ML-KEM (ou hybride X25519MLKEM768).':
     'Migrate to ML-KEM (or the X25519MLKEM768 hybrid).',
+  'Migrer vers ML-KEM (idéalement en hybride).': 'Migrate to ML-KEM (ideally in hybrid mode).',
   'Migrer vers ML-KEM.': 'Migrate to ML-KEM.',
   'Mode agressif exposant le secret partagé, déprécié.':
     'Aggressive mode exposing the shared secret, deprecated.',
@@ -257,6 +260,8 @@ export const CATALOGUE_A = {
   'Prévoir la migration vers ML-KEM / ML-DSA.': 'Plan the migration to ML-KEM / ML-DSA.',
   'RSA >= 3072 bits à court terme, puis migration vers ML-KEM (chiffrement) ou ML-DSA (signature).':
     'RSA >= 3072 bits in the short term, then migration to ML-KEM (encryption) or ML-DSA (signing).',
+  'RSA-PSS (ou PKCS#1 v1.5) avec SHA-256 et une clé d\'au moins 3072 bits, puis ML-DSA.':
+    'RSA-PSS (or PKCS#1 v1.5) with SHA-256 and a key of at least 3072 bits, then ML-DSA.',
   'Refuser alg=none et imposer une liste blanche d\'algorithmes (ex. ES256, EdDSA).':
     'Refuse alg=none and enforce an allowlist of algorithms (e.g. ES256, EdDSA).',
   'Remplacer par AES-256-GCM.': 'Replace with AES-256-GCM.',
