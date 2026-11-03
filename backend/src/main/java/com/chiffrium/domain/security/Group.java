@@ -13,9 +13,7 @@ import java.util.Locale;
  * ses responsables invitent, acceptent les demandes d'adhésion et gèrent les analyses du groupe.
  * Personne n'entre dans un groupe sans l'avoir accepté.
  *
- * @param id          identifiant
  * @param name        nom unique
- * @param description description libre
  * @param visibility  privé (sur invitation) ou public (visible dans l'annuaire, adhésion sur demande)
  * @param createdAt   date de création
  * @param members     membres (vide quand seul l'en-tête du groupe est chargé)
@@ -59,8 +57,6 @@ public record Group(String id, String name, String description, Visibility visib
     /**
      * Appartenance d'un utilisateur à un groupe.
      *
-     * @param groupId   groupe
-     * @param groupName nom du groupe
      * @param manager   l'utilisateur en est responsable
      */
     public record Membership(String groupId, String groupName, boolean manager) {

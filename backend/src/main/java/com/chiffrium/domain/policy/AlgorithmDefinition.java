@@ -58,7 +58,6 @@ public record AlgorithmDefinition(
     }
 
     /**
-     * @param oid         OID
      * @param description libellé de l'OID
      */
     public record OidRef(String oid, String description) {

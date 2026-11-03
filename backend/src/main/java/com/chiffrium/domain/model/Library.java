@@ -8,8 +8,6 @@ import java.util.List;
  * @param bomRef          bom-ref CycloneDX d'origine
  * @param purl            package URL
  * @param group           groupe / namespace
- * @param name            nom
- * @param version         version
  * @param scope           portée (required, optional...)
  * @param cryptoLibrary   vrai si la bibliothèque fournit des primitives cryptographiques
  * @param vulnerabilities vulnérabilités connues (OSV)

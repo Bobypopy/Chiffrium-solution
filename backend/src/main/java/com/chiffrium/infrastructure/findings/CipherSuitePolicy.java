@@ -23,7 +23,6 @@ final class CipherSuitePolicy {
 
     /**
      * @param pattern  motif sur le nom de suite en majuscules
-     * @param severity gravité
      * @param reason   explication
      */
     record Weakness(Pattern pattern, Severity severity, String reason) {

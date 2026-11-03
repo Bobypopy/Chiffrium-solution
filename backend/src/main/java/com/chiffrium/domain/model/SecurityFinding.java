@@ -8,7 +8,6 @@ import java.util.Comparator;
  *
  * @param id             identifiant stable (règle + emplacement), utilisé pour comparer deux analyses
  * @param ruleId         règle ayant produit le constat
- * @param category       famille
  * @param severity       gravité (abaissée d'un niveau dans le code de test)
  * @param title          intitulé court
  * @param description    explication du risque

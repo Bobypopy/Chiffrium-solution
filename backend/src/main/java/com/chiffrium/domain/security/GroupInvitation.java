@@ -14,8 +14,6 @@ import java.util.Locale;
  *   <li>{@link Kind#JOIN_REQUEST} : un utilisateur demande à rejoindre un groupe public ; un responsable accepte.</li>
  * </ul>
  *
- * @param id          identifiant
- * @param groupId     groupe
  * @param groupName   nom du groupe (affichage)
  * @param userId      personne concernée (invitée ou demandeuse)
  * @param username    son identifiant

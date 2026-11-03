@@ -5,7 +5,6 @@ import java.time.Instant;
 /**
  * Notification adressée à un utilisateur dans l'application (centre de notifications).
  *
- * @param id        identifiant
  * @param userId    destinataire
  * @param kind      type (ex. GROUP_INVITATION, ANALYSIS_FINISHED), pour l'icône et le filtrage
  * @param title     intitulé court

@@ -7,7 +7,6 @@ package com.chiffrium.application.port;
 public interface AlertSink {
 
     /**
-     * @param title intitulé
      * @param body  détail
      * @param link  lien relatif dans l'application (peut être null)
      */

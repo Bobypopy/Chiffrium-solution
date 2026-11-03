@@ -42,3 +42,8 @@ Thumbs.db
 *.env
 docker-config/
 __pycache__/
+
+# Notes personnelles : gardees sur le poste, jamais versionnees (voir docs/README-interne si besoin)
+docs/backlog.md
+docs/legal.md
+docs/qa-campagne.md

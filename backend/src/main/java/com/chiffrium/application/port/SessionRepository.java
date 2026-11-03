@@ -24,7 +24,6 @@ public interface SessionRepository {
 
     /**
      * @param tokenHash  empreinte du jeton
-     * @param userId     utilisateur
      * @param createdAt  ouverture
      * @param lastSeenAt dernière activité (expiration par inactivité)
      * @param expiresAt  expiration absolue

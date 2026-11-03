@@ -158,7 +158,6 @@ public record Settings(Storage storage, Sessions sessions, Intelligence intellig
     /**
      * @param enabled       SSO actif
      * @param issuer        URL de l'émetteur OIDC (ex. https://login.microsoftonline.com/.../v2.0)
-     * @param clientId      identifiant du client
      * @param clientSecret  secret du client (chiffré au repos)
      * @param redirectUri   URL de retour déclarée chez le fournisseur (.../api/auth/oidc/callback)
      * @param defaultRole   rôle attribué à la première connexion

@@ -33,7 +33,6 @@ enum Dialect {
     /**
      * Requête d'insertion ou de mise à jour selon la clé.
      *
-     * @param table   table
      * @param keys    colonnes de la clé
      * @param columns toutes les colonnes, dans l'ordre des paramètres
      */

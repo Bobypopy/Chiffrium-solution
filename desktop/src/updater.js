@@ -67,11 +67,8 @@ function createUpdateController({ autoUpdater, activity, beforeInstall, onChange
 
   if (autoUpdater) {
     autoUpdater.autoDownload = true;
-    // "Plus tard" : la mise à jour s'installe à la fermeture, mais c'est nous qui la lançons (voir isReady()
-    // et main.js), avec la fenêtre de l'installateur. Sa barre de progression montre que la mise à jour
-    // avance, et un échec devient visible : en 2.5.0, une installation silencieuse échouait sans le moindre
-    // message et la version cassée restait en place alors que son correctif était déjà téléchargé (la cause
-    // de cet échec est corrigée en 2.5.3, voir desktop/build/installer.nsh).
+    // "Plus tard" : c'est nous qui installons à la fermeture (voir isReady() et main.js), avec la fenêtre de
+    // l'installateur. En silencieux, un échec ne laisse aucune trace et la version cassée reste en place.
     autoUpdater.autoInstallOnAppQuit = false;
     autoUpdater.on('checking-for-update', () => {
       if (state.status !== STATUS.READY && state.status !== STATUS.DOWNLOADING) set({ status: STATUS.CHECKING });

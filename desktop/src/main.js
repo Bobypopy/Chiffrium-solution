@@ -43,20 +43,17 @@ const MAX_LOG_BYTES = 5 * 1024 * 1024;
 /** Nom du produit avant la 1.0.0 : ses données vivent dans un dossier voisin, à reprendre une fois. */
 const ANCIEN_PRODUIT = 'CryptoAnalyzer';
 /**
- * Ce qui nous appartient dans le dossier utilisateur (le reste est le cache de Chromium, à ne pas déplacer).
+ * Ce qui nous appartient dans le dossier utilisateur ; le reste est le cache de Chromium.
  *
- * "Local State" fait exception : c'est un fichier de Chromium, mais il contient la clé avec laquelle le
- * système a chiffré master.key.enc. Sans lui, la clé maîtresse devient illisible et l'application ne démarre
- * plus du tout ("Error while decrypting the ciphertext"). Il n'est repris que lors de la reprise, c'est-à-dire
- * avant que la nouvelle installation n'ait écrit quoi que ce soit.
+ * "Local State" appartient à Chromium mais contient la clé qui déchiffre master.key.enc : sans lui, la clé
+ * maîtresse est illisible et l'application ne démarre plus.
  */
 const AFFAIRES = ['data', 'bin', 'desktop-config.json', 'desktop.log', 'desktop.old.log',
   'master.key.enc', '.updaterId', 'Local State'];
 
 /**
- * Reprend les données de l'ancien nom du produit. Sans cela, une installation existante repart vide :
- * analyses, catalogue, comptes et clé maîtresse restent dans %APPDATA%\CryptoAnalyzer sans que rien ne le
- * dise. La clé chiffrée reste lisible : le chiffrement du système est lié à l'utilisateur, pas au produit.
+ * Reprend les données de l'ancien nom du produit, sans quoi une installation existante repart vide.
+ * Se fait avant que Chromium n'écrive son "Local State", qui écraserait celui qu'on déplace.
  */
 function reprendreDonneesAnciennes() {
   try {
@@ -338,6 +335,8 @@ function registerIpc() {
   handle('desktop:update-install', (_event, when) => updates.install(when === 'when-idle' ? 'when-idle' : 'now'));
   handle('desktop:update-cancel', () => updates.cancelScheduled());
   handle('desktop:choose-mode', async (_event, choice) => {
+    // Démarrage déjà lancé (double clic sur l'écran d'accueil) : un second moteur arrêterait le premier.
+    if (mode) return { ok: true };
     try {
       const config = desktopConfig.write(userDir(), choice ?? {});
       if (config.mode === desktopConfig.MODES.SERVER) await checkServer(config.serverUrl);

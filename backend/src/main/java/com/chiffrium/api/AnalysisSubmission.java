@@ -10,7 +10,6 @@ import java.util.Objects;
  * Corps de POST /api/analyses. Accepte une cible unique ({@code target}) ou une liste ({@code targets}),
  * ce qui remplace l'ancien import d'un fichier .txt/.csv d'URL.
  *
- * @param target              cible unique
  * @param targets             liste de cibles (une analyse par cible)
  * @param branch              branche Git
  * @param recurseSubmodules   cloner les sous-modules (défaut : oui)

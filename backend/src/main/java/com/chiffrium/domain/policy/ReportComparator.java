@@ -27,7 +27,6 @@ public final class ReportComparator {
 
     /**
      * @param bomRef identifiant stable de l'actif
-     * @param name   nom
      * @param status statut de politique (null si non évalué)
      */
     public record AssetRef(String bomRef, String name, PolicyStatus status) {

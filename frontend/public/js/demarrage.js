@@ -1,9 +1,7 @@
-// Filet de sécurité au démarrage : sans lui, un seul fichier manquant laisse une fenêtre vide, sans rien à
-// lire. C'est arrivé en 2.5.0 (trois fichiers de traduction absents de la livraison) : l'application semblait
-// morte, et seul le journal du serveur montrait les 404.
+// Filet de sécurité : sans lui, un seul fichier manquant laisse une fenêtre vide et muette.
 //
-// Ce script est volontairement classique (pas un module) et sans import : il doit fonctionner même quand le
-// chargement des modules échoue. main.js appelle window.__demarrageOk() dès que le routeur prend la main.
+// Script classique et sans import, pour fonctionner justement quand le chargement des modules échoue.
+// main.js appelle window.__demarrageOk() dès que le routeur prend la main.
 
 (function () {
   var DELAI_MS = 8000;

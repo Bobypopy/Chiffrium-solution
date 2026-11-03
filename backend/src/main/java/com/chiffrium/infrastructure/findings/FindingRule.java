@@ -20,20 +20,16 @@ import java.util.regex.Pattern;
  *   <li>{@code exclude} : ligne ignorée si elle correspond aussi à ce motif.</li>
  * </ul>
  *
- * @param id              identifiant unique
  * @param category        famille du constat
  * @param severity        gravité de base
  * @param cwe             référence CWE
  * @param languages       langages concernés (vide = tous les fichiers texte)
  * @param pattern         motif sur le contenu, ou null pour une règle sur le nom de fichier
  * @param fileName        motif sur le nom de fichier, ou null
- * @param title           intitulé
  * @param description     risque
  * @param recommendation  correction
- * @param secretGroup     groupe du secret
  * @param minEntropy      entropie de Shannon minimale du secret (bits par caractère), 0 = pas de filtre
  * @param numberGroup     groupe numérique comparé à {@code below}
- * @param below           seuil
  * @param listGroup       groupe contenant une liste
  * @param listCheck       analyse de la liste
  * @param required        éléments obligatoires pour {@link ListCheck#REQUIRE_ALL}

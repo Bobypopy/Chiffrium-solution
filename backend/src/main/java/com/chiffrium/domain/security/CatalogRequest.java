@@ -12,7 +12,6 @@ import java.util.Locale;
  * Demande de modification du catalogue (ex. classer un OID comme interdit dans l'organisation), soumise par un
  * utilisateur et validée ou refusée par un administrateur. Toutes les étapes sont tracées dans l'audit.
  *
- * @param id            identifiant
  * @param kind          ajout, modification ou suppression d'une entrée
  * @param algorithmId   entrée concernée
  * @param proposal      entrée proposée (null pour une suppression)

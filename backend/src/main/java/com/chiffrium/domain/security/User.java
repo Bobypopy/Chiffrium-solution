@@ -13,14 +13,12 @@ import java.util.Locale;
  * @param username           identifiant de connexion (minuscules)
  * @param displayName        nom affiché
  * @param email              adresse (SSO)
- * @param role               rôle
  * @param source             origine du compte (local ou SSO)
  * @param passwordHash       hachage PBKDF2 (null pour un compte SSO)
  * @param enabled            compte actif
  * @param mustChangePassword changement de mot de passe exigé à la prochaine connexion
  * @param failedAttempts     échecs de connexion consécutifs
  * @param lockedUntil        verrouillage temporaire après trop d'échecs
- * @param createdAt          création
  * @param lastLoginAt        dernière connexion réussie
  */
 public record User(

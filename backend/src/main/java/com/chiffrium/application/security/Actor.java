@@ -10,7 +10,6 @@ import com.chiffrium.domain.security.Role;
  *
  * @param userId   identifiant du compte (null pour le système)
  * @param username identifiant de connexion
- * @param role     rôle
  * @param sourceIp adresse d'origine de la requête
  */
 public record Actor(String userId, String username, Role role, String sourceIp) {

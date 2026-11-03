@@ -46,10 +46,13 @@ jobs:
         with:
           name: backend-test-reports
           path: backend/target/surefire-reports/
+          retention-days: 7
+      # Le jar ne sert qu'au job "interface" de ce même run : inutile de le garder (quota de stockage du compte).
       - uses: actions/upload-artifact@v4
         with:
           name: chiffrium-backend-jar
           path: backend/target/chiffrium-backend.jar
+          retention-days: 1
 
   frontend:
     name: Frontend (tests)
@@ -131,6 +134,7 @@ jobs:
             qa/travail/qa-rapport-*.json
             qa/travail/backend.log
           if-no-files-found: warn
+          retention-days: 7
 
   kubernetes:
     name: Manifestes Kubernetes
