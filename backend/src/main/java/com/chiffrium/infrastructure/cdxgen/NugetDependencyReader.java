@@ -68,8 +68,7 @@ final class NugetDependencyReader {
             JsonNode frameworks = root.path("dependencies");
             for (Iterator<JsonNode> targets = frameworks.elements(); targets.hasNext(); ) {
                 JsonNode packages = targets.next();
-                for (Iterator<Map.Entry<String, JsonNode>> it = packages.fields(); it.hasNext(); ) {
-                    Map.Entry<String, JsonNode> entry = it.next();
+                for (Map.Entry<String, JsonNode> entry : packages.properties()) {
                     JsonNode details = entry.getValue();
                     // "Project" : un autre projet de la solution, pas un paquet publié.
                     if ("Project".equalsIgnoreCase(details.path("type").asText())) {

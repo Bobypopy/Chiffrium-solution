@@ -140,11 +140,17 @@ final class Jdbc {
 
     private static PreparedStatement prepare(Connection connection, String sql, Object... parameters) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(sql);
-        for (int i = 0; i < parameters.length; i++) {
-            Object value = parameters[i];
-            statement.setObject(i + 1, value instanceof Instant instant ? Timestamp.from(instant) : value);
+        try {
+            for (int i = 0; i < parameters.length; i++) {
+                Object value = parameters[i];
+                statement.setObject(i + 1, value instanceof Instant instant ? Timestamp.from(instant) : value);
+            }
+            return statement;
+        } catch (SQLException | RuntimeException e) {
+            // Paramètre refusé : la requête n'est rendue à personne, elle est fermée ici.
+            statement.close();
+            throw e;
         }
-        return statement;
     }
 
     static Instant instant(ResultSet rs, String column) throws SQLException {

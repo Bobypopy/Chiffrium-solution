@@ -34,21 +34,21 @@ jobs:
       TEST_POSTGRES_USER: postgres
       TEST_POSTGRES_PASSWORD: ci
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
       - run: mvn -B verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: backend-test-reports
           path: backend/target/surefire-reports/
           retention-days: 7
       # Le jar ne sert qu'au job "interface" de ce même run : inutile de le garder (quota de stockage du compte).
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: chiffrium-backend-jar
           path: backend/target/chiffrium-backend.jar
@@ -61,8 +61,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - run: npm test
@@ -74,8 +74,8 @@ jobs:
       run:
         working-directory: desktop
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - run: npm ci --ignore-scripts
@@ -90,15 +90,15 @@ jobs:
     # une analyse est jouée, et les écrans sont parcourus. La campagne complète tourne la nuit
     # (nightly.yml) ; on ne garde ici que ce qui doit rester vert à chaque poussée.
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: chiffrium-backend-jar
           path: backend/target
@@ -126,7 +126,7 @@ jobs:
           python suite_auth.py
           python test_rapport_ui.py
           python test_langue.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: rapports-interface
@@ -140,7 +140,7 @@ jobs:
     name: Manifestes Kubernetes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Rendu Kustomize et validation des schémas
         run: |
           kubectl kustomize deploy/k8s/overlays/local > rendered.yaml
@@ -151,22 +151,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # L'image de base cdxgen fait ~4 Go une fois décompressée : on libère le disque du runner.
       - name: Libérer de l'espace disque
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
           docker system prune -af
           df -h /
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Image frontend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: frontend
           tags: chiffrium-frontend:ci
           push: false
       - name: Image backend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: backend
           tags: chiffrium-backend:ci

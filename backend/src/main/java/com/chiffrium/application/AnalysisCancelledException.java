@@ -5,6 +5,8 @@ package com.chiffrium.application;
  */
 public final class AnalysisCancelledException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public AnalysisCancelledException() {
         super("Analyse arrêtée à la demande de l'utilisateur.");
     }
