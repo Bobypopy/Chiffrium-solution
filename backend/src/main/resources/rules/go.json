@@ -86,6 +86,7 @@
       "pattern": "\\becdsa\\s*\\.\\s*(?<op>Sign\\w*|Verify\\w*)\\s*\\(",
       "algorithm": "ECDSA"
     },
+    { "id": "go.ecdh.generate", "pattern": "\\becdh\\s*\\.\\s*(?<curve>P256|P384|P521|X25519)\\s*\\(\\s*\\)\\s*\\.\\s*GenerateKey\\s*\\(", "algorithm": "ECDH", "functions": ["keygen"], "key": "private-key" },
     {
       "id": "go.ecdh",
       "pattern": "\\becdh\\s*\\.\\s*(?<curve>P256|P384|P521|X25519)\\s*\\(",
@@ -101,6 +102,8 @@
     },
     { "id": "go.x25519", "pattern": "\\bcurve25519\\s*\\.\\s*(?:X25519|ScalarMult|ScalarBaseMult)\\s*\\(", "algorithm": "X25519", "functions": ["other"] },
     { "id": "go.dsa", "pattern": "\\bdsa\\s*\\.\\s*(?:GenerateKey|GenerateParameters|Sign)\\s*\\(", "algorithm": "DSA", "functions": ["sign"] },
+    { "id": "go.circl.keygen", "pattern": "\\b(?<name>kyber512|kyber768|kyber1024|mlkem512|mlkem768|mlkem1024|mldsa44|mldsa65|mldsa87|dilithium2|dilithium3|dilithium5|ed448|x448)\\s*\\.\\s*(?:GenerateKeyPair|GenerateKey)\\s*\\(", "functions": ["keygen"], "key": "private-key" },
+    { "id": "go.nacl.keygen", "pattern": "\\b(?<api>box|sign)\\s*\\.\\s*GenerateKey\\s*\\(", "template": "{api}", "map": { "box": "X25519", "sign": "Ed25519" }, "functions": ["keygen"], "key": "private-key" },
     { "id": "go.mlkem", "pattern": "\\bmlkem\\s*\\.\\s*(?<op>GenerateKey|NewDecapsulationKey)(?<bits>768|1024)\\s*\\(", "template": "ML-KEM-{bits}", "functions": ["keygen"], "keyByApi": { "GenerateKey": "private-key" } },
     {
       "id": "go.pbkdf2",

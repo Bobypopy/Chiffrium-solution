@@ -9,7 +9,7 @@ package com.chiffrium.domain.model;
  * @param issuer         émetteur X.509 (certificats uniquement)
  * @param notValidBefore début de validité ISO-8601 (certificats uniquement)
  * @param notValidAfter  fin de validité ISO-8601 (certificats uniquement)
- * @param generated      clé créée à l'exécution par le code (génération repérée par une règle), pas un fichier du dépôt
+ * @param generated      clé créée par le code ou l'outillage (génération repérée par une règle), pas un fichier du dépôt
  */
 public record MaterialInfo(
         String materialType,

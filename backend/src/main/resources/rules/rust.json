@@ -9,6 +9,14 @@
     "^\\s*impl(?:<[^>]*>)?\\s+(?:[\\w:<>]+\\s+for\\s+)?(?<name>\\w+)"
   ],
   "rules": [
+    { "id": "rust.ml-kem.generate", "pattern": "\\bMlKem(?<bits>512|768|1024)\\s*::\\s*generate\\s*\\(", "template": "ML-KEM-{bits}", "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.ml-dsa.generate", "pattern": "\\bMlDsa(?<bits>44|65|87)\\s*::\\s*key_gen\\s*\\(", "template": "ML-DSA-{bits}", "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.pqcrypto.keypair", "pattern": "\\b(?<name>mlkem512|mlkem768|mlkem1024|kyber512|kyber768|kyber1024|mldsa44|mldsa65|mldsa87|dilithium2|dilithium3|dilithium5|falcon512|falcon1024)\\s*::\\s*keypair\\s*\\(", "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.ring.ed25519-generate", "pattern": "\\bEd25519KeyPair\\s*::\\s*generate_pkcs8\\s*\\(", "algorithm": "Ed25519", "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.ring.ecdsa-generate", "pattern": "\\bEcdsaKeyPair\\s*::\\s*generate_pkcs8\\s*\\(\\s*&\\s*(?:signature\\s*::\\s*)?ECDSA_(?<curve>P256|P384)", "algorithm": "ECDSA", "map": { "p256": "P-256", "p384": "P-384" }, "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.ring.agreement-generate", "pattern": "\\bEphemeralPrivateKey\\s*::\\s*generate\\s*\\(\\s*&\\s*(?:agreement\\s*::\\s*)?(?<name>X25519|ECDH_P256|ECDH_P384)", "map": { "ecdh_p256": "ECDH-P-256", "ecdh_p384": "ECDH-P-384" }, "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.dalek.signing-key", "pattern": "\\bSigningKey\\s*::\\s*generate\\s*\\(", "algorithm": "Ed25519", "functions": ["keygen"], "key": "private-key" },
+    { "id": "rust.dalek.x25519", "pattern": "\\b(?:StaticSecret|EphemeralSecret|ReusableSecret)\\s*::\\s*(?:random_from_rng|random)\\s*\\(", "algorithm": "X25519", "functions": ["keygen"], "key": "private-key" },
     {
       "id": "rust.ring",
       "pattern": "\\b(?:digest|hmac|aead|signature|agreement|pbkdf2)\\s*::\\s*(?<name>SHA1_FOR_LEGACY_USE_ONLY|SHA256|SHA384|SHA512|SHA512_256|HMAC_SHA256|HMAC_SHA384|HMAC_SHA512|AES_128_GCM|AES_256_GCM|CHACHA20_POLY1305|ECDSA_P256_SHA256_ASN1_SIGNING|ECDSA_P256_SHA256_FIXED_SIGNING|ECDSA_P384_SHA384_ASN1_SIGNING|ECDSA_P384_SHA384_FIXED_SIGNING|ED25519|X25519|ECDH_P256|ECDH_P384|RSA_PKCS1_SHA256|RSA_PKCS1_SHA384|RSA_PKCS1_SHA512|RSA_PSS_SHA256|RSA_PSS_SHA384|RSA_PSS_SHA512|PBKDF2_HMAC_SHA1|PBKDF2_HMAC_SHA256|PBKDF2_HMAC_SHA384|PBKDF2_HMAC_SHA512)\\b",

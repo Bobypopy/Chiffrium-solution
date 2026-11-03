@@ -270,10 +270,10 @@ export const RAPPORT = {
     'Static analysis: it sees where the code creates its keys, not their value nor what is decided at '
     + 'runtime (configuration, vault), nor dependencies computed by a build script. Findings are to be '
     + 'confirmed in review.',
-  ["Clé créée à l'exécution par le code : sa valeur n'est pas dans le dépôt, seuls son algorithme et "
-    + "l'endroit où elle est créée sont connus."]:
-    'Key created at runtime by the code: its value is not in the repository, only its algorithm and the '
-    + 'place where it is created are known.',
+  ["Clé créée par le code ou l'outillage du dépôt (script, infrastructure, KMS) : sa valeur n'est pas dans le "
+    + "dépôt, seuls son algorithme et l'endroit où sa création est décrite sont connus."]:
+    'Key created by the code or the tooling of the repository (script, infrastructure, KMS): its value is not '
+    + 'in the repository, only its algorithm and the place where its creation is described are known.',
 
   // --- Comparaison
   'Comparaison en cours...': 'Comparing...',

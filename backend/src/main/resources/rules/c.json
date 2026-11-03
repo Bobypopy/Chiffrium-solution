@@ -202,6 +202,48 @@
       ]
     },
     {
+      "id": "c.libsodium.keygen",
+      "pattern": "\\bcrypto_(?<name>secretstream_xchacha20poly1305|aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_aes256gcm|secretbox|sign|auth|box|kx)_(?:seed_keypair|keypair|keygen)\\s*\\(",
+      "map": {
+        "box": "X25519",
+        "kx": "X25519",
+        "sign": "Ed25519",
+        "secretbox": "XSalsa20-Poly1305",
+        "aead_xchacha20poly1305_ietf": "XChaCha20-Poly1305",
+        "aead_chacha20poly1305_ietf": "ChaCha20-Poly1305",
+        "aead_aes256gcm": "AES-256-GCM",
+        "secretstream_xchacha20poly1305": "XChaCha20-Poly1305",
+        "auth": "HMAC-SHA-512"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "auto"
+    },
+    {
+      "id": "c.liboqs.keypair",
+      "pattern": "\\bOQS_(?<api>KEM|SIG)_new\\s*\\(\\s*OQS_(?:KEM|SIG)_alg_(?<name>\\w+)(?=[\\s\\S]{0,400}?\\bOQS_(?:KEM|SIG)_keypair\\s*\\()",
+      "primitiveByApi": { "KEM": "kem", "SIG": "signature" },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "c.liboqs",
+      "pattern": "\\bOQS_(?<api>KEM|SIG)_new\\s*\\(\\s*OQS_(?:KEM|SIG)_alg_(?<name>\\w+)",
+      "primitiveByApi": { "KEM": "kem", "SIG": "signature" },
+      "functionsByApi": { "KEM": ["encapsulate", "decapsulate"], "SIG": ["sign", "verify"] }
+    },
+    {
+      "id": "c.liboqs.direct-keypair",
+      "pattern": "\\bOQS_(?:KEM|SIG)_(?<name>ml_kem_\\d+|ml_dsa_\\d+|mlkem\\d+|mldsa\\d+|kyber_?\\d+|dilithium_?\\d|falcon_?\\d+)_keypair\\s*\\(",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
       "id": "c.libsodium",
       "pattern": "\\bcrypto_(?<name>aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_chacha20poly1305|aead_aes256gcm|secretbox|box|sign|generichash|pwhash|kx|scalarmult|auth_hmacsha256|auth_hmacsha512|hash_sha256|hash_sha512|stream_xchacha20|stream_chacha20)(?:_\\w+)?\\s*\\(",
       "map": {

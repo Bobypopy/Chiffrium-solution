@@ -260,4 +260,27 @@ class SecurityFindingDetectorTest {
                         "app/keys.php:4");
         assertThat(findings).allSatisfy(f -> assertThat(f.snippet() + " " + f.evidence()).doesNotContain("Kq7#vault"));
     }
+
+    @Test
+    void flagsKeysGeneratedInClearAndPasswordsOnTheCommandLine(@TempDir Path root) {
+        TestSupport.write(root, "scripts/gen.sh", """
+                openssl genrsa -out server.key 2048
+                openssl req -x509 -newkey rsa:4096 -nodes -keyout k.pem -out c.pem
+                openssl genpkey -algorithm ED25519 -aes-256-cbc -pass pass:Kq7vault9 -out ed.pem
+                ssh-keygen -t ed25519 -N "" -f deploy_key
+                ssh-keygen -t rsa -b 4096 -f k -N "$PASS"
+                keytool -genkeypair -keyalg RSA -keystore app.jks -storepass changeit
+                keytool -genkeypair -keyalg RSA -keystore app.jks -storepass:env STORE_PASS
+                openssl genrsa -aes256 -passout env:KEY_PASS -out safe.key 4096
+                """);
+
+        List<SecurityFinding> findings = detect(root);
+
+        assertThat(findings).filteredOn(f -> f.ruleId().equals("key-cli-unencrypted-export"))
+                .extracting(SecurityFinding::line).containsExactlyInAnyOrder(1, 2, 4);
+        assertThat(findings).filteredOn(f -> f.ruleId().equals("secret-cli-key-password"))
+                .extracting(SecurityFinding::line).containsExactlyInAnyOrder(3, 6);
+        assertThat(findings).allSatisfy(f -> assertThat(f.snippet() + " " + f.evidence())
+                .doesNotContain("Kq7vault9").doesNotContain("changeit"));
+    }
 }

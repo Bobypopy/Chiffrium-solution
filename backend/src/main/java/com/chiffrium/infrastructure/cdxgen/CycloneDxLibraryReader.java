@@ -48,7 +48,11 @@ public final class CycloneDxLibraryReader implements LibraryReader {
             "cargo/ed25519", "cargo/chacha20poly1305", "cargo/argon2",
             "composer/phpseclib", "composer/defuse", "composer/paragonie",
             "gem/rbnacl", "gem/bcrypt", "gem/jwt", "openssl", "libressl", "boringssl", "wolfssl", "mbedtls",
-            "libsodium", "libgcrypt", "nettle", "gnutls");
+            "libsodium", "libgcrypt", "nettle", "gnutls",
+            // Post-quantique (liboqs, pqcrypto, ml-kem...) puis bibliothèques de clés plus récentes
+            "open-quantum-safe", "liboqs", "pypi/oqs", "pypi/pqcrypto", "cargo/pqcrypto", "cargo/ml-kem",
+            "cargo/ml-dsa", "cargo/oqs", "pypi/jwcrypto", "pypi/tink", "cargo/x25519-dalek", "npm/%40stablelib",
+            "npm/@stablelib");
 
     private final ObjectMapper mapper;
     private final LicensePolicy licensePolicy;

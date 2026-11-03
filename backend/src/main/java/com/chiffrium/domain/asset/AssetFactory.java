@@ -27,8 +27,9 @@ public final class AssetFactory {
     private static final String MATERIAL_PREFIX = "crypto/related-crypto-material/";
     private static final String GENERATED_KEY_PREFIX = MATERIAL_PREFIX + "generated/";
     private static final String UNRESOLVED_PREFIX = "crypto/unresolved/";
-    private static final String GENERATED_KEY_DESCRIPTION = "Clé créée à l'exécution par le code : sa valeur n'est "
-            + "pas dans le dépôt, seuls son algorithme et l'endroit où elle est créée sont connus.";
+    private static final String GENERATED_KEY_DESCRIPTION = "Clé créée par le code ou l'outillage du dépôt (script, "
+            + "infrastructure, KMS) : sa valeur n'est pas dans le dépôt, seuls son algorithme et l'endroit où sa "
+            + "création est décrite sont connus.";
 
     private final AlgorithmNormalizer normalizer;
 

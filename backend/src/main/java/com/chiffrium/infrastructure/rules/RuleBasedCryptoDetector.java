@@ -62,6 +62,10 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
     private static final Set<Primitive> MODE_PRIMITIVES = EnumSet.of(Primitive.BLOCK_CIPHER,
             Primitive.AUTHENTICATED_ENCRYPTION);
     private static final String SECRET_KEY = "secret-key";
+    private static final String PRIVATE_KEY = "private-key";
+    private static final String AUTO_KEY = "auto";
+    private static final Set<Primitive> SYMMETRIC_KEY_PRIMITIVES = EnumSet.of(Primitive.BLOCK_CIPHER,
+            Primitive.STREAM_CIPHER, Primitive.AUTHENTICATED_ENCRYPTION, Primitive.MAC);
 
     private final List<RulePack> packs;
     private final AssetFactory assetFactory;
@@ -120,7 +124,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                         assets.add(assetFactory.fromSpec(detection.spec, occurrence, detection.functions,
                                 DetectionSource.RULES, null));
                         if (detection.key != null && detection.spec.isRecognized()) {
-                            assets.add(assetFactory.generatedKey(detection.key, detection.spec, occurrence));
+                            assets.add(assetFactory.generatedKey(keyType(detection.key, detection.spec),
+                                    detection.spec, occurrence));
                         }
                     }
                 }
@@ -503,6 +508,13 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 .filter(p -> p.appliesTo(language) && !p.functionPatterns().isEmpty())
                 .findFirst()
                 .orElse(current);
+    }
+
+    private static String keyType(String declared, AlgorithmSpec spec) {
+        if (!AUTO_KEY.equals(declared)) {
+            return declared;
+        }
+        return SYMMETRIC_KEY_PRIMITIVES.contains(spec.primitive()) ? SECRET_KEY : PRIVATE_KEY;
     }
 
     private static boolean isMaterialLike(String baseName) {

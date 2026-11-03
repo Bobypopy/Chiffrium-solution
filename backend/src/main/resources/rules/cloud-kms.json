@@ -1,0 +1,96 @@
+{
+  "id": "cloud-kms",
+  "languages": ["java", "kotlin", "scala", "groovy", "python", "javascript", "typescript", "go", "csharp", "c", "cpp", "php", "ruby", "rust", "swift", "config"],
+  "commentPrefixes": ["//", "/*", "*", "#"],
+  "functionPatterns": [],
+  "classPatterns": [],
+  "rules": [
+    {
+      "id": "cloud.aws.key-spec",
+      "pattern": "\\b(?:KeySpec|keySpec|key_spec|customer_master_key_spec|CustomerMasterKeySpec|KeyPairSpec|key_pair_spec)\\b[\\s\\\"':=(]*(?:(?:Data)?KeySpec\\s*\\.\\s*)?[\\\"']?(?<api>RSA_2048|RSA_3072|RSA_4096|ECC_NIST_P256|ECC_NIST_P384|ECC_NIST_P521|ECC_SECG_P256K1|SYMMETRIC_DEFAULT|HMAC_224|HMAC_256|HMAC_384|HMAC_512|AES_128|AES_256|ML_DSA_44|ML_DSA_65|ML_DSA_87|SM2)\\b",
+      "template": "{api}",
+      "map": {
+        "ecc_secg_p256k1": "EC-secp256k1",
+        "symmetric_default": "AES-256-GCM",
+        "hmac_224": "HMAC-SHA-224",
+        "hmac_256": "HMAC-SHA-256",
+        "hmac_384": "HMAC-SHA-384",
+        "hmac_512": "HMAC-SHA-512"
+      },
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "cloud.aws.go-key-spec",
+      "pattern": "\\b(?:Data)?KeySpec(?<api>Rsa2048|Rsa3072|Rsa4096|EccNistP256|EccNistP384|EccNistP521|EccSecgP256k1|SymmetricDefault|Hmac224|Hmac256|Hmac384|Hmac512|Aes128|Aes256|MlDsa44|MlDsa65|MlDsa87|Sm2)\\b",
+      "template": "{api}",
+      "map": {
+        "eccsecgp256k1": "EC-secp256k1",
+        "symmetricdefault": "AES-256-GCM",
+        "hmac224": "HMAC-SHA-224",
+        "hmac256": "HMAC-SHA-256",
+        "hmac384": "HMAC-SHA-384",
+        "hmac512": "HMAC-SHA-512"
+      },
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "cloud.gcp.rsa",
+      "pattern": "\\bRSA_(?:SIGN_PSS|SIGN_PKCS1|SIGN_RAW_PKCS1|DECRYPT_OAEP)_(?<size>\\d{4})_(?:SHA\\d{3}|NOHASH)\\b",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cloud.gcp.ec",
+      "pattern": "\\bEC_SIGN_(?<curve>P256|P384|SECP256K1)_SHA\\d{3}\\b",
+      "algorithm": "ECDSA",
+      "map": {
+        "p_256": "P-256",
+        "p256": "P-256",
+        "p_384": "P-384",
+        "p384": "P-384",
+        "p_521": "P-521",
+        "p521": "P-521",
+        "p_256k": "secp256k1",
+        "p-256k": "secp256k1",
+        "p256k": "secp256k1"
+      },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cloud.gcp.ml-dsa",
+      "pattern": "\\bPQ_SIGN_ML_DSA_(?<bits>44|65|87)\\b",
+      "template": "ML-DSA-{bits}",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cloud.gcp.symmetric",
+      "pattern": "\\bGOOGLE_SYMMETRIC_ENCRYPTION\\b",
+      "algorithm": "AES-256-GCM",
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
+      "id": "cloud.azure.create-key",
+      "pattern": "\\b(?:create|Create)_?(?<api>rsa|Rsa|ec|Ec|oct|Oct)_?(?:key|Key)(?:Async)?\\s*\\((?=(?:[^;]{0,200}?\\b(?:KeySize|keySize|size)\\s*[=:]\\s*(?<size>\\d{3,5}))?)(?=(?:[^;]{0,200}?\\b(?:CurveName|curveName|curve)\\s*[=:]\\s*(?:KeyCurveName\\s*\\.\\s*)?[\\\"']?(?<curve>P[-_]?256K|P[-_]?256|P[-_]?384|P[-_]?521)\\b)?)",
+      "template": "{api}",
+      "map": {
+        "rsa": "RSA",
+        "ec": "EC",
+        "oct": "AES",
+        "p_256": "P-256",
+        "p_384": "P-384",
+        "p_521": "P-521",
+        "p_256k": "secp256k1",
+        "p-256k": "secp256k1",
+        "p256k": "secp256k1"
+      },
+      "functions": ["keygen"],
+      "key": "auto"
+    }
+  ]
+}

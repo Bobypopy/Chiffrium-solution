@@ -21,6 +21,8 @@
     { "id": "ruby.openssl.digest-new", "pattern": "\\bOpenSSL\\s*::\\s*Digest\\s*\\.\\s*new\\s*\\(\\s*{ARG}", "functions": ["digest"] },
     { "id": "ruby.openssl.digest-class", "pattern": "\\bOpenSSL\\s*::\\s*Digest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|RIPEMD160)\\b", "functions": ["digest"] },
     { "id": "ruby.digest", "pattern": "\\bDigest\\s*::\\s*(?<name>MD5|SHA1|SHA256|SHA384|SHA512|SHA2|RMD160)\\b", "map": { "sha2": "SHA-256", "rmd160": "RIPEMD-160" }, "functions": ["digest"] },
+    { "id": "ruby.openssl.generate-key", "pattern": "\\bOpenSSL\\s*::\\s*PKey\\s*\\.\\s*generate_key\\s*\\(\\s*['\\\"](?<name>[\\w-]+)['\\\"](?:[^)\\n]*?rsa_keygen_bits\\s*:\\s*{SIZE})?", "functions": ["keygen"], "key": "private-key" },
+    { "id": "ruby.rbnacl.generate", "pattern": "\\bRbNaCl\\s*::\\s*(?<api>PrivateKey|SigningKey)\\s*\\.\\s*generate\\b", "template": "{api}", "map": { "privatekey": "X25519", "signingkey": "Ed25519" }, "functions": ["keygen"], "key": "private-key" },
     {
       "id": "ruby.openssl.pkey-generate",
       "pattern": "\\bOpenSSL\\s*::\\s*PKey\\s*::\\s*(?<name>RSA|DSA|EC)\\s*\\.\\s*(?:generate|new(?=\\s*\\(\\s*\\d))\\s*\\(\\s*(?:{SIZE}|['\"](?<curve>[\\w-]+)['\"])?",

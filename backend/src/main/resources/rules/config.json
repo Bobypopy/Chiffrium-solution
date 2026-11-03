@@ -28,6 +28,81 @@
       "pattern": "\\b(?:signature|hash|digest|cipher|encryption|key)[-_.]?(?:algorithm|algo)\\s*[:=]\\s*['\"]?(?<name>[\\w./-]+)",
       "skipUnrecognized": true,
       "functions": ["other"]
+    },
+    {
+      "id": "config.openssl.genrsa",
+      "pattern": "\\bopenssl\\s+genrsa\\b(?=(?:[^\\n|;&]*\\s(?<size>\\d{3,5})\\b)?)",
+      "algorithm": "RSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.openssl.genpkey",
+      "pattern": "\\bopenssl\\s+genpkey\\b(?=[^\\n|;&]*?\\s-algorithm\\s+(?<name>[\\w-]+))(?=(?:[^\\n|;&]*?rsa_keygen_bits:(?<size>\\d{3,5}))?)(?=(?:[^\\n|;&]*?ec_paramgen_curve:(?<curve>[\\w-]+))?)",
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "config.openssl.req-newkey",
+      "pattern": "\\bopenssl\\s+req\\b(?=[^\\n|;&]*?\\s-newkey\\s+(?<name>rsa|ec|ed25519|ed448|ml-dsa-\\d{2})(?::(?<size>\\d{3,5}))?)(?=(?:[^\\n|;&]*?ec_paramgen_curve:(?<curve>[\\w-]+))?)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.openssl.ecparam",
+      "pattern": "\\bopenssl\\s+ecparam\\b(?=[^\\n|;&]*?\\s-genkey\\b)(?=[^\\n|;&]*?\\s-name\\s+(?<curve>[\\w-]+))",
+      "algorithm": "EC",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.ssh-keygen",
+      "pattern": "\\bssh-keygen\\b(?=[^\\n|;&]*?\\s-t\\s+(?<name>ecdsa-sk|ed25519-sk|rsa|dsa|ecdsa|ed25519)\\b)(?=(?:[^\\n|;&]*?\\s-b\\s+(?<size>\\d{3,5}))?)",
+      "map": { "ecdsa-sk": "ECDSA", "ed25519-sk": "Ed25519" },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.keytool.genkeypair",
+      "pattern": "\\bkeytool\\b(?=[^\\n|;&]*?\\s-genkey(?:pair)?\\b)(?=[^\\n|;&]*?\\s-keyalg\\s+(?<name>\\w+))(?=(?:[^\\n|;&]*?\\s-keysize\\s+(?<size>\\d{3,5}))?)(?=(?:[^\\n|;&]*?\\s-groupname\\s+(?<curve>[\\w-]+))?)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.keytool.genseckey",
+      "pattern": "\\bkeytool\\b(?=[^\\n|;&]*?\\s-genseckey\\b)(?=[^\\n|;&]*?\\s-keyalg\\s+(?<name>\\w+))(?=(?:[^\\n|;&]*?\\s-keysize\\s+(?<size>\\d{2,5}))?)",
+      "functions": ["keygen"],
+      "key": "secret-key"
+    },
+    {
+      "id": "config.gpg.quick-gen-key",
+      "pattern": "\\bgpg2?\\b(?=[^\\n|;&]*?--quick-gen(?:erate)?-key\\b)(?=[^\\n|;&]*?\\s(?<name>rsa|dsa|ed25519|ed448|cv25519|nistp256|nistp384|nistp521)(?<size>\\d{3,5})?\\b)",
+      "map": {
+        "cv25519": "X25519",
+        "nistp256": "ECDSA-P-256",
+        "nistp384": "ECDSA-P-384",
+        "nistp521": "ECDSA-P-521"
+      },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.terraform.tls-private-key",
+      "pattern": "\\bresource\\s+\\\"tls_private_key\\\"\\s+\\\"[\\w-]+\\\"\\s*\\{(?=[^}]*?\\balgorithm\\s*=\\s*\\\"(?<name>RSA|ECDSA|ED25519)\\\")(?=(?:[^}]*?\\brsa_bits\\s*=\\s*(?<size>\\d{3,5}))?)(?=(?:[^}]*?\\becdsa_curve\\s*=\\s*\\\"(?<curve>P224|P256|P384|P521)\\\")?)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.terraform.azure-key-vault-key",
+      "pattern": "\\bresource\\s+\\\"azurerm_key_vault_key\\\"\\s+\\\"[\\w-]+\\\"\\s*\\{(?=[^}]*?\\bkey_type\\s*=\\s*\\\"(?<name>RSA-HSM|RSA|EC-HSM|EC)\\\")(?=(?:[^}]*?\\bkey_size\\s*=\\s*(?<size>\\d{3,5}))?)(?=(?:[^}]*?\\bcurve\\s*=\\s*\\\"(?<curve>[\\w-]+)\\\")?)",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "config.cert-manager.private-key",
+      "pattern": "\\bprivateKey\\s*:[ \\t]*\\r?\\n(?=(?:[ \\t]+[^\\n]*\\n){0,6}?[ \\t]+algorithm\\s*:\\s*['\\\"]?(?<name>RSA|ECDSA|Ed25519)\\b)(?=(?:(?:[ \\t]+[^\\n]*\\n){0,6}?[ \\t]+size\\s*:\\s*(?<size>\\d{3,5}))?)",
+      "functions": ["keygen"],
+      "key": "private-key"
     }
   ]
 }

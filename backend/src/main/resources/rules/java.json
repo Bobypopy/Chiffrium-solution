@@ -80,6 +80,40 @@
       "functions": ["other"]
     },
     {
+      "id": "java.tink.generate",
+      "pattern": "\\bKeysetHandle\\s*\\.\\s*generateNew\\s*\\(\\s*(?:KeyTemplates\\s*\\.\\s*get\\s*\\(\\s*\\\"|(?:\\w+\\s*\\.\\s*)*)(?<name>[A-Z][A-Z0-9_]+)",
+      "skipUnrecognized": true,
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
+      "id": "java.nimbus.keygen",
+      "pattern": "\\bnew\\s+(?<name>RSA|EC)KeyGenerator\\s*\\(\\s*(?:{SIZE}|Curve\\s*\\.\\s*(?<curve>P_256|P_384|P_521|SECP256K1))?",
+      "map": { "p_256": "P-256", "p_384": "P-384", "p_521": "P-521" },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "java.jjwt.key",
+      "pattern": "\\b(?:Jwts\\s*\\.\\s*SIG\\s*\\.\\s*(?=\\w+\\s*\\.\\s*key(?:Pair)?\\s*\\()|Keys\\s*\\.\\s*(?:secretKeyFor|keyPairFor)\\s*\\(\\s*SignatureAlgorithm\\s*\\.\\s*)(?<name>HS256|HS384|HS512|RS256|RS384|RS512|PS256|PS384|PS512|ES256|ES384|ES512|EdDSA)\\b",
+      "map": {
+        "rs256": "RSA",
+        "rs384": "RSA",
+        "rs512": "RSA",
+        "ps256": "RSA",
+        "ps384": "RSA",
+        "ps512": "RSA",
+        "es256": "ECDSA-P-256",
+        "es384": "ECDSA-P-384",
+        "es512": "ECDSA-P-521",
+        "hs256": "HMAC-SHA-256",
+        "hs384": "HMAC-SHA-384",
+        "hs512": "HMAC-SHA-512"
+      },
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
       "id": "java.bc.block-cipher-mode",
       "pattern": "\\bnew\\s+(?<mode>CBC|GCM|CCM|CTR|SIC|CFB|OFB|EAX|OCB|KCCM|KGCM)BlockCipher\\s*\\(\\s*(?:new\\s+)?(?<name>AES|DES|DESede|Blowfish|Twofish|Serpent|Camellia|CAST5|CAST6|IDEA|SEED|SM4|ARIA|RC2|RC6|Noekeon|Threefish)Engine",
       "functions": ["encrypt", "decrypt"]
@@ -123,6 +157,11 @@
       "id": "java.jca.keysize.rsa-spec",
       "kind": "keysize",
       "pattern": "\\bnew\\s+RSAKeyGenParameterSpec\\s*\\(\\s*{SIZE}\\b"
+    },
+    {
+      "id": "java.pqc.parameter-set",
+      "kind": "keysize",
+      "pattern": "\\b(?:MLKEMParameters\\s*\\.\\s*ml_kem_|MLDSAParameters\\s*\\.\\s*ml_dsa_|NamedParameterSpec\\s*\\.\\s*ML_(?:KEM|DSA)_)(?<size>\\d{2,4})\\b"
     },
     {
       "id": "java.random-key-bytes",

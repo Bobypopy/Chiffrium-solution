@@ -46,6 +46,8 @@
       "map": { "default": "bcrypt" },
       "functions": ["keyderive"]
     },
+    { "id": "php.sodium.keygen", "pattern": "\\bsodium_crypto_(?<name>secretstream_xchacha20poly1305|aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_aes256gcm|secretbox|sign|auth|box|kx)_(?:seed_keypair|keypair|keygen)\\s*\\(", "map": { "box": "X25519", "kx": "X25519", "sign": "Ed25519", "secretbox": "XSalsa20-Poly1305", "aead_xchacha20poly1305_ietf": "XChaCha20-Poly1305", "aead_chacha20poly1305_ietf": "ChaCha20-Poly1305", "aead_aes256gcm": "AES-256-GCM", "secretstream_xchacha20poly1305": "XChaCha20-Poly1305", "auth": "HMAC-SHA-512" }, "functions": ["keygen"], "key": "auto" },
+    { "id": "php.phpseclib.create-key", "pattern": "\\b(?<name>RSA|EC|DSA)\\s*::\\s*createKey\\s*\\(\\s*(?:{SIZE}|['\\\"](?<curve>[\\w-]+)['\\\"])?", "functions": ["keygen"], "key": "private-key" },
     {
       "id": "php.sodium",
       "pattern": "\\bsodium_crypto_(?<name>aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_chacha20poly1305|aead_aes256gcm|secretbox|box|sign|generichash|pwhash|kx|scalarmult|auth)(?:_\\w+)?\\s*\\(",

@@ -91,6 +91,8 @@ class CdxgenAdaptersTest {
     void libraryReaderFlagsCryptoLibraries() {
         assertThat(CycloneDxLibraryReader.isCryptoLibrary("pkg:maven/org.bouncycastle/bcprov-jdk18on@1.78")).isTrue();
         assertThat(CycloneDxLibraryReader.isCryptoLibrary("pkg:pypi/cryptography@42.0.0")).isTrue();
+        assertThat(CycloneDxLibraryReader.isCryptoLibrary("pkg:pypi/liboqs-python@0.12.0")).isTrue();
+        assertThat(CycloneDxLibraryReader.isCryptoLibrary("pkg:cargo/ml-kem@0.2.1")).isTrue();
         assertThat(CycloneDxLibraryReader.isCryptoLibrary("pkg:npm/lodash@4.17.21")).isFalse();
         assertThat(new CycloneDxLibraryReader(TestSupport.MAPPER, LicensePolicyLoader.loadBuiltIn(TestSupport.MAPPER)).read(SBOM)).isEmpty();
     }

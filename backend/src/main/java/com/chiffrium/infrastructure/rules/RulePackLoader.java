@@ -37,7 +37,8 @@ public final class RulePackLoader {
 
     private static final String INDEX = "/rules/index.json";
     private static final String RULES_DIR = "/rules/";
-    private static final Set<String> KEY_TYPES = Set.of("private-key", "secret-key");
+    /** "auto" : clé secrète pour une primitive symétrique, clé privée sinon (API qui génèrent les deux). */
+    private static final Set<String> KEY_TYPES = Set.of("private-key", "secret-key", "auto");
 
     private static final String STRING_LITERAL =
             "(?:[bBrRuUfF@]{0,2}\"[^\"\\n]*\"|[bBrRuUfF]{0,2}'[^'\\n]*'|`[^`\\n]*`)";

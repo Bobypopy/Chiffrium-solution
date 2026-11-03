@@ -57,9 +57,46 @@
       "pattern": "\\b(?i:\\w{0,40}key\\w{0,40})\\s*=\\s*RandomNumberGenerator\\s*\\.\\s*GetBytes\\s*\\(\\s*(?<size>16|24|32)\\s*\\)"
     },
     {
+      "id": "cs.bc.keysize",
+      "kind": "keysize",
+      "pattern": "\\bnew\\s+(?:RsaKeyGenerationParameters\\s*\\([^;]*?,|KeyGenerationParameters\\s*\\(\\s*[^,]+,)\\s*{SIZE}\\b"
+    },
+    {
+      "id": "cs.bc.pqc-parameter-set",
+      "kind": "keysize",
+      "pattern": "\\b(?:MLKemParameters\\s*\\.\\s*ml_kem_|MLDsaParameters\\s*\\.\\s*ml_dsa_)(?<size>\\d{2,4})\\b"
+    },
+    {
       "id": "cs.keysize",
       "kind": "keysize",
       "pattern": "\\.\\s*KeySize\\s*=\\s*{SIZE}\\b"
+    },
+    {
+      "id": "cs.ml-kem.generate",
+      "pattern": "\\bMLKem\\s*\\.\\s*GenerateKey\\s*\\(\\s*MLKemAlgorithm\\s*\\.\\s*MLKem(?<bits>512|768|1024)",
+      "template": "ML-KEM-{bits}",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cs.ml-dsa.generate",
+      "pattern": "\\bMLDsa\\s*\\.\\s*GenerateKey\\s*\\(\\s*MLDsaAlgorithm\\s*\\.\\s*MLDsa(?<bits>44|65|87)",
+      "template": "ML-DSA-{bits}",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cs.slh-dsa.generate",
+      "pattern": "\\bSlhDsa\\s*\\.\\s*GenerateKey\\s*\\(",
+      "algorithm": "SLH-DSA",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "cs.bc.key-pair-generator",
+      "pattern": "\\bnew\\s+(?<name>Rsa|EC|Ed25519|Ed448|X25519|X448|Dsa|DH|MLKem|MLDsa|SlhDsa|Kyber|Dilithium|Falcon|SphincsPlus)KeyPairGenerator\\s*\\(",
+      "functions": ["keygen"],
+      "key": "private-key"
     },
     {
       "id": "cs.asymmetric.create-curve",

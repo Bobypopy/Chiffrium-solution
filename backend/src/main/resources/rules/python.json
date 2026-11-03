@@ -49,6 +49,66 @@
       "functions": ["encrypt", "decrypt"]
     },
     {
+      "id": "python.oqs.keypair",
+      "pattern": "\\boqs\\s*\\.\\s*(?<api>KeyEncapsulation|Signature)\\s*\\(\\s*{ARG}(?=[\\s\\S]{0,400}?\\.\\s*generate_keypair\\s*\\()",
+      "primitiveByApi": { "KeyEncapsulation": "kem", "Signature": "signature" },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.oqs",
+      "pattern": "\\boqs\\s*\\.\\s*(?<api>KeyEncapsulation|Signature)\\s*\\(\\s*{ARG}",
+      "primitiveByApi": { "KeyEncapsulation": "kem", "Signature": "signature" },
+      "functionsByApi": { "KeyEncapsulation": ["encapsulate", "decapsulate"], "Signature": ["sign", "verify"] }
+    },
+    {
+      "id": "python.pqcrypto.keypair",
+      "pattern": "\\bfrom\\s+pqcrypto\\s*\\.\\s*(?:kem|sign)\\s*\\.\\s*(?<name>\\w+)\\s+import\\s+[^\\n]*\\bgenerate_keypair\\b",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.nacl.private-key",
+      "pattern": "(?<![\\w.])(?:nacl\\s*\\.\\s*public\\s*\\.\\s*)?PrivateKey\\s*\\.\\s*generate\\s*\\(",
+      "algorithm": "X25519",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.ecdsa.signing-key",
+      "pattern": "\\bSigningKey\\s*\\.\\s*generate\\s*\\(\\s*curve\\s*=\\s*(?:ecdsa\\s*\\.\\s*)?(?<curve>NIST192p|NIST224p|NIST256p|NIST384p|NIST521p|SECP256k1)\\b",
+      "algorithm": "ECDSA",
+      "map": {
+        "nist192p": "P-192",
+        "nist224p": "P-224",
+        "nist256p": "P-256",
+        "nist384p": "P-384",
+        "nist521p": "P-521"
+      },
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.nacl.signing-key",
+      "pattern": "(?<![\\w.])(?:nacl\\s*\\.\\s*signing\\s*\\.\\s*)?SigningKey\\s*\\.\\s*generate\\s*\\(\\s*\\)",
+      "algorithm": "Ed25519",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.jwcrypto.generate",
+      "pattern": "\\bJWK\\s*\\.\\s*generate\\s*\\(\\s*kty\\s*=\\s*['\\\"](?<name>RSA|EC)['\\\"](?:\\s*,\\s*(?:size\\s*=\\s*{SIZE}|crv\\s*=\\s*['\\\"](?<curve>[\\w-]+)['\\\"]))?",
+      "functions": ["keygen"],
+      "key": "private-key"
+    },
+    {
+      "id": "python.tink.generate",
+      "pattern": "\\bnew_keyset_handle\\s*\\(\\s*(?:\\w+\\s*\\.\\s*)*(?<name>[A-Z][A-Z0-9_]+)\\s*\\)",
+      "skipUnrecognized": true,
+      "functions": ["keygen"],
+      "key": "auto"
+    },
+    {
       "id": "python.cryptography.aead-generate-key",
       "pattern": "\\b(?<name>AESGCM|AESCCM|AESOCB3|AESGCMSIV|ChaCha20Poly1305)\\s*\\.\\s*generate_key\\s*\\(\\s*(?:bit_length\\s*=\\s*)?{SIZE}?",
       "functions": ["keygen"],

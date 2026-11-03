@@ -15,6 +15,9 @@
     { "id": "swift.cryptokit.hash", "pattern": "\\b(?<name>SHA256|SHA384|SHA512)\\s*\\.\\s*hash\\s*\\(", "functions": ["digest"] },
     { "id": "swift.cryptokit.aes", "pattern": "\\bAES\\s*\\.\\s*(?<mode>GCM|KeyWrap)\\s*\\.\\s*(?<op>seal|open|wrap|unwrap)\\b", "algorithm": "AES" },
     { "id": "swift.cryptokit.chachapoly", "pattern": "\\bChaChaPoly\\s*\\.\\s*(?<op>seal|open)\\b", "algorithm": "ChaCha20-Poly1305" },
+    { "id": "swift.cryptokit.ml-kem", "pattern": "\\bMLKEM(?<bits>768|1024)\\s*\\.\\s*PrivateKey\\s*\\(\\s*\\)", "template": "ML-KEM-{bits}", "functions": ["keygen"], "key": "private-key" },
+    { "id": "swift.cryptokit.ml-dsa", "pattern": "\\bMLDSA(?<bits>65|87)\\s*\\.\\s*PrivateKey\\s*\\(\\s*\\)", "template": "ML-DSA-{bits}", "functions": ["keygen"], "key": "private-key" },
+    { "id": "swift.cryptokit.x-wing", "pattern": "\\bXWingMLKEM768X25519\\s*\\.\\s*PrivateKey\\s*\\(\\s*\\)", "algorithm": "X-Wing", "functions": ["keygen"], "key": "private-key" },
     {
       "id": "swift.cryptokit.ec-keygen",
       "pattern": "\\b(?<curve>P256|P384|P521)\\s*\\.\\s*(?<api>Signing|KeyAgreement)\\s*\\.\\s*PrivateKey\\s*\\(\\s*\\)",

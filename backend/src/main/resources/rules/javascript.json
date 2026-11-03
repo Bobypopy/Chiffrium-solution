@@ -78,6 +78,117 @@
       }
     },
     {
+      "id": "js.jose.keypair",
+      "pattern": "\\bgenerateKeyPair\\s*\\(\\s*['\\\"](?<name>RS256|RS384|RS512|PS256|PS384|PS512|ES256|ES384|ES512|EdDSA|Ed25519|RSA-OAEP-256|RSA-OAEP|ECDH-ES)(?:\\+A\\d{3}KW)?['\\\"]",
+      "map": {
+        "rs256": "RSA",
+        "rs384": "RSA",
+        "rs512": "RSA",
+        "ps256": "RSA",
+        "ps384": "RSA",
+        "ps512": "RSA",
+        "rsa-oaep-256": "RSA",
+        "es256": "ECDSA-P-256",
+        "es384": "ECDSA-P-384",
+        "es512": "ECDSA-P-521"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.jose.secret",
+      "pattern": "\\bgenerateSecret\\s*\\(\\s*['\\\"](?<name>HS256|HS384|HS512|A128GCM|A192GCM|A256GCM|A128KW|A192KW|A256KW|A128CBC-HS256|A256CBC-HS512)['\\\"]",
+      "map": {
+        "hs256": "HMAC-SHA-256",
+        "hs384": "HMAC-SHA-384",
+        "hs512": "HMAC-SHA-512",
+        "a128gcm": "AES-128-GCM",
+        "a192gcm": "AES-192-GCM",
+        "a256gcm": "AES-256-GCM",
+        "a128kw": "AES-128",
+        "a192kw": "AES-192",
+        "a256kw": "AES-256",
+        "a128cbc-hs256": "AES-128-CBC",
+        "a256cbc-hs512": "AES-256-CBC"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "secret-key"
+    },
+    {
+      "id": "js.noble.ml-kem",
+      "pattern": "\\bml_kem(?<bits>512|768|1024)\\s*\\.\\s*keygen\\s*\\(",
+      "template": "ML-KEM-{bits}",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.noble.ml-dsa",
+      "pattern": "\\bml_dsa(?<bits>44|65|87)\\s*\\.\\s*keygen\\s*\\(",
+      "template": "ML-DSA-{bits}",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.noble.slh-dsa",
+      "pattern": "\\bslh_dsa_\\w+\\s*\\.\\s*keygen\\s*\\(",
+      "algorithm": "SLH-DSA",
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.noble.curves",
+      "pattern": "\\b(?<name>ed25519|ed448|x25519|x448|secp256k1|p256|p384|p521)\\s*\\.\\s*(?:utils\\s*\\.\\s*)?(?:randomPrivateKey|randomSecretKey|keygen)\\s*\\(",
+      "map": {
+        "p256": "ECDSA-P-256",
+        "p384": "ECDSA-P-384",
+        "p521": "ECDSA-P-521",
+        "secp256k1": "ECDSA-secp256k1"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.tweetnacl.keypair",
+      "pattern": "\\bnacl\\s*\\.\\s*(?<api>box|sign)\\s*\\.\\s*keyPair\\s*\\(",
+      "template": "{api}",
+      "map": { "box": "X25519", "sign": "Ed25519" },
+      "functions": [
+        "keygen"
+      ],
+      "key": "private-key"
+    },
+    {
+      "id": "js.libsodium.keygen",
+      "pattern": "\\b(?:\\w+\\s*\\.\\s*)?crypto_(?<name>secretstream_xchacha20poly1305|aead_xchacha20poly1305_ietf|aead_chacha20poly1305_ietf|aead_aes256gcm|secretbox|sign|auth|box|kx)_(?:seed_keypair|keypair|keygen)\\s*\\(",
+      "map": {
+        "box": "X25519",
+        "kx": "X25519",
+        "sign": "Ed25519",
+        "secretbox": "XSalsa20-Poly1305",
+        "aead_xchacha20poly1305_ietf": "XChaCha20-Poly1305",
+        "aead_chacha20poly1305_ietf": "ChaCha20-Poly1305",
+        "aead_aes256gcm": "AES-256-GCM",
+        "secretstream_xchacha20poly1305": "XChaCha20-Poly1305",
+        "auth": "HMAC-SHA-512"
+      },
+      "functions": [
+        "keygen"
+      ],
+      "key": "auto"
+    },
+    {
       "id": "js.node.keypair",
       "pattern": "\\bgenerateKeyPair(?:Sync)?\\s*\\(\\s*{ARG}(?:\\s*,\\s*\\{[^}]*?(?:modulusLength\\s*:\\s*{SIZE}|namedCurve\\s*:\\s*['\"](?<curve>[\\w-]+)['\"]))?",
       "functions": [
@@ -144,7 +255,8 @@
     {
       "id": "js.webcrypto.operation",
       "pattern": "\\bsubtle\\s*\\.\\s*(?<op>encrypt|decrypt|sign|verify|digest|generateKey|deriveKey|deriveBits|wrapKey|unwrapKey)\\s*\\(\\s*(?:\\{\\s*name\\s*:\\s*)?{ARG}",
-      "skipUnrecognized": true
+      "skipUnrecognized": true,
+      "keyByApi": { "generateKey": "auto" }
     },
     {
       "id": "js.webcrypto.algorithm-object",
