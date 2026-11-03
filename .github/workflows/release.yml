@@ -60,6 +60,8 @@ jobs:
         working-directory: desktop
         env:
           APP_VERSION: ${{ github.ref_name }}
+          # Test de bout en bout avec le vrai moteur (réinitialisation du mot de passe administrateur).
+          CHIFFRIUM_JAR: ${{ github.workspace }}/backend/target/chiffrium-backend.jar
         run: |
           npm ci
           npm test

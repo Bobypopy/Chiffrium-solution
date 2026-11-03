@@ -5,7 +5,7 @@
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 
-const { backendEnvironment, resourcePaths } = require('./backend');
+const { JAVA_OUTPUT_OPTIONS, backendEnvironment, resourcePaths } = require('./backend');
 
 const RESET_TIMEOUT_MS = 120_000;
 
@@ -23,11 +23,23 @@ function parseResetOutput(output) {
   return null;
 }
 
-/** Message de la commande en cas d'échec, sans rien qui ressemble à un mot de passe (sortie déjà en échec). */
+/** Message de la commande en cas d'échec : ni ligne JSON, ni journal horodaté, ni trace Java. */
 function failureMessage(output) {
   const lines = output.split(/\r?\n/).map((line) => line.trim())
-    .filter((line) => line && !line.startsWith('{') && !/^\d{2}:\d{2}|^\d{4}-\d{2}-\d{2}/.test(line));
+    .filter((line) => line && !line.startsWith('{') && !/^\d{2}:\d{2}|^\d{4}-\d{2}-\d{2}/.test(line)
+      && !/^(at |\.\.\. \d+ more|Caused by:)/.test(line));
   return lines.at(-1) ?? 'la commande de réinitialisation a échoué';
+}
+
+/**
+ * Environnement du moteur pour la commande : celui du serveur local (mêmes données, même clé), sans ce qui ne
+ * concerne que le serveur. PORT en particulier : la commande n'écoute pas, et 0 est refusé par la configuration.
+ */
+function resetEnvironment({ dataDir, frontendDir, masterKey }) {
+  const env = backendEnvironment({ port: 0, dataDir, frontendDir, masterKey, cdxgenCommand: null });
+  delete env.PORT;
+  delete env.EXIT_ON_STDIN_CLOSE;
+  return env;
 }
 
 /**
@@ -39,13 +51,15 @@ function resetSoleAdminPassword({ resourcesDir, dataDir, masterKey, log }) {
     if (!fs.existsSync(required)) return Promise.reject(new Error(`Ressource manquante : ${required}`));
   }
   return new Promise((resolve, reject) => {
-    const env = backendEnvironment({ port: 0, dataDir, frontendDir: paths.frontend, masterKey, cdxgenCommand: null });
-    delete env.EXIT_ON_STDIN_CLOSE;
-    const child = spawn(paths.java, ['-jar', paths.jar, 'reset-password', '--sole-admin', '--yes', '--json'],
+    const env = resetEnvironment({ dataDir, frontendDir: paths.frontend, masterKey });
+    const child = spawn(paths.java,
+      [...JAVA_OUTPUT_OPTIONS, '-jar', paths.jar, 'reset-password', '--sole-admin', '--yes', '--json'],
       { env, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
     let output = '';
-    child.stdout.on('data', (chunk) => { output += chunk.toString(); });
-    child.stderr.on('data', (chunk) => { output += chunk.toString(); });
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (text) => { output += text; });
+    child.stderr.on('data', (text) => { output += text; });
     const timer = setTimeout(() => child.kill(), RESET_TIMEOUT_MS);
     child.once('error', (error) => {
       clearTimeout(timer);
@@ -62,4 +76,4 @@ function resetSoleAdminPassword({ resourcesDir, dataDir, masterKey, log }) {
   });
 }
 
-module.exports = { resetSoleAdminPassword, parseResetOutput, failureMessage };
+module.exports = { resetSoleAdminPassword, resetEnvironment, parseResetOutput, failureMessage };

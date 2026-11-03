@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,11 +50,15 @@ class PasswordRecoveryCommandTest {
     }
 
     private Run run(String... args) {
+        return capture(() -> new CommandLine(open()).run(args));
+    }
+
+    private static Run capture(IntSupplier command) {
         PrintStream original = System.out;
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
         System.setOut(new PrintStream(captured, true, StandardCharsets.UTF_8));
         try {
-            return new Run(new CommandLine(open()).run(args), captured.toString(StandardCharsets.UTF_8));
+            return new Run(command.getAsInt(), captured.toString(StandardCharsets.UTF_8));
         } finally {
             System.setOut(original);
         }
@@ -129,5 +134,15 @@ class PasswordRecoveryCommandTest {
         assertThat(run("reset-password", "--sole-admin", "--yes").output()).contains("Plusieurs administrateurs");
         assertThat(run("reset-password", "personne", "--yes").code()).isEqualTo(CommandLine.EXIT_FAILURE);
         assertThat(run("reset-password").code()).isEqualTo(CommandLine.EXIT_USAGE);
+    }
+
+    @Test
+    void refusedConfigurationGivesAReadableMessageInsteadOfAStackTrace() {
+        // v1.1.0 : l'application de bureau passait PORT=0, la configuration levait une exception non rattrapée.
+        Run run = capture(() -> Main.runCommand(Map.of("DATA_DIR", dataDir.toString(), "PORT", "0"),
+                new String[] {"reset-password", "--sole-admin", "--yes", "--json"}));
+
+        assertThat(run.code()).isEqualTo(CommandLine.EXIT_FAILURE);
+        assertThat(run.output()).contains("Démarrage impossible", "PORT=0").doesNotContain("\tat ");
     }
 }

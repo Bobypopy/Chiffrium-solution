@@ -18,6 +18,11 @@ const ORPHAN_RELEASE_DELAY_MS = 1500;
 const OUTPUT_TAIL_CHARS = 8000;
 const CONTROL_TOKEN_BYTES = 32;
 const ACTIVITY_PATH = '/api/desktop/activity';
+/**
+ * Sortie du moteur en UTF-8 : vers un tube, Java écrit System.out/err dans l'encodage du système (Cp1252 sous
+ * Windows), et les accents des messages d'erreur montrés à l'utilisateur arriveraient illisibles.
+ */
+const JAVA_OUTPUT_OPTIONS = ['-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'];
 
 /** Port TCP libre sur l'interface locale. */
 function freePort() {
@@ -113,7 +118,7 @@ async function startBackend({ resourcesDir, dataDir, masterKey, cdxgenCommand, l
   const url = `http://${LOOPBACK}:${port}`;
   const controlToken = crypto.randomBytes(CONTROL_TOKEN_BYTES).toString('hex');
   fs.mkdirSync(dataDir, { recursive: true });
-  const child = spawn(paths.java, ['-jar', paths.jar], {
+  const child = spawn(paths.java, [...JAVA_OUTPUT_OPTIONS, '-jar', paths.jar], {
     env: backendEnvironment({ port, dataDir, frontendDir: paths.frontend, masterKey, cdxgenCommand, controlToken }),
     stdio: ['pipe', 'pipe', 'pipe'],
     windowsHide: true,
@@ -121,11 +126,13 @@ async function startBackend({ resourcesDir, dataDir, masterKey, cdxgenCommand, l
   fs.writeFileSync(pidFile, String(child.pid));
   child.once('exit', () => fs.rmSync(pidFile, { force: true }));
   let tail = '';
-  const record = (chunk) => {
-    const text = chunk.toString();
+  const record = (text) => {
     log(text);
     tail = (tail + text).slice(-OUTPUT_TAIL_CHARS);
   };
+  // Décodage par flux : un caractère accentué coupé entre deux morceaux n'est pas abîmé.
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
   child.stdout.on('data', record);
   child.stderr.on('data', record);
   await waitForHealth(url, child, () => tail);
@@ -156,4 +163,4 @@ async function startBackend({ resourcesDir, dataDir, masterKey, cdxgenCommand, l
   return { url, port, stop, activity };
 }
 
-module.exports = { startBackend, backendEnvironment, resourcePaths, freePort };
+module.exports = { startBackend, backendEnvironment, resourcePaths, freePort, JAVA_OUTPUT_OPTIONS };

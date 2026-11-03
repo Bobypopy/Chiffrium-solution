@@ -126,25 +126,32 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-        AppConfig config = AppConfig.fromEnvironment();
         if (args.length > 0 && CommandLine.handles(args[0])) {
-            Application application;
-            try {
-                application = new Application(config);
-            } catch (RuntimeException e) {
-                // Base H2 ouverte par l'application en cours d'exécution, ou clé maîtresse absente.
-                System.out.println("Données inaccessibles (" + e.getMessage() + "). Fermez Chiffrium et vérifiez "
-                        + "DATA_DIR et la clé maîtresse.");
-                System.exit(CommandLine.EXIT_FAILURE);
-                return;
-            }
-            System.exit(new CommandLine(application).run(args));
+            System.exit(runCommand(System.getenv(), args));
         }
+        AppConfig config = AppConfig.fromEnvironment();
         Application application = new Application(config);
         application.startServer();
         if (config.exitOnStdinClose()) {
             exitWhenParentCloses();
         }
+    }
+
+    /**
+     * Commande en ligne : une configuration refusée ou des données inaccessibles donnent un message lisible et
+     * le code d'échec, jamais une trace Java (l'application de bureau affiche la dernière ligne de la sortie).
+     */
+    static int runCommand(Map<String, String> environment, String[] args) {
+        Application application;
+        try {
+            application = new Application(AppConfig.from(environment));
+        } catch (RuntimeException e) {
+            // Variable hors bornes, base H2 ouverte par l'application en cours d'exécution, ou clé maîtresse absente.
+            System.out.println("Démarrage impossible (" + e.getMessage() + "). Fermez Chiffrium et vérifiez la "
+                    + "configuration, DATA_DIR et la clé maîtresse.");
+            return CommandLine.EXIT_FAILURE;
+        }
+        return new CommandLine(application).run(args);
     }
 
     /**
