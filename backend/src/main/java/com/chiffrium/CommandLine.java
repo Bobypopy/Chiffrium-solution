@@ -2,6 +2,9 @@ package com.chiffrium;
 
 import com.chiffrium.application.AnalysisService;
 import com.chiffrium.application.security.Actor;
+import com.chiffrium.application.security.UserService;
+import com.chiffrium.domain.security.Role;
+import com.chiffrium.domain.security.User;
 import com.chiffrium.domain.model.AnalysisJob;
 import com.chiffrium.domain.model.AnalysisReport;
 import com.chiffrium.domain.model.AnalysisRequest;
@@ -15,7 +18,9 @@ import org.slf4j.MDC;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -24,8 +29,10 @@ import java.util.UUID;
  * java -jar chiffrium-backend.jar analyze &lt;url|chemin&gt; [--no-cdxgen] [--no-vulns] [--history]
  *      [--branch nom] [--fail-on disallowed|deprecated] [--sarif fichier]
  * java -jar chiffrium-backend.jar migrate-db --to &lt;url jdbc&gt; [--user u] [--password p] [--force]
+ * java -jar chiffrium-backend.jar reset-password &lt;identifiant&gt;|--sole-admin [--yes] [--json]
  * </pre>
- * La première intègre l'analyse dans une chaîne CI/CD, la seconde recopie la base locale vers PostgreSQL.
+ * La première intègre l'analyse dans une chaîne CI/CD, la deuxième recopie la base locale vers PostgreSQL, la
+ * troisième rend l'accès à un compte local dont le mot de passe est perdu (dernier administrateur compris).
  * Codes de sortie : 0 succès, 1 seuil de politique dépassé, 2 usage incorrect, 3 échec.
  */
 final class CommandLine {
@@ -38,8 +45,10 @@ final class CommandLine {
             + "[--branch nom] [--fail-on disallowed|deprecated] [--sarif fichier]";
     private static final String MIGRATE_USAGE =
             "Usage : migrate-db --to <url jdbc> [--user utilisateur] [--password mot de passe] [--force]";
+    private static final String RESET_USAGE = "Usage : reset-password <identifiant>|--sole-admin [--yes] [--json]";
     static final String COMMAND_ANALYZE = "analyze";
     static final String COMMAND_MIGRATE = "migrate-db";
+    static final String COMMAND_RESET_PASSWORD = "reset-password";
     /** Demandeur enregistré pour les analyses lancées en ligne de commande (traçabilité). */
     static final String CLI_ACTOR = "cli";
 
@@ -52,12 +61,16 @@ final class CommandLine {
 
     /** Vrai si le premier argument désigne une commande à exécuter sans démarrer le serveur. */
     static boolean handles(String command) {
-        return COMMAND_ANALYZE.equals(command) || COMMAND_MIGRATE.equals(command);
+        return COMMAND_ANALYZE.equals(command) || COMMAND_MIGRATE.equals(command)
+                || COMMAND_RESET_PASSWORD.equals(command);
     }
 
     int run(String[] args) {
         if (args.length > 0 && COMMAND_MIGRATE.equals(args[0])) {
             return migrate(args);
+        }
+        if (args.length > 0 && COMMAND_RESET_PASSWORD.equals(args[0])) {
+            return resetPassword(args);
         }
         if (args.length < 2) {
             out.println(USAGE);
@@ -166,6 +179,101 @@ final class CommandLine {
         } finally {
             application.database.close();
         }
+    }
+
+    /**
+     * Mot de passe provisoire pour un compte local, quand plus personne ne peut se connecter pour le faire depuis
+     * l'interface (seul administrateur, sans SSO). Même effet qu'une réinitialisation par un administrateur :
+     * changement imposé à la connexion suivante, verrouillage levé, sessions fermées, action tracée.
+     *
+     * <p>Sécurité : la commande ouvre la base avec la clé maîtresse, donc seul celui qui a déjà accès aux données
+     * (session Windows du poste pour l'application de bureau, accès au serveur et à sa clé sinon) peut la lancer ;
+     * rien n'est exposé sur le réseau. Le mot de passe n'est écrit que sur la sortie standard, jamais dans le
+     * journal ni dans l'audit.
+     */
+    private int resetPassword(String[] args) {
+        String username = null;
+        boolean soleAdmin = false;
+        boolean confirmed = false;
+        boolean json = false;
+        for (int i = 1; i < args.length; i++) {
+            switch (args[i]) {
+                case "--sole-admin" -> soleAdmin = true;
+                case "--yes" -> confirmed = true;
+                case "--json" -> json = true;
+                default -> {
+                    if (args[i].startsWith("--") || username != null) {
+                        out.println("Option inconnue : " + args[i] + System.lineSeparator() + RESET_USAGE);
+                        return EXIT_USAGE;
+                    }
+                    username = args[i];
+                }
+            }
+        }
+        if ((username == null) == !soleAdmin) {
+            out.println(RESET_USAGE);
+            return EXIT_USAGE;
+        }
+        try {
+            Actor actor = new Actor(null, cliOperator(), Role.ADMIN, null);
+            List<User> accounts = application.users.list(actor);
+            String wanted = username;
+            List<User> targets = soleAdmin
+                    ? accounts.stream().filter(u -> u.role() == Role.ADMIN && u.enabled() && u.source() == User.Source.LOCAL)
+                    .toList()
+                    : accounts.stream().filter(u -> u.username().equals(wanted)).toList();
+            if (targets.size() != 1) {
+                out.println(soleAdmin
+                        ? targets.isEmpty() ? "Aucun administrateur local actif."
+                        : "Plusieurs administrateurs locaux : l'un d'eux peut réinitialiser ce mot de passe depuis "
+                        + "Administration > Comptes."
+                        : "Compte introuvable : " + username);
+                return EXIT_FAILURE;
+            }
+            User target = targets.get(0);
+            if (!confirmed && !confirm(target.username())) {
+                out.println("Réinitialisation annulée.");
+                return EXIT_USAGE;
+            }
+            UserService.UserWithPassword reset = application.users.resetPassword(actor, target.id());
+            application.audit.record(actor, "ADMIN_RECOVERY", target.username(),
+                    "mot de passe réinitialisé hors connexion (ligne de commande)");
+            if (json) {
+                out.println(application.mapper.writeValueAsString(Map.of("username", target.username(),
+                        "temporaryPassword", reset.temporaryPassword())));
+            } else {
+                out.println("Mot de passe provisoire de " + target.username() + " : " + reset.temporaryPassword());
+                out.println("Affiché une seule fois ; il devra être changé à la prochaine connexion.");
+            }
+            return EXIT_OK;
+        } catch (IllegalArgumentException | com.fasterxml.jackson.core.JsonProcessingException e) {
+            out.println("Réinitialisation impossible : " + e.getMessage());
+            return EXIT_FAILURE;
+        } finally {
+            application.database.close();
+        }
+    }
+
+    /** Confirmation tapée par une personne : sans terminal, la commande exige --yes plutôt que de supposer. */
+    private boolean confirm(String username) {
+        java.io.Console console = System.console();
+        if (console == null) {
+            out.println("Confirmation impossible sans terminal : relancer avec --yes.");
+            return false;
+        }
+        String typed = console.readLine("Retaper l'identifiant \"%s\" pour confirmer la réinitialisation : ", username);
+        return username.equals(typed == null ? null : typed.trim());
+    }
+
+    /** Auteur inscrit à l'audit : compte système et poste d'où la commande a été lancée. */
+    private static String cliOperator() {
+        String host;
+        try {
+            host = java.net.InetAddress.getLocalHost().getHostName();
+        } catch (java.net.UnknownHostException e) {
+            host = "poste inconnu";
+        }
+        return CLI_ACTOR + ":" + System.getProperty("user.name", "?") + "@" + host;
     }
 
     private void printSummary(AnalysisReport report) {

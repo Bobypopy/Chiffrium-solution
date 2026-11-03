@@ -62,8 +62,8 @@ class CancellationTest {
             // Le travailleur n'a pas été tué par l'interruption : une nouvelle analyse sans cdxgen aboutit.
             AnalysisRequest quick = new AnalysisRequest(project.toString(), null, false, false, false, null);
             String next = application.analyses().submit(admin, List.of(quick), null).get(0).id();
-            assertThat(await(next, application, j -> j.status().isTerminal()).status())
-                    .isEqualTo(AnalysisStatus.SUCCEEDED);
+            AnalysisJob after = await(next, application, j -> j.status().isTerminal());
+            assertThat(after.status()).as("erreur : %s", after.error()).isEqualTo(AnalysisStatus.SUCCEEDED);
             assertThat(application.audit().search(null, "ANALYSIS_CANCELLED", 10, 0)).hasSize(2);
         } finally {
             application.close();

@@ -6,9 +6,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const {
-  app, BrowserWindow, Menu, dialog, ipcMain, safeStorage, session, shell,
+  app, BrowserWindow, Menu, clipboard, dialog, ipcMain, safeStorage, session, shell,
 } = require('electron');
 const { startBackend } = require('./backend');
+const { resetSoleAdminPassword } = require('./passwordReset');
 const { prepareCdxgenLauncher } = require('./cdxgen');
 const {
   DATA_DIR_NAME, HEALTH_PATH, LOG_FILE_NAME, SERVER_CHECK_TIMEOUT_MS, UPDATE_CHECK_INTERVAL_MS, WINDOW,
@@ -378,6 +379,7 @@ function buildMenu() {
           click: () => mainWindow?.webContents.executeJavaScript("location.hash = '#/help'"),
         },
         { label: 'Ouvrir le dossier des données', click: () => shell.openPath(userDir()) },
+        { label: 'Réinitialiser le mot de passe administrateur...', click: () => resetAdminPassword() },
         { label: 'Rechercher des mises à jour...', click: () => checkForUpdatesFromMenu() },
         { type: 'separator' },
         {
@@ -388,6 +390,67 @@ function buildMenu() {
       ],
     },
   ]));
+}
+
+/** Durée pendant laquelle le mot de passe provisoire copié reste dans le presse-papiers. */
+const CLIPBOARD_CLEAR_MS = 60_000;
+
+/**
+ * Aide > Réinitialiser le mot de passe administrateur : rend l'accès quand le seul administrateur local a perdu
+ * son mot de passe. Le moteur est arrêté (la base ne s'ouvre qu'une fois), la commande reset-password tourne avec
+ * la clé maîtresse de la session Windows, puis le moteur redémarre. Le mot de passe provisoire n'est montré que
+ * dans la fenêtre, jamais écrit dans le journal ; l'action est inscrite à l'audit.
+ */
+async function resetAdminPassword() {
+  if (mode !== desktopConfig.MODES.LOCAL) {
+    dialog.showMessageBox(mainWindow, { type: 'info', title: 'Mot de passe administrateur',
+      message: 'Disponible en mode local uniquement.',
+      detail: 'Sur un serveur d\'équipe, un autre administrateur réinitialise le mot de passe depuis Administration '
+        + '> Comptes, ou l\'exploitant lance "reset-password" sur le serveur (voir la documentation).' });
+    return;
+  }
+  const { response } = await dialog.showMessageBox(mainWindow, {
+    type: 'warning',
+    title: 'Mot de passe administrateur',
+    message: 'Réinitialiser le mot de passe du compte administrateur local ?',
+    detail: 'À utiliser quand plus aucun administrateur ne peut se connecter. Un mot de passe provisoire remplace '
+      + 'l\'actuel et devra être changé à la connexion ; les sessions ouvertes sont fermées. Le moteur d\'analyse '
+      + 'redémarre (les analyses en cours reprendront). L\'action est inscrite au journal d\'audit.',
+    buttons: ['Réinitialiser', 'Annuler'],
+    defaultId: 1,
+    cancelId: 1,
+  });
+  if (response !== 0) return;
+  const port = backend?.port ?? null;
+  await stopBackend();
+  try {
+    const result = await resetSoleAdminPassword({ resourcesDir: resourcesDir(), dataDir: dataDir(),
+      masterKey: loadOrCreateMasterKey(safeStorage, userDir()), log });
+    const choice = await dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Mot de passe provisoire',
+      message: `Compte ${result.username}`,
+      detail: `Mot de passe provisoire : ${result.temporaryPassword}\n\nIl n'est affiché qu'une fois et devra être `
+        + 'changé à la connexion.',
+      buttons: ['Copier et fermer', 'Fermer'],
+      defaultId: 0,
+    });
+    if (choice.response === 0) {
+      clipboard.writeText(result.temporaryPassword);
+      setTimeout(() => {
+        if (clipboard.readText() === result.temporaryPassword) clipboard.clear();
+      }, CLIPBOARD_CLEAR_MS).unref();
+    }
+  } catch (error) {
+    dialog.showErrorBox('Réinitialisation impossible', error.message);
+  } finally {
+    try {
+      await launchLocal(port);
+    } catch (error) {
+      log(`Redémarrage du moteur impossible : ${error.stack ?? error.message}`);
+      dialog.showErrorBox('Moteur d\'analyse arrêté', `${error.message}\n\nJournal : ${logFile()}`);
+    }
+  }
 }
 
 function setupAutoUpdate() {

@@ -127,10 +127,20 @@ public final class Main {
 
     public static void main(String[] args) {
         AppConfig config = AppConfig.fromEnvironment();
-        Application application = new Application(config);
         if (args.length > 0 && CommandLine.handles(args[0])) {
+            Application application;
+            try {
+                application = new Application(config);
+            } catch (RuntimeException e) {
+                // Base H2 ouverte par l'application en cours d'exécution, ou clé maîtresse absente.
+                System.out.println("Données inaccessibles (" + e.getMessage() + "). Fermez Chiffrium et vérifiez "
+                        + "DATA_DIR et la clé maîtresse.");
+                System.exit(CommandLine.EXIT_FAILURE);
+                return;
+            }
             System.exit(new CommandLine(application).run(args));
         }
+        Application application = new Application(config);
         application.startServer();
         if (config.exitOnStdinClose()) {
             exitWhenParentCloses();
