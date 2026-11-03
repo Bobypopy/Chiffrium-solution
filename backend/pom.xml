@@ -20,7 +20,7 @@
   </licenses>
 
   <properties>
-    <revision>1.2.6</revision>
+    <revision>1.2.7</revision>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -30,11 +30,11 @@
     <slf4j.version>2.0.17</slf4j.version>
     <h2.version>2.3.232</h2.version>
     <nimbus.version>10.9.1</nimbus.version>
-    <postgresql.version>42.7.7</postgresql.version>
+    <postgresql.version>42.7.12</postgresql.version>
     <hikari.version>6.3.0</hikari.version>
     <logback.version>1.5.18</logback.version>
     <junit.version>5.13.4</junit.version>
-    <assertj.version>3.27.6</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
   </properties>
 
   <dependencyManagement>
