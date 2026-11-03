@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
  * @param direction         "read" ou "write" pour les règles de fichiers sans mode explicite
  * @param key               type de la clé créée par l'appel ("private-key" ou "secret-key"), null sinon
  * @param keyByApi          type de clé selon la valeur du groupe {@code api}
+ * @param fallback          détection de repli (nom d'algorithme écrit seul, sans appel reconnu) : ignorée si un
+ *                          appel du même fichier utilise déjà cet algorithme
  */
 public record Rule(
         String id,
@@ -51,7 +53,8 @@ public record Rule(
         boolean skipUnrecognized,
         String direction,
         String key,
-        Map<String, String> keyByApi) {
+        Map<String, String> keyByApi,
+        boolean fallback) {
 
     /** Nature d'une règle. */
     public enum Kind {

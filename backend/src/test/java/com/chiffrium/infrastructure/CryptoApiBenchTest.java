@@ -30,9 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Mesure de la détection sur CryptoAPI-Bench (Afrose et al., SecDev 2019 ; licence MIT), banc d'essai public de
  * mauvais usages cryptographiques en Java. Un fichier "Corrected" ne doit rien déclencher ; tous les autres
- * contiennent la faiblesse de leur catégorie. Les cas "AB..." (valeur transmise entre méthodes, champs ou
- * classes) demandent une analyse de flux que l'outil ne fait pas : le rappel reste donc partiel, et ce test
- * empêche surtout qu'il baisse.
+ * contiennent la faiblesse de leur catégorie. Dans les cas "AB..." (valeur transmise entre méthodes, champs ou
+ * classes), seul un nom d'algorithme écrit dans le fichier est retrouvé ; un nombre, un tableau d'octets ou un
+ * fichier qui ne fait que recevoir la valeur demanderaient une analyse de flux que l'outil ne fait pas. Le
+ * rappel reste donc partiel, et ce test empêche surtout qu'il baisse. Les cas ratés sont listés dans la sortie.
  *
  * <p>Lancé par la campagne nocturne, avec {@code CRYPTOAPI_BENCH} = dossier {@code src/main/java/org/cryptoapi}
  * d'un clone du dépôt.
@@ -40,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named = "CRYPTOAPI_BENCH", matches = ".+")
 class CryptoApiBenchTest {
 
-    /** Valeurs mesurées en version 1.0.8 : à relever quand la détection progresse, jamais à baisser. */
-    private static final int MIN_DETECTED = 81;
+    /** Valeurs mesurées en version 1.0.10 : à relever quand la détection progresse, jamais à baisser. */
+    private static final int MIN_DETECTED = 108;
     private static final int MAX_FALSE_ALARMS = 1;
 
     private static final Set<PolicyStatus> WEAK = Set.of(PolicyStatus.DISALLOWED, PolicyStatus.DEPRECATED);
@@ -103,6 +104,9 @@ class CryptoApiBenchTest {
                 continue;
             }
             boolean secure = parts[2].contains("Corrected");
+            if (secure == hit) {
+                System.out.println((secure ? "fausse alerte : " : "raté : ") + path);
+            }
             counts.computeIfAbsent(category, k -> new int[4])[(secure ? 2 : 0) + (hit ? 0 : 1)]++;
         }
         int detected = counts.values().stream().mapToInt(c -> c[0]).sum();

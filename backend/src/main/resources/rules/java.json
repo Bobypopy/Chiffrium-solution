@@ -148,6 +148,11 @@
       "functions": ["sign", "verify"]
     },
     {
+      "id": "java.jca.name-literal",
+      "pattern": "\"(?<name>(?:AES|DES|DESede|TripleDES|RC2|RC4|ARCFOUR|Blowfish|IDEA|RSA)/\\w+/[\\w-]+|AES|DES|DESede|TripleDES|RC2|RC4|ARCFOUR|Blowfish|RSA|MD2|MD4|MD5|SHA-?1|SHA-(?:224|256|384|512)|SHA3-(?:224|256|384|512)|Hmac(?:MD5|SHA1|SHA224|SHA256|SHA384|SHA512)|(?:MD2|MD5|SHA1|SHA224|SHA256|SHA384|SHA512)with(?:RSA|DSA|ECDSA))\"",
+      "fallback": true
+    },
+    {
       "id": "java.jca.keysize.initialize",
       "kind": "keysize",
       "pattern": "\\.\\s*(?:initialize|init)\\s*\\(\\s*{SIZE}\\b"

@@ -124,7 +124,8 @@ public final class RulePackLoader {
                 node.path("skipUnrecognized").asBoolean(false),
                 node.hasNonNull("direction") ? node.get("direction").asText() : null,
                 key,
-                keyByApi);
+                keyByApi,
+                node.path("fallback").asBoolean(false));
     }
 
     private static String keyType(String value, String where) {

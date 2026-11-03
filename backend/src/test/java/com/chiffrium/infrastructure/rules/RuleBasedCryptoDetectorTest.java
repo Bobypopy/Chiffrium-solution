@@ -56,6 +56,20 @@ class RuleBasedCryptoDetectorTest {
                     }
                 }
                 """);
+        TestSupport.write(project, "java/Literals.java", """
+                public class Literals {
+                    public static final String DEFAULT_CRYPTO = "DES/ECB/PKCS5Padding";
+                    private static final String HASH = "SHA-256";
+                    private static final String ECB = "AES/ECB/PKCS5Padding";
+                    private final String label = "AES key";
+                    void go(String algo) throws Exception {
+                        javax.crypto.Cipher.getInstance(algo);
+                        java.security.MessageDigest.getInstance(HASH);
+                        javax.crypto.KeyGenerator.getInstance("AES");
+                        sign("SHA1withRSA");
+                    }
+                }
+                """);
         TestSupport.write(project, "kotlin/Hash.kt", """
                 fun sha(bytes: ByteArray): ByteArray = java.security.MessageDigest.getInstance("SHA-512").digest(bytes)
                 """);
@@ -191,6 +205,18 @@ class RuleBasedCryptoDetectorTest {
         assertThat(aes.function()).isEqualTo("Crypto.encrypt");
         assertThat(aes.functions()).contains(CryptoFunction.ENCRYPT, CryptoFunction.DECRYPT);
         assertThat(occurrenceOf("RSA-1024", "java/Crypto.java").functions()).contains(CryptoFunction.KEYGEN);
+    }
+
+    @Test
+    void algorithmNamesWrittenAloneAreInventoriedOnceWhenAlreadyUsedByACall() {
+        // "AES key" n'est pas un nom d'algorithme ; le mode ECB n'est pas couvert par KeyGenerator "AES".
+        assertThat(namesIn("java/Literals.java")).contains("SHA-1withRSA", "AES")
+                .anyMatch(name -> name.startsWith("DES-ECB"))
+                .anyMatch(name -> name.startsWith("AES-ECB"));
+        // "SHA-256" est déjà la valeur de MessageDigest.getInstance(HASH) : une seule occurrence, celle de l'appel.
+        assertThat(result.assets().stream().filter(a -> a.name().equals("SHA-256"))
+                .flatMap(a -> a.occurrences().stream()).filter(o -> o.file().equals("java/Literals.java")))
+                .singleElement().extracting(Occurrence::line).isEqualTo(8);
     }
 
     @Test

@@ -26,11 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Détecteur multi-langages fondé sur des règles déclaratives (src/main/resources/rules/*.json).
@@ -257,6 +259,30 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             // Les tailles en octets viennent en dernier : la clé générée reprend la détection déjà complétée.
             modifiers.stream().filter(m -> m.kind() != Rule.Kind.KEYBYTES).forEach(this::attach);
             modifiers.stream().filter(m -> m.kind() == Rule.Kind.KEYBYTES).forEach(this::attach);
+            dropRedundantFallbacks();
+        }
+
+        /**
+         * Un nom d'algorithme écrit seul (règle de repli) signale une valeur transmise par un champ, une méthode
+         * ou une autre classe ; si un appel reconnu du fichier dit déjà tout ce qu'il dit, il ferait doublon.
+         * "AES/ECB/PKCS5Padding" reste donc à côté de {@code KeyGenerator.getInstance("AES")} : le mode est en plus.
+         */
+        private void dropRedundantFallbacks() {
+            Set<String> fallbackRules = pack.rules().stream().filter(Rule::fallback).map(Rule::id)
+                    .collect(Collectors.toSet());
+            List<AlgorithmSpec> calls = detections.stream()
+                    .filter(d -> d.spec != null && !fallbackRules.contains(d.ruleId))
+                    .map(d -> d.spec)
+                    .toList();
+            detections.removeIf(d -> fallbackRules.contains(d.ruleId) && d.spec != null
+                    && calls.stream().anyMatch(call -> covers(call, d.spec)));
+        }
+
+        private static boolean covers(AlgorithmSpec call, AlgorithmSpec named) {
+            return Objects.equals(call.catalogId(), named.catalogId())
+                    && (named.mode() == null || named.mode().equals(call.mode()))
+                    && (named.padding() == null || named.padding().equals(call.padding()))
+                    && (named.keySize() == null || named.keySize().equals(call.keySize()));
         }
 
         private void onAlgorithm(Rule rule, Matcher matcher, int line) {
