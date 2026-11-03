@@ -262,7 +262,8 @@ public final class CycloneDxCbomWriter implements CbomWriter {
         }
         // CycloneDX n'a pas de champ pour le trajet d'une valeur : il complète l'extrait de code.
         String trace = occurrence.trace().isEmpty() ? null
-                : "valeur venue de : " + String.join(" -> ", occurrence.trace());
+                : "valeur venue de : " + String.join(" -> ", occurrence.trace())
+                + occurrence.otherTraces().stream().map(t -> " ; " + t.replace(" → ", " -> ")).reduce("", String::concat);
         if (occurrence.snippet() != null || trace != null) {
             node.put("additionalContext", occurrence.snippet() == null ? trace
                     : trace == null ? occurrence.snippet() : occurrence.snippet() + " (" + trace + ")");

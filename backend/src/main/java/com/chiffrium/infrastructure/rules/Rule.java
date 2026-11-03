@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
  * @param keyByApi          type de clé selon la valeur du groupe {@code api}
  * @param fallback          détection de repli (nom d'algorithme écrit seul, sans appel reconnu) : ignorée si un
  *                          appel du même fichier utilise déjà cet algorithme
+ * @param listSeparator     séparateur des éléments du groupe {@code list} quand il diffère du défaut (espaces,
+ *                          virgules, deux-points, points-virgules) : {@code aes128-sha256-modp2048} en IPsec
  */
 public record Rule(
         String id,
@@ -54,7 +56,8 @@ public record Rule(
         String direction,
         String key,
         Map<String, String> keyByApi,
-        boolean fallback) {
+        boolean fallback,
+        Pattern listSeparator) {
 
     /** Nature d'une règle. */
     public enum Kind {

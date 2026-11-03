@@ -3,6 +3,8 @@
   "languages": ["java", "kotlin", "scala", "groovy"],
   "commentPrefixes": ["//", "/*", "*"],
   "functionPatterns": [
+    "^\\s*(?<name>[A-Z]\\w*)\\s*\\((?:\\s*\\)\\s*(?:throws\\s+[\\w.,\\s]+)?\\{|(?:\\s*(?:final\\s+)?[\\w.<>\\[\\]?]+(?:\\.\\.\\.)?\\s+\\w+\\s*,)*\\s*(?:final\\s+)?[\\w.<>\\[\\]?]+(?:\\.\\.\\.)?\\s+\\w+\\s*(?:,|\\)\\s*(?:throws\\s+[\\w.,\\s]+)?\\{?))\\s*$",
+    "^\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:(?:public|private|protected|internal|static|final|data|open|abstract|sealed|inner|value)\\s+)*(?:record|class)\\s+(?<name>[A-Z]\\w*)\\s*(?:<[^>]*>)?\\s*(?:(?:private|internal|public|protected)?\\s*(?:@\\w+\\s*)*constructor\\s*)?\\(",
     "^\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:(?:public|private|protected|internal|static|final|abstract|override|open|suspend|inline|operator|infix|tailrec)\\s+)*(?:fun|def)\\s+(?:<[^>]*>\\s*)?(?:[\\w.]+\\.)?(?<name>[A-Za-z_]\\w*)\\s*[(\\[]",
     "^(?!\\s*(?:return|new|else|throw|case|if|for|while|switch|catch|do|try|val|var)\\b)\\s*(?:@\\w+(?:\\([^)]*\\))?\\s+)*(?:(?:(?:public|private|protected|static|final|synchronized|abstract|native|default|override|open|internal|inline|operator)\\s+)+(?:<[^>]*>\\s*)?(?:[\\w.\\[\\]<>?,]+\\s+)?|(?:<[^>]*>\\s*)?[\\w.\\[\\]<>?,]+\\s+)(?<name>[A-Za-z_]\\w*)\\s*\\([^=;]*$"
   ],

@@ -157,6 +157,20 @@
       "algorithm": "AES-256-GCM",
       "functions": ["keygen"],
       "key": "secret-key"
+    },
+    {
+      "id": "config.openssl.protocol",
+      "pattern": "(?m)^\\s*(?:MinProtocol|MaxProtocol)\\s*=\\s*(?<list>[^\\n#]+)",
+      "skipUnrecognized": true,
+      "functions": ["other"]
+    },
+    {
+      "id": "config.ipsec.proposals",
+      "pattern": "(?m)^\\s*(?:ike|esp|ah|phase2alg|proposals|esp_proposals|ah_proposals)\\s*=\\s*(?<list>[^\\n#]+)",
+      "listSeparator": "[\\s,;:!+-]+",
+      "map": {"aes128": "AES-128", "aes192": "AES-192", "aes256": "AES-256", "aes128gcm16": "AES-128-GCM", "aes256gcm16": "AES-256-GCM", "aes128gcm": "AES-128-GCM", "aes256gcm": "AES-256-GCM", "aes128ctr": "AES-128-CTR", "aes256ctr": "AES-256-CTR", "3des": "3DES", "des": "DES", "blowfish": "Blowfish", "cast128": "CAST5", "chacha20poly1305": "ChaCha20-Poly1305", "md5": "HMAC-MD5", "sha1": "HMAC-SHA-1", "sha": "HMAC-SHA-1", "sha256": "HMAC-SHA-256", "sha384": "HMAC-SHA-384", "sha512": "HMAC-SHA-512", "sha2_256": "HMAC-SHA-256", "prfmd5": "HMAC-MD5", "prfsha1": "HMAC-SHA-1", "prfsha256": "HMAC-SHA-256", "prfsha384": "HMAC-SHA-384", "prfsha512": "HMAC-SHA-512", "modp768": "DH-768", "modp1024": "DH-1024", "modp1536": "DH-1536", "modp2048": "DH-2048", "modp3072": "DH-3072", "modp4096": "DH-4096", "modp6144": "DH-6144", "modp8192": "DH-8192", "ecp256": "ECDH-P-256", "ecp384": "ECDH-P-384", "ecp521": "ECDH-P-521", "x25519": "X25519", "curve25519": "X25519", "x448": "X448", "curve448": "X448", "mlkem768": "ML-KEM-768", "mlkem1024": "ML-KEM-1024", "mlkem512": "ML-KEM-512"},
+      "skipUnrecognized": true,
+      "functions": ["other"]
     }
   ]
 }

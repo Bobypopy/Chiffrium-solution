@@ -125,7 +125,8 @@ public final class RulePackLoader {
                 node.hasNonNull("direction") ? node.get("direction").asText() : null,
                 key,
                 keyByApi,
-                node.path("fallback").asBoolean(false));
+                node.path("fallback").asBoolean(false),
+                node.hasNonNull("listSeparator") ? compile(node.get("listSeparator").asText(), where) : null);
     }
 
     private static String keyType(String value, String where) {

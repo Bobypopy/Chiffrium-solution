@@ -71,6 +71,71 @@
       "title": "Protocole SSL/TLS obsolète activé",
       "description": "SSLv2/SSLv3/TLS 1.0/TLS 1.1 activé explicitement (POODLE, BEAST, retiré par la RFC 8996).",
       "recommendation": "N'autoriser que TLS 1.2 et TLS 1.3."
+    },
+    {
+      "id": "android-cleartext-traffic",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-319",
+      "languages": [
+        "config"
+      ],
+      "pattern": "(?:\\bcleartextTrafficPermitted|android:usesCleartextTraffic)\\s*=\\s*\\\"true\\\"",
+      "title": "Trafic en clair autorisé (Android)",
+      "description": "L'application Android accepte des connexions HTTP non chiffrées.",
+      "recommendation": "Retirer usesCleartextTraffic et cleartextTrafficPermitted=\"true\" ; si un domaine l'exige vraiment, le limiter à ce domaine dans network_security_config.xml."
+    },
+    {
+      "id": "android-user-certificates",
+      "category": "certificate-validation",
+      "severity": "medium",
+      "cwe": "CWE-295",
+      "languages": [
+        "config"
+      ],
+      "pattern": "(?s)<(?:base-config|domain-config)\\b[^>]*(?<!/)>(?:(?!</(?:base|domain)-config>|<debug-overrides).)*?<certificates\\s+src\\s*=\\s*\\\"user\\\"",
+      "title": "Autorités ajoutées par l'utilisateur acceptées (Android)",
+      "description": "La configuration réseau fait confiance aux certificats installés par l'utilisateur : une autorité ajoutée sur l'appareil permet d'intercepter le trafic TLS.",
+      "recommendation": "Ne faire confiance qu'aux autorités système ; réserver les certificats utilisateur au bloc debug-overrides."
+    },
+    {
+      "id": "ios-ats-insecure-loads",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-319",
+      "languages": [
+        "config"
+      ],
+      "pattern": "<key>(?:NSAllowsArbitraryLoads(?:InWebContent|ForMedia)?|NSExceptionAllowsInsecureHTTPLoads|NSTemporaryExceptionAllowsInsecureHTTPLoads)</key>\\s*<true\\s*/>",
+      "title": "App Transport Security désactivé (iOS)",
+      "description": "Info.plist autorise des connexions HTTP non chiffrées ou contourne les exigences TLS d'App Transport Security.",
+      "recommendation": "Retirer NSAllowsArbitraryLoads ; si un domaine l'exige, déclarer une exception limitée à ce domaine dans NSExceptionDomains."
+    },
+    {
+      "id": "ios-ats-old-tls",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-327",
+      "languages": [
+        "config"
+      ],
+      "pattern": "<key>NS(?:Temporary)?ExceptionMinimumTLSVersion</key>\\s*<string>TLSv1\\.[01]</string>",
+      "title": "TLS 1.0 ou 1.1 accepté (iOS)",
+      "description": "Une exception App Transport Security abaisse la version minimale de TLS à 1.0 ou 1.1.",
+      "recommendation": "Exiger TLS 1.2 au minimum (TLSv1.2 ou TLSv1.3)."
+    },
+    {
+      "id": "openssl-low-security-level",
+      "category": "insecure-protocol-config",
+      "severity": "medium",
+      "cwe": "CWE-327",
+      "languages": [
+        "config"
+      ],
+      "pattern": "(?m)^\\s*CipherString\\s*=\\s*[^\\n]*@SECLEVEL=[01]\\b",
+      "title": "Niveau de sécurité OpenSSL abaissé",
+      "description": "SECLEVEL 0 ou 1 réactive des clés courtes (RSA de moins de 2048 bits), SHA-1 et des suites obsolètes pour tout le système ou l'application.",
+      "recommendation": "Garder SECLEVEL=2 au minimum (valeur par défaut des distributions récentes)."
     }
   ]
 }

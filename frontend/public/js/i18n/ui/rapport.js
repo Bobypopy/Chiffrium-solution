@@ -106,6 +106,7 @@ export const RAPPORT = {
   'Recommandation :': 'Recommendation:',
   'Voir dans le graphe': 'See in the graph',
   'Valeur venue de :': 'Value coming from:',
+  'Autres trajets :': 'Other paths:',
   'Sélectionnez un actif pour voir le détail.': 'Select an asset to see its details.',
   'Aucun actif ne correspond aux filtres.': 'No asset matches the filters.',
   'Aucun emplacement : actif déclaré dans le CBOM de cdxgen sans localisation.':

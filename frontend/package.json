@@ -1,6 +1,6 @@
 {
   "name": "chiffrium-frontend",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "private": true,
   "description": "Interface web de Chiffrium (modules ES natifs, sans étape de build)",
   "type": "module",

@@ -41,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named = "CRYPTOAPI_BENCH", matches = ".+")
 class CryptoApiBenchTest {
 
-    /** Valeurs mesurées en version 1.0.11 : à relever quand la détection progresse, jamais à baisser. */
-    private static final int MIN_DETECTED = 123;
+    /** Valeurs mesurées en version 1.0.12 : à relever quand la détection progresse, jamais à baisser. */
+    private static final int MIN_DETECTED = 125;
     private static final int MAX_FALSE_ALARMS = 1;
 
     private static final Set<PolicyStatus> WEAK = Set.of(PolicyStatus.DISALLOWED, PolicyStatus.DEPRECATED);

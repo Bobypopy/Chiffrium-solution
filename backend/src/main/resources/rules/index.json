@@ -16,5 +16,6 @@
   "sql.json",
   "config.json",
   "jwt.json",
-  "cloud-kms.json"
+  "cloud-kms.json",
+  "xml-security.json"
 ]

@@ -340,6 +340,36 @@ export const REGLES = {
   'Algorithmes SSH faibles': 'Weak SSH algorithms',
   'La configuration SSH active des algorithmes obsolètes.':
     'The SSH configuration enables outdated algorithms.',
+  "Trafic en clair autorisé (Android)":
+    "Cleartext traffic allowed (Android)",
+  "L'application Android accepte des connexions HTTP non chiffrées.":
+    "The Android application accepts unencrypted HTTP connections.",
+  "Retirer usesCleartextTraffic et cleartextTrafficPermitted=\"true\" ; si un domaine l'exige vraiment, le limiter à ce domaine dans network_security_config.xml.":
+    "Remove usesCleartextTraffic and cleartextTrafficPermitted=\"true\"; if a domain really requires it, limit it to that domain in network_security_config.xml.",
+  "Autorités ajoutées par l'utilisateur acceptées (Android)":
+    "User-added authorities trusted (Android)",
+  "La configuration réseau fait confiance aux certificats installés par l'utilisateur : une autorité ajoutée sur l'appareil permet d'intercepter le trafic TLS.":
+    "The network configuration trusts user-installed certificates: an authority added on the device makes TLS traffic interception possible.",
+  "Ne faire confiance qu'aux autorités système ; réserver les certificats utilisateur au bloc debug-overrides.":
+    "Trust system authorities only; keep user certificates for the debug-overrides block.",
+  "App Transport Security désactivé (iOS)":
+    "App Transport Security disabled (iOS)",
+  "Info.plist autorise des connexions HTTP non chiffrées ou contourne les exigences TLS d'App Transport Security.":
+    "Info.plist allows unencrypted HTTP connections or bypasses the TLS requirements of App Transport Security.",
+  "Retirer NSAllowsArbitraryLoads ; si un domaine l'exige, déclarer une exception limitée à ce domaine dans NSExceptionDomains.":
+    "Remove NSAllowsArbitraryLoads; if a domain requires it, declare an exception limited to that domain in NSExceptionDomains.",
+  "TLS 1.0 ou 1.1 accepté (iOS)":
+    "TLS 1.0 or 1.1 accepted (iOS)",
+  "Une exception App Transport Security abaisse la version minimale de TLS à 1.0 ou 1.1.":
+    "An App Transport Security exception lowers the minimum TLS version to 1.0 or 1.1.",
+  "Exiger TLS 1.2 au minimum (TLSv1.2 ou TLSv1.3).":
+    "Require TLS 1.2 at least (TLSv1.2 or TLSv1.3).",
+  "Niveau de sécurité OpenSSL abaissé":
+    "OpenSSL security level lowered",
+  "SECLEVEL 0 ou 1 réactive des clés courtes (RSA de moins de 2048 bits), SHA-1 et des suites obsolètes pour tout le système ou l'application.":
+    "SECLEVEL 0 or 1 re-enables short keys (RSA under 2048 bits), SHA-1 and outdated suites for the whole system or application.",
+  "Garder SECLEVEL=2 au minimum (valeur par défaut des distributions récentes).":
+    "Keep SECLEVEL=2 at least (the default of recent distributions).",
   'jdk.tls.disabledAlgorithms trop permissif': 'jdk.tls.disabledAlgorithms too permissive',
   ['La redéfinition de jdk.tls.disabledAlgorithms réactive des protocoles ou algorithmes interdits par '
     + 'défaut dans le JDK.']:

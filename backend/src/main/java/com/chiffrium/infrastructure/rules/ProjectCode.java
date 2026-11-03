@@ -22,35 +22,50 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Code d'un paquet de règles à l'échelle du projet : fonctions déclarées, appels entre elles et affectations.
- * Sert au graphe quand cdxgen ne fournit pas les appels (langages autres que Java et Python, ligne de commande)
- * et à la trace des valeurs transmises d'une fonction à l'autre ({@link ValueTracer}).
+ * Code d'un paquet de règles à l'échelle du projet : fonctions déclarées, appels entre elles, affectations,
+ * retours et boucles. Sert au graphe quand cdxgen ne fournit pas les appels (langages autres que Java et Python,
+ * ligne de commande) et à la trace des valeurs transmises d'une fonction à l'autre ({@link ValueTracer}).
  *
  * <p>Un appel est relié à sa déclaration par le nom, le receveur ({@code bc.go()} avec {@code Classe bc},
- * {@code Classe.go()}, {@code this.go()}, {@code new Classe()}) et le nombre d'arguments. Un appel ambigu
- * (homonymes indiscernables) n'est pas relié : mieux vaut un lien absent qu'un lien faux.
+ * {@code Classe.go()}, {@code this.go()}, {@code new Classe()}, {@code super(...)}) et le nombre d'arguments.
+ * Un appel ambigu (homonymes indiscernables, receveur d'un type de bibliothèque) n'est pas relié : mieux vaut
+ * un lien absent qu'un lien faux.
  */
 final class ProjectCode {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectCode.class);
 
     private static final Pattern CALL = Pattern.compile("(?<![\\w$])(?<name>[A-Za-z_$][\\w$]*)\\s*\\(");
-    private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z_$][\\w$]*");
     private static final Pattern ANNOTATION = Pattern.compile("@[\\w.]+(?:\\([^)]*\\))?\\s*");
+    private static final Pattern RETURN = Pattern.compile("(?<![\\w$])return\\s+(?<value>[^;\\n]+)");
+    /** Corps d'une fonction à expression : {@code fun algo() = "AES"}, {@code def algo = "AES"}. */
+    private static final Pattern EXPRESSION_BODY = Pattern.compile("\\)\\s*(?::\\s*[\\w<>?.\\[\\], ]+)?\\s*=(?![=>])\\s*(?<value>[^\\n;{]+)$");
     private static final Set<String> SELF = Set.of("this", "self");
+    /** Noms des constructeurs déclarés à part du nom de la classe (JavaScript, TypeScript, Python, PHP). */
+    private static final Set<String> CONSTRUCTOR_NAMES = Set.of("constructor", "__init__", "__construct");
+    /** Appels d'un autre constructeur depuis un constructeur. */
+    private static final String SUPER = "super";
+    private static final String THIS = "this";
     /** Premier paramètre implicite d'une méthode Python : absent des arguments de l'appel. */
     private static final Set<String> IMPLICIT_PARAMETERS = Set.of("self", "cls");
     private static final String NEW = "new";
     private static final String CHAINED = "()";
-    private static final int TEXT_CACHE_SIZE = 32;
+    /** Collection parcourue, en fin de texte avant {@code .forEach(} : {@code algos}, {@code List.of("A", "B")}. */
+    private static final Pattern FOR_EACH_RECEIVER = Pattern.compile("(?<value>[\\w$.]+(?:\\([^()\\n]*\\))?)\\s*$");
+    private static final int TEXT_CACHE_SIZE = 256;
+    /** Lignes où chercher un appel passé en argument d'un appel écrit sur plusieurs lignes. */
+    private static final int MAX_ARGUMENT_LINES = 10;
+    private static final int MAX_BODY_LINES = 400;
 
     /**
      * Fonction déclarée.
      *
      * @param parameters noms des paramètres, null si la signature n'a pas pu être lue
+     * @param types      types déclarés des paramètres (null quand le langage n'en écrit pas)
      * @param required   nombre de paramètres sans valeur par défaut
      */
-    record FunctionDef(String path, ScopeResolver.Declaration declaration, List<String> parameters, int required) {
+    record FunctionDef(String path, ScopeResolver.Declaration declaration, List<String> parameters,
+                       List<String> types, int required) {
 
         String qualified() {
             return declaration.qualified();
@@ -58,6 +73,23 @@ final class ProjectCode {
 
         boolean accepts(int arguments) {
             return parameters == null || (arguments >= required && arguments <= parameters.size());
+        }
+
+        /** Faux si un argument de type connu ne peut pas aller dans le paramètre (byte[] dans un PrivateKey). */
+        boolean accepts(List<String> argumentTypes) {
+            if (types == null) {
+                return true;
+            }
+            for (int i = 0; i < Math.min(types.size(), argumentTypes.size()); i++) {
+                if (!TypeKind.compatible(argumentTypes.get(i), types.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        boolean isConstructor() {
+            return declaration.name().equals(declaration.container()) || CONSTRUCTOR_NAMES.contains(declaration.name());
         }
     }
 
@@ -70,7 +102,7 @@ final class ProjectCode {
     record Call(String path, int line, String caller, FunctionDef callee, List<String> arguments) {
     }
 
-    /** Affectation {@code nom = expression} : expression et ligne. */
+    /** Expression qui donne sa valeur à un nom (affectation, retour, élément parcouru) et sa ligne. */
     record Assignment(String expression, int line) {
     }
 
@@ -84,8 +116,14 @@ final class ProjectCode {
     private final Map<String, List<String>> constants = new HashMap<>();
     private final Map<String, List<FunctionDef>> functionsByName = new HashMap<>();
     private final Map<String, FunctionDef> functionsByLocation = new HashMap<>();
+    private final Map<String, List<FunctionDef>> constructorsByClass = new HashMap<>();
     private final List<Call> calls = new ArrayList<>();
     private final Map<FunctionDef, List<Call>> callers = new HashMap<>();
+    /** Appels entre surcharges de même arité d'une classe : pas de lien dans le graphe, mais suivis par la trace. */
+    private final Map<FunctionDef, List<Call>> overloadCallers = new HashMap<>();
+    private final Map<String, List<Call>> callsByLocation = new HashMap<>();
+    /** Affectations et boucles déjà cherchées, par fichier et par nom : la trace repose souvent les mêmes questions. */
+    private final Map<String, List<Assignment>> lookups = new HashMap<>();
     private final Map<String, Loaded> cache = new LinkedHashMap<>(16, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Loaded> eldest) {
@@ -129,8 +167,42 @@ final class ProjectCode {
         return List.copyOf(edges.values());
     }
 
+    /**
+     * Appels qui peuvent transmettre une valeur à la fonction : ceux qui la désignent, et ceux qui hésitent
+     * entre elle et une surcharge de même arité de la même classe ({@code verify(String, ...)} et
+     * {@code verify(byte[], ...)}) : la valeur passe par l'une ou l'autre, et l'une délègue souvent à l'autre.
+     */
     List<Call> callersOf(FunctionDef function) {
-        return callers.getOrDefault(function, List.of());
+        List<Call> all = new ArrayList<>(callers.getOrDefault(function, List.of()));
+        all.addAll(overloadCallers.getOrDefault(function, List.of()));
+        return all;
+    }
+
+    /**
+     * Appel de la fonction {@code name} du projet écrit à cette ligne, ou dans les lignes suivantes quand il est
+     * passé en argument d'un appel écrit sur plusieurs lignes ; vide s'il n'a pas été relié.
+     */
+    Optional<Call> callAt(String path, int line, String name) {
+        for (int l = line; l <= line + MAX_ARGUMENT_LINES; l++) {
+            Optional<Call> call = callsByLocation.getOrDefault(path + ":" + l, List.of()).stream()
+                    .filter(c -> c.callee().declaration().name().equals(name))
+                    .findFirst();
+            if (call.isPresent()) {
+                return call;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Constructeur de la classe déclaré dans ce fichier qui a un paramètre de ce nom, ou null. */
+    FunctionDef constructorWithParameter(String path, String container, String parameter) {
+        List<FunctionDef> candidates = new ArrayList<>(constructorsByClass.getOrDefault(container, List.of()));
+        candidates.addAll(functionsByName.getOrDefault(container, List.of()));
+        return candidates.stream()
+                .filter(f -> f.path().equals(path) && f.isConstructor()
+                        && f.declaration().container().equals(container)
+                        && f.parameters() != null && f.parameters().contains(parameter))
+                .findFirst().orElse(null);
     }
 
     /** Fonction dont le bloc contient la ligne, ou null. */
@@ -145,17 +217,62 @@ final class ProjectCode {
 
     /** Affectations {@code nom = ...} du fichier (champ, variable, {@code this.nom}), hors commentaires. */
     List<Assignment> assignments(String path, String name) {
-        Loaded loaded = load(path);
+        return lookups.computeIfAbsent("=" + path + "|" + name, k -> matches(path, Pattern.compile(
+                "(?<![\\w$.])(?:(?:this|self)\\s*\\.\\s*)?" + Pattern.quote(name)
+                        + "\\s*(?::\\s*[\\w<>\\[\\], .?]+?)?\\s*=(?![=>])\\s*(?<value>[^;\\n]+)")));
+    }
+
+    /**
+     * Collections parcourues par une boucle qui donne ses valeurs au nom : {@code for (String a : algos)},
+     * {@code for (a in algos)}, {@code for (const a of algos)}, {@code for a in algos:}, {@code algos.forEach(a ->}.
+     * Chaque motif commence par un mot fixe ({@code for}, {@code forEach}) : une alternative ouverte par
+     * {@code [\w.]+} essayait chaque position du fichier et prenait l'essentiel du temps d'analyse.
+     */
+    List<Assignment> loops(String path, String name) {
+        return lookups.computeIfAbsent("for" + path + "|" + name, k -> {
+            String quoted = Pattern.quote(name);
+            List<Assignment> found = new ArrayList<>(matches(path, Pattern.compile(
+                    "\\bfor\\s*\\(\\s*(?:final\\s+|const\\s+|let\\s+|var\\s+|val\\s+)?(?:[\\w<>\\[\\],.?]+\\s+)?" + quoted
+                            + "\\s*(?::|\\bin\\b|\\bof\\b)\\s*(?<value>[^\\n]+)"
+                            + "|\\bfor\\s+" + quoted + "\\s+in\\s+(?<value2>[^:\\n]+):")));
+            Loaded loaded = load(path);
+            if (loaded != null) {
+                Matcher forEach = Pattern.compile("\\.\\s*forEach\\s*[({]\\s*\\(?\\s*" + quoted + "\\s*\\)?\\s*(?:->|=>)")
+                        .matcher(loaded.text().content());
+                while (forEach.find()) {
+                    int line = loaded.text().lineOf(forEach.start());
+                    String before = loaded.text().content().substring(
+                            loaded.text().content().lastIndexOf('\n', forEach.start()) + 1, forEach.start());
+                    Matcher receiver = FOR_EACH_RECEIVER.matcher(before);
+                    if (receiver.find() && !loaded.commentLines().contains(line)) {
+                        found.add(new Assignment(receiver.group("value"), line));
+                    }
+                }
+            }
+            return found;
+        });
+    }
+
+    /** Expressions renvoyées par la fonction : {@code return ...} dans son bloc, ou corps à expression. */
+    List<Assignment> returns(FunctionDef function) {
+        Loaded loaded = load(function.path());
         if (loaded == null) {
             return List.of();
         }
-        Pattern pattern = Pattern.compile("(?<![\\w$.])(?:(?:this|self)\\s*\\.\\s*)?" + Pattern.quote(name)
-                + "\\s*(?::\\s*[\\w<>\\[\\], .?]+?)?\\s*=(?![=>])\\s*(?<value>[^;\\n]+)");
         List<Assignment> found = new ArrayList<>();
-        Matcher matcher = pattern.matcher(loaded.text().content());
-        while (matcher.find()) {
-            int line = loaded.text().lineOf(matcher.start());
-            if (!loaded.commentLines().contains(line)) {
+        int start = function.declaration().line();
+        Matcher body = EXPRESSION_BODY.matcher(loaded.text().line(start));
+        if (body.find()) {
+            found.add(new Assignment(body.group("value").trim(), start));
+        }
+        int last = Math.min(loaded.text().lineCount(), start + MAX_BODY_LINES);
+        for (int line = start + 1; line <= last; line++) {
+            ScopeResolver.Declaration enclosing = loaded.scopes().enclosing(loaded.text(), line, loaded.stem());
+            if (enclosing == null || enclosing.line() < start) {
+                break;
+            }
+            Matcher matcher = RETURN.matcher(loaded.text().line(line));
+            if (enclosing.line() == start && !loaded.commentLines().contains(line) && matcher.find()) {
                 found.add(new Assignment(stripTrailingComment(matcher.group("value")), line));
             }
         }
@@ -166,6 +283,37 @@ final class ProjectCode {
         return Optional.ofNullable(load(path)).map(Loaded::text);
     }
 
+    Language language(String path) {
+        ScannedFile file = files.get(path);
+        return file == null ? null : file.language();
+    }
+
+    private List<Assignment> matches(String path, Pattern pattern) {
+        Loaded loaded = load(path);
+        if (loaded == null) {
+            return List.of();
+        }
+        List<Assignment> found = new ArrayList<>();
+        Matcher matcher = pattern.matcher(loaded.text().content());
+        while (matcher.find()) {
+            int line = loaded.text().lineOf(matcher.start());
+            String value = firstNonNull(matcher, "value", "value2", "value3");
+            if (value != null && !loaded.commentLines().contains(line)) {
+                found.add(new Assignment(stripTrailingComment(beforeUnbalancedParenthesis(value)), line));
+            }
+        }
+        return found;
+    }
+
+    private static String firstNonNull(Matcher matcher, String... groups) {
+        for (String group : groups) {
+            if (matcher.pattern().namedGroups().containsKey(group) && matcher.group(group) != null) {
+                return matcher.group(group);
+            }
+        }
+        return null;
+    }
+
     private void indexDeclarations() {
         for (String path : files.keySet()) {
             Loaded loaded = read(path);
@@ -174,13 +322,18 @@ final class ProjectCode {
             }
             ConstantResolver.indexInto(constants, loaded.text().content());
             for (ScopeResolver.Declaration declaration : loaded.scopes().declarations(loaded.text(), loaded.stem())) {
-                List<String> parameters = parameters(loaded.text(), declaration);
+                List<String> raw = rawParameters(loaded.text(), declaration);
+                List<String> parameters = raw == null ? null : parameterNames(raw);
                 int required = parameters == null ? 0 : (int) parameters.stream().filter(p -> !p.endsWith("=")).count();
                 List<String> names = parameters == null ? null
                         : parameters.stream().map(p -> p.endsWith("=") ? p.substring(0, p.length() - 1) : p).toList();
-                FunctionDef function = new FunctionDef(path, declaration, names, required);
+                List<String> types = parameters == null ? null : parameterTypes(raw, parameters.size());
+                FunctionDef function = new FunctionDef(path, declaration, names, types, required);
                 functionsByName.computeIfAbsent(declaration.name(), k -> new ArrayList<>()).add(function);
                 functionsByLocation.put(path + ":" + declaration.line(), function);
+                if (CONSTRUCTOR_NAMES.contains(declaration.name())) {
+                    constructorsByClass.computeIfAbsent(declaration.container(), k -> new ArrayList<>()).add(function);
+                }
             }
         }
     }
@@ -198,40 +351,96 @@ final class ProjectCode {
             Map<String, String> types = new HashMap<>();
             Matcher matcher = CALL.matcher(content);
             while (matcher.find()) {
-                List<FunctionDef> candidates = functionsByName.get(matcher.group("name"));
-                if (candidates == null) {
-                    continue;
-                }
+                String name = matcher.group("name");
                 int line = loaded.text().lineOf(matcher.start());
                 FunctionDef declaredHere = functionsByLocation.get(path + ":" + line);
                 if (loaded.commentLines().contains(line)
-                        || (declaredHere != null && declaredHere.declaration().name().equals(matcher.group("name")))) {
+                        || (declaredHere != null && declaredHere.declaration().name().equals(name))) {
+                    continue;
+                }
+                String receiver = receiverBefore(content, matcher.start());
+                ScopeResolver.Declaration caller = loaded.scopes().enclosing(loaded.text(), line, loaded.stem());
+                List<FunctionDef> candidates = candidates(name, receiver, caller, content);
+                if (candidates.isEmpty()) {
                     continue;
                 }
                 List<String> arguments = arguments(content, matcher.end() - 1);
                 if (arguments == null) {
                     continue;
                 }
-                ScopeResolver.Declaration caller = loaded.scopes().enclosing(loaded.text(), line, loaded.stem());
-                String receiver = receiverBefore(content, matcher.start());
-                FunctionDef callee = resolve(candidates, receiver, arguments.size(), path, caller, content, types);
-                if (callee != null) {
-                    Call call = new Call(path, line, caller == null ? null : caller.qualified(), callee, arguments);
+                boolean constructorCall = SUPER.equals(name) || THIS.equals(name)
+                        || !functionsByName.containsKey(name);
+                List<FunctionDef> chosen = choose(candidates, constructorCall ? NEW : receiver, arguments, path,
+                        caller, content, types);
+                String callerName = caller == null ? null : caller.qualified();
+                if (chosen.size() == 1) {
+                    Call call = new Call(path, line, callerName, chosen.get(0), arguments);
                     calls.add(call);
-                    callers.computeIfAbsent(callee, k -> new ArrayList<>()).add(call);
+                    callers.computeIfAbsent(chosen.get(0), k -> new ArrayList<>()).add(call);
+                    callsByLocation.computeIfAbsent(path + ":" + line, k -> new ArrayList<>()).add(call);
+                } else if (chosen.size() > 1 && chosen.stream().allMatch(f -> f.path().equals(chosen.get(0).path())
+                        && f.declaration().container().equals(chosen.get(0).declaration().container()))) {
+                    for (FunctionDef overload : chosen) {
+                        overloadCallers.computeIfAbsent(overload, k -> new ArrayList<>())
+                                .add(new Call(path, line, callerName, overload, arguments));
+                    }
                 }
             }
         }
     }
 
-    /** Déclaration désignée par l'appel, ou null si plusieurs restent possibles. */
-    private static FunctionDef resolve(List<FunctionDef> candidates, String receiver, int argumentCount, String path,
-                                       ScopeResolver.Declaration caller, String content, Map<String, String> types) {
-        List<FunctionDef> matching = candidates.stream().filter(f -> f.accepts(argumentCount)).toList();
+    /**
+     * Déclarations que l'appel peut viser : fonctions de ce nom ; constructeurs de la classe parente pour
+     * {@code super(...)}, de la classe pour {@code this(...)} ; constructeur nommé à part ({@code __init__},
+     * {@code constructor}) pour {@code Classe(...)} et {@code new Classe(...)}.
+     */
+    private List<FunctionDef> candidates(String name, String receiver, ScopeResolver.Declaration caller,
+                                         String content) {
+        if ((SUPER.equals(name) || THIS.equals(name)) && receiver.isEmpty() && caller != null) {
+            String target = THIS.equals(name) ? caller.container() : parentOf(caller.container(), content);
+            return target == null ? List.of() : constructorsOf(target);
+        }
+        List<FunctionDef> named = functionsByName.get(name);
+        if (named != null) {
+            return named;
+        }
+        return (receiver.isEmpty() || NEW.equals(receiver)) ? constructorsByClass.getOrDefault(name, List.of())
+                : List.of();
+    }
+
+    private List<FunctionDef> constructorsOf(String container) {
+        List<FunctionDef> constructors = new ArrayList<>(constructorsByClass.getOrDefault(container, List.of()));
+        functionsByName.getOrDefault(container, List.of()).stream()
+                .filter(f -> f.declaration().container().equals(container))
+                .forEach(constructors::add);
+        return constructors;
+    }
+
+    private static String parentOf(String container, String content) {
+        Matcher matcher = Pattern.compile("\\b(?:class|record)\\s+" + Pattern.quote(container)
+                + "\\b[^{;]*?\\bextends\\s+(?<parent>[A-Z][\\w$]*)").matcher(content);
+        return matcher.find() ? matcher.group("parent") : null;
+    }
+
+    /**
+     * Déclarations que l'appel peut encore désigner : une seule pour un appel relié. Entre surcharges de même
+     * arité, les types connus des arguments écartent celles qui ne peuvent pas les recevoir.
+     */
+    private static List<FunctionDef> choose(List<FunctionDef> candidates, String receiver, List<String> arguments,
+                                            String path, ScopeResolver.Declaration caller, String content,
+                                            Map<String, String> types) {
+        List<FunctionDef> matching = candidates.stream().filter(f -> f.accepts(arguments.size())).toList();
+        if (matching.size() > 1) {
+            List<String> argumentTypes = arguments.stream()
+                    .map(a -> types.computeIfAbsent("(" + a, k -> Objects.requireNonNullElse(TypeKind.ofArgument(a, content), "")))
+                    .map(t -> t.isEmpty() ? null : t)
+                    .toList();
+            List<FunctionDef> typed = matching.stream().filter(f -> f.accepts(argumentTypes)).toList();
+            matching = typed.isEmpty() ? matching : typed;
+        }
         List<FunctionDef> chosen;
         if (NEW.equals(receiver)) {
-            chosen = matching.stream()
-                    .filter(f -> f.declaration().name().equals(f.declaration().container())).toList();
+            chosen = matching.stream().filter(FunctionDef::isConstructor).toList();
         } else if (receiver.isEmpty() || SELF.contains(receiver)) {
             chosen = matching.stream().filter(f -> f.path().equals(path) && caller != null
                     && f.declaration().container().equals(caller.container())).toList();
@@ -251,7 +460,7 @@ final class ProjectCode {
                     ? receiver : types.computeIfAbsent(receiver, r -> Objects.requireNonNullElse(typeOf(r, content), ""));
             chosen = matching.stream().filter(f -> f.declaration().container().equals(type)).toList();
         }
-        return chosen.size() == 1 ? chosen.get(0) : null;
+        return chosen;
     }
 
     /** "new", "this", "()" (appel chaîné), un identifiant, ou "" sans receveur. */
@@ -291,40 +500,45 @@ final class ProjectCode {
         return i;
     }
 
-    /** Type déclaré d'une variable du fichier : {@code Classe v}, {@code v: Classe}, {@code v = new Classe(}. */
+    /** Classe déclarée d'une variable du fichier : {@code Classe v}, {@code v: Classe}, {@code v = new Classe(}. */
     private static String typeOf(String variable, String content) {
-        String name = Pattern.quote(variable);
-        for (String template : List.of(
-                "(?<![\\w$.])(?<type>[A-Z][\\w$]*)(?:<[^<>;\\n]*>)?(?:\\[\\])*\\s+" + name + "\\s*[=;,)]",
-                "(?<![\\w$.])" + name + "\\s*:\\s*(?<type>[A-Z][\\w$]*)",
-                "(?<![\\w$.])" + name + "\\s*=\\s*(?:new\\s+)?(?<type>[A-Z][\\w$]*)\\s*[(<]")) {
-            Matcher matcher = Pattern.compile(template).matcher(content);
-            if (matcher.find()) {
-                return matcher.group("type");
-            }
+        String type = TypeKind.declared(variable, content, true);
+        if (type == null) {
+            return null;
         }
-        return null;
+        String base = type.replaceAll("<.*", "").replace("[]", "");
+        return base.substring(base.lastIndexOf('.') + 1);
     }
 
     /**
-     * Noms des paramètres de la déclaration (suffixe "=" quand le paramètre a une valeur par défaut), ou null si
-     * la signature n'est pas lisible. Le premier paramètre implicite d'une méthode Python est retiré.
+     * Paramètres de la déclaration tels qu'écrits, ou null si la signature n'est pas lisible. Une fonction
+     * fléchée ({@code const f = (a, b) => ...}, {@code const f = a => ...}) est lue aussi.
      */
-    private static List<String> parameters(SourceText text, ScopeResolver.Declaration declaration) {
+    private static List<String> rawParameters(SourceText text, ScopeResolver.Declaration declaration) {
         StringBuilder signature = new StringBuilder();
         int last = Math.min(text.lineCount(), declaration.line() + ScopeResolver.MAX_SIGNATURE_LINES);
         for (int i = declaration.line(); i <= last; i++) {
             signature.append(text.line(i)).append('\n');
         }
-        Matcher name = Pattern.compile("(?<![\\w$])" + Pattern.quote(declaration.name()) + "\\s*\\(")
+        String quoted = Pattern.quote(declaration.name());
+        Matcher name = Pattern.compile("(?<![\\w$])" + quoted + "\\s*(?::[^=\\n]+)?(?:=\\s*(?:async\\s*)?(?:function\\s*)?)?\\(")
                 .matcher(signature);
-        if (!name.find()) {
-            return null;
+        List<String> raw;
+        if (name.find()) {
+            raw = arguments(signature.toString(), name.end() - 1);
+        } else {
+            Matcher single = Pattern.compile("(?<![\\w$])" + quoted + "\\s*=\\s*(?:async\\s+)?(?<param>[\\w$]+)\\s*=>")
+                    .matcher(signature);
+            raw = single.find() ? List.of(single.group("param")) : null;
         }
-        List<String> raw = arguments(signature.toString(), name.end() - 1);
-        if (raw == null) {
-            return null;
-        }
+        return raw;
+    }
+
+    /**
+     * Noms des paramètres (suffixe "=" quand le paramètre a une valeur par défaut), ou null si l'un n'est pas
+     * lisible. Le premier paramètre implicite d'une méthode Python est retiré.
+     */
+    private static List<String> parameterNames(List<String> raw) {
         List<String> names = new ArrayList<>();
         for (String parameter : raw) {
             String parsed = parameterName(parameter);
@@ -337,6 +551,15 @@ final class ProjectCode {
             names.remove(0);
         }
         return names;
+    }
+
+    /** Types déclarés, alignés sur les noms (le paramètre implicite retiré a aussi son type retiré). */
+    private static List<String> parameterTypes(List<String> raw, int count) {
+        List<String> types = new ArrayList<>();
+        for (String parameter : raw.subList(raw.size() - count, raw.size())) {
+            types.add(TypeKind.ofParameter(ANNOTATION.matcher(parameter).replaceAll("").trim()));
+        }
+        return types;
     }
 
     /** "final String algo" -> "algo", "algo: String = \"x\"" -> "algo=", "$algo" -> "$algo". */
@@ -426,6 +649,27 @@ final class ProjectCode {
             }
         }
         return null;
+    }
+
+    /** Coupe à la parenthèse qui ferme un en-tête : "List.of(\"A\")) {" -> "List.of(\"A\")". */
+    private static String beforeUnbalancedParenthesis(String value) {
+        int depth = 0;
+        char quote = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (quote != 0) {
+                if (c == quote) {
+                    quote = 0;
+                }
+            } else if (c == '"' || c == '\'') {
+                quote = c;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')' && --depth < 0) {
+                return value.substring(0, i);
+            }
+        }
+        return value;
     }
 
     private static String stripTrailingComment(String value) {

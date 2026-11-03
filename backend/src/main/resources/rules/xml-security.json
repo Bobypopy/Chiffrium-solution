@@ -1,0 +1,75 @@
+{
+  "id": "xml-security",
+  "languages": [
+    "config",
+    "java",
+    "kotlin",
+    "scala",
+    "groovy",
+    "python",
+    "javascript",
+    "typescript",
+    "go",
+    "csharp",
+    "php",
+    "ruby"
+  ],
+  "commentPrefixes": [
+    "<!--",
+    "//",
+    "#",
+    "*"
+  ],
+  "rules": [
+    {
+      "id": "xml.signature-encryption-uri",
+      "pattern": "(?<![\\w/])https?://www\\.w3\\.org/(?:2000/09/xmldsig|2001/04/xmldsig-more|2001/04/xmlenc|2009/xmlenc11|2007/05/xmldsig-more|2021/04/xmldsig-more)#(?<name>[\\w-]+)",
+      "map": {
+        "rsa-sha1": "SHA1withRSA",
+        "rsa-sha224": "SHA224withRSA",
+        "rsa-sha256": "SHA256withRSA",
+        "rsa-sha384": "SHA384withRSA",
+        "rsa-sha512": "SHA512withRSA",
+        "rsa-md5": "MD5withRSA",
+        "dsa-sha1": "SHA1withDSA",
+        "dsa-sha256": "SHA256withDSA",
+        "ecdsa-sha1": "SHA1withECDSA",
+        "ecdsa-sha224": "SHA224withECDSA",
+        "ecdsa-sha256": "SHA256withECDSA",
+        "ecdsa-sha384": "SHA384withECDSA",
+        "ecdsa-sha512": "SHA512withECDSA",
+        "hmac-sha1": "HMAC-SHA-1",
+        "hmac-sha224": "HMAC-SHA-224",
+        "hmac-sha256": "HMAC-SHA-256",
+        "hmac-sha384": "HMAC-SHA-384",
+        "hmac-sha512": "HMAC-SHA-512",
+        "hmac-md5": "HMAC-MD5",
+        "sha1": "SHA-1",
+        "sha224": "SHA-224",
+        "sha256": "SHA-256",
+        "sha384": "SHA-384",
+        "sha512": "SHA-512",
+        "md5": "MD5",
+        "ripemd160": "RIPEMD-160",
+        "tripledes-cbc": "DESede/CBC/NoPadding",
+        "aes128-cbc": "AES-128-CBC",
+        "aes192-cbc": "AES-192-CBC",
+        "aes256-cbc": "AES-256-CBC",
+        "aes128-gcm": "AES-128-GCM",
+        "aes192-gcm": "AES-192-GCM",
+        "aes256-gcm": "AES-256-GCM",
+        "kw-aes128": "AES-128",
+        "kw-aes256": "AES-256",
+        "kw-tripledes": "3DES",
+        "rsa-1_5": "RSA/ECB/PKCS1Padding",
+        "rsa-oaep-mgf1p": "RSA/ECB/OAEPPadding",
+        "rsa-oaep": "RSA/ECB/OAEPPadding"
+      },
+      "skipUnrecognized": true,
+      "functions": [
+        "sign",
+        "verify"
+      ]
+    }
+  ]
+}

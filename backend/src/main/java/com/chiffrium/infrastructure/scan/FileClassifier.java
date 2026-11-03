@@ -42,7 +42,7 @@ public final class FileClassifier {
             Map.entry("properties", Language.CONFIG), Map.entry("yml", Language.CONFIG),
             Map.entry("yaml", Language.CONFIG), Map.entry("ini", Language.CONFIG),
             Map.entry("toml", Language.CONFIG), Map.entry("env", Language.CONFIG), Map.entry("cfg", Language.CONFIG),
-            Map.entry("xml", Language.CONFIG), Map.entry("security", Language.CONFIG), Map.entry("tf", Language.CONFIG),
+            Map.entry("xml", Language.CONFIG), Map.entry("plist", Language.CONFIG),Map.entry("security", Language.CONFIG), Map.entry("tf", Language.CONFIG),
             Map.entry("tfvars", Language.CONFIG), Map.entry("sh", Language.CONFIG), Map.entry("bash", Language.CONFIG),
             Map.entry("ps1", Language.CONFIG), Map.entry("npmrc", Language.CONFIG), Map.entry("pypirc", Language.CONFIG));
 

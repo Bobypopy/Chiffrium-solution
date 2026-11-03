@@ -104,7 +104,8 @@ public record CryptoAsset(
                 kept.source(),
                 kept.ruleId(),
                 functions,
-                kept.trace().isEmpty() ? candidate.trace() : kept.trace());
+                kept.trace().isEmpty() ? candidate.trace() : kept.trace(),
+                kept.trace().isEmpty() ? candidate.otherTraces() : kept.otherTraces());
     }
 
     private static AlgorithmSpec richerAlgorithm(AlgorithmSpec a, AlgorithmSpec b) {

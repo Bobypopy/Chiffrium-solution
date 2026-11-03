@@ -18,8 +18,11 @@ import java.util.regex.Pattern;
 final class ScopeResolver {
 
     static final int MAX_LOOKBACK_LINES = 400;
-    /** Nombre de lignes tolérées entre une déclaration et l'accolade qui ouvre son bloc. */
-    static final int MAX_SIGNATURE_LINES = 5;
+    /**
+     * Nombre de lignes tolérées entre une déclaration et l'accolade qui ouvre son bloc : un paramètre par ligne
+     * est un style courant.
+     */
+    static final int MAX_SIGNATURE_LINES = 15;
     /** Une déclaration n'est jamais aussi longue : au-delà, la ligne n'est pas soumise aux motifs. */
     static final int MAX_DECLARATION_LINE_LENGTH = 1_000;
     private static final String NAME_GROUP = "name";

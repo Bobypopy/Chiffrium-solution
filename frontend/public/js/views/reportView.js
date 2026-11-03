@@ -651,6 +651,8 @@ function assetDetail(asset, onShowGraph, modules = []) {
         // Valeur venue d'ailleurs (paramètre, champ) : de l'endroit où elle est écrite jusqu'à cet appel.
         o.trace?.length ? h('div', { class: 'trace small' }, h('span', { class: 'muted' }, 'Valeur venue de :'),
           ` ${o.trace.join(' → ')}`) : null,
+        o.otherTraces?.length ? h('div', { class: 'trace small' }, h('span', { class: 'muted' }, 'Autres trajets :'),
+          h('ul', {}, o.otherTraces.map((t) => h('li', {}, t)))) : null,
         h('span', { class: 'muted small' }, `${label(SOURCE_LABELS, o.source)}${o.ruleId ? ` - ${o.ruleId}` : ''}`))))))
       : emptyState('Aucun emplacement : actif déclaré dans le CBOM de cdxgen sans localisation.'));
 }

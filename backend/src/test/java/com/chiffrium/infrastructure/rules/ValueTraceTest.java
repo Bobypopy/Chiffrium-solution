@@ -74,6 +74,73 @@ class ValueTraceTest {
                 def run():
                     return fingerprint(b"x", "md5")
                 """);
+        // Second appelant qui transmet la même valeur : un second trajet.
+        TestSupport.write(project, "java/Batch.java", """
+                public class Batch {
+                    void run(Worker worker) throws Exception {
+                        worker.go("DES/ECB/PKCS5Padding", 2048);
+                    }
+                }
+                """);
+        // Accesseur, champ affecté par le constructeur, super(...) : le cas de java-jwt.
+        TestSupport.write(project, "java/Algo.java", """
+                public abstract class Algo {
+                    private final String description;
+                    protected Algo(String name, String description) {
+                        this.description = description;
+                    }
+                    public String getDescription() {
+                        return description;
+                    }
+                }
+                """);
+        TestSupport.write(project, "java/RsaAlgo.java", """
+                public class RsaAlgo extends Algo {
+                    RsaAlgo(String id, String algorithm) {
+                        super(id, algorithm);
+                    }
+                    void sign() throws Exception {
+                        java.security.Signature.getInstance(getDescription());
+                    }
+                    static RsaAlgo rs256() {
+                        return new RsaAlgo("RS256", "SHA256withRSA");
+                    }
+                }
+                """);
+        TestSupport.write(project, "java/Digests.java", """
+                public class Digests {
+                    void all() throws Exception {
+                        for (String name : java.util.List.of("MD2", "SHA-512")) {
+                            java.security.MessageDigest.getInstance(name);
+                        }
+                    }
+                }
+                """);
+        TestSupport.write(project, "kotlin/Box.kt", """
+                class Box(val algo: String) {
+                    fun use() = javax.crypto.Cipher.getInstance(algo)
+                }
+
+                fun build() = Box("ARCFOUR")
+                """);
+        TestSupport.write(project, "python/holder.py", """
+                import hashlib
+
+                class Holder:
+                    def __init__(self, algo):
+                        self.algo = algo
+
+                    def digest(self, data):
+                        return hashlib.new(self.algo, data)
+
+                def make():
+                    return Holder("sha1")
+                """);
+        TestSupport.write(project, "js/hash.js", """
+                const crypto = require('crypto');
+                const fingerprint = (data, algo) => crypto.createHash(algo).update(data).digest('hex');
+                function check(buf) { return fingerprint(buf, 'md4'); }
+                """);
         TestSupport.write(project, "java/Routes.java", """
                 public class Routes {
                     record Request(String name) {}
@@ -112,15 +179,14 @@ class ValueTraceTest {
     void parameterValueIsFoundAtTheCallWithItsPath() {
         assertThat(occurrences("DES-ECB", "java/Worker.java")).singleElement().satisfies(o -> {
             assertThat(o.line()).isEqualTo(3);
-            // De l'endroit où la valeur est écrite à l'appel qui la transmet.
-            assertThat(o.trace()).containsExactly("Main.main (java/Main.java:4)", "Main.main (java/Main.java:5)");
+            // De l'endroit où la valeur est écrite à l'appel qui la transmet (un des deux appelants).
+            assertThat(allPaths(o)).contains("Main.main (java/Main.java:4) → Main.main (java/Main.java:5)");
         });
     }
 
     @Test
     void theStringWhereTheValueIsWrittenBecomesALocationOfTheSameAsset() {
-        CryptoAsset des = result.assets().stream().filter(a -> a.name().startsWith("DES-ECB")).findFirst().orElseThrow();
-        assertThat(des.occurrences()).extracting(Occurrence::file).contains("java/Main.java");
+        assertThat(occurrences("DES-ECB", "java/Main.java")).extracting(Occurrence::line).contains(4);
     }
 
     @Test
@@ -144,9 +210,60 @@ class ValueTraceTest {
 
     @Test
     void otherLanguagesAreTracedToo() {
-        assertThat(occurrences("MD5", "python/digests.py")).singleElement()
-                .satisfies(o -> assertThat(o.trace()).containsExactly("digests.run (python/digests.py:7)"));
+        assertThat(occurrences("MD5", "python/digests.py")).anySatisfy(o -> {
+            assertThat(o.line()).isEqualTo(4);
+            assertThat(o.trace()).containsExactly("digests.run (python/digests.py:7)");
+        });
+        // 'md5' n'est pas retenu seul en Python, mais là où il est écrit est un emplacement de l'actif tracé.
+        assertThat(occurrences("MD5", "python/digests.py")).extracting(Occurrence::line).contains(7);
         assertThat(occurrences("Blowfish", "kotlin/Seal.kt")).isNotEmpty();
+    }
+
+    @Test
+    void severalCallersPassingTheSameValueGiveSeveralPaths() {
+        assertThat(occurrences("DES-ECB", "java/Worker.java")).singleElement()
+                .satisfies(o -> assertThat(allPaths(o)).containsExactlyInAnyOrder(
+                        "Main.main (java/Main.java:4) → Main.main (java/Main.java:5)",
+                        "Batch.run (java/Batch.java:3)"));
+        // Les deux endroits où la valeur est écrite sont des emplacements de l'actif.
+        assertThat(occurrences("DES-ECB", "java/Batch.java")).isNotEmpty();
+    }
+
+    /** Trajet principal et autres trajets, chacun en une ligne. */
+    private static List<String> allPaths(Occurrence occurrence) {
+        List<String> paths = new java.util.ArrayList<>(occurrence.otherTraces());
+        paths.add(0, String.join(" → ", occurrence.trace()));
+        return paths;
+    }
+
+    @Test
+    void numberWhereAKeySizeIsWrittenBecomesALocation() {
+        assertThat(occurrences("RSA-1024", "java/Main.java")).extracting(Occurrence::line).contains(5);
+    }
+
+    @Test
+    void getterFieldAndSuperConstructorAreFollowed() {
+        assertThat(occurrences("SHA-256withRSA", "java/RsaAlgo.java")).anySatisfy(o -> {
+            assertThat(o.line()).isEqualTo(6);
+            assertThat(o.trace()).first().asString().contains("RsaAlgo.rs256 (java/RsaAlgo.java:9)");
+            assertThat(o.trace()).anyMatch(s -> s.contains("java/Algo.java"));
+        });
+        // "getDescription" contient "des" : un appel n'est jamais pris pour un nom d'algorithme.
+        assertThat(result.assets()).noneMatch(a -> a.name().startsWith("3DES")
+                && a.occurrences().stream().anyMatch(o -> o.file().equals("java/RsaAlgo.java")));
+    }
+
+    @Test
+    void elementsOfAListWalkedByALoopAreFollowed() {
+        assertThat(occurrences("MD2", "java/Digests.java")).anyMatch(o -> o.line() == 4);
+        assertThat(occurrences("SHA-512", "java/Digests.java")).anyMatch(o -> o.line() == 4);
+    }
+
+    @Test
+    void constructorsDeclaredApartFromTheBodyAreFollowed() {
+        assertThat(occurrences("RC4", "kotlin/Box.kt")).anyMatch(o -> o.line() == 2 && !o.trace().isEmpty());
+        assertThat(occurrences("SHA-1", "python/holder.py")).anyMatch(o -> o.line() == 8 && !o.trace().isEmpty());
+        assertThat(occurrences("MD4", "js/hash.js")).anyMatch(o -> o.line() == 2 && !o.trace().isEmpty());
     }
 
     @Test

@@ -19,6 +19,8 @@ import java.util.Set;
  * @param functions opérations réalisées à cet endroit (keygen, encrypt, ...)
  * @param trace     trajet de la valeur jusqu'à cet appel quand elle vient d'ailleurs, de l'endroit où elle est
  *                  écrite au dernier relais ("Classe.méthode (chemin:ligne)") ; vide sinon
+ * @param otherTraces autres trajets jusqu'à cet appel (autres appelants, taille de clé venue d'ailleurs), chacun
+ *                  en une ligne ("A (f:1) → B (g:2)")
  */
 public record Occurrence(
         String file,
@@ -30,7 +32,8 @@ public record Occurrence(
         DetectionSource source,
         String ruleId,
         Set<CryptoFunction> functions,
-        List<String> trace) {
+        List<String> trace,
+        List<String> otherTraces) {
 
     /** Ordre stable pour des rapports reproductibles : fichier, ligne, colonne. */
     public static final Comparator<Occurrence> BY_LOCATION = Comparator
@@ -41,11 +44,12 @@ public record Occurrence(
     public Occurrence {
         functions = functions == null ? Set.of() : Set.copyOf(functions);
         trace = trace == null ? List.of() : List.copyOf(trace);
+        otherTraces = otherTraces == null ? List.of() : List.copyOf(otherTraces);
     }
 
     public Occurrence(String file, Integer line, Integer column, String function, String snippet, Language language,
                       DetectionSource source, String ruleId, Set<CryptoFunction> functions) {
-        this(file, line, column, function, snippet, language, source, ruleId, functions, List.of());
+        this(file, line, column, function, snippet, language, source, ruleId, functions, List.of(), List.of());
     }
 
     /** Clé d'unicité : deux détections au même endroit (quel que soit le moteur) sont fusionnées. */

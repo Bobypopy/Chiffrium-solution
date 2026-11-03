@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -111,7 +112,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         List<CryptoAsset> assets = new ArrayList<>();
         List<FileFlow> flows = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
-        Map<String, AlgorithmSpec> traceOrigins = new HashMap<>();
+        Map<String, Origin> traceOrigins = new LinkedHashMap<>();
         Set<String> packsWithCrypto = new HashSet<>();
         int unresolved = 0;
         FileFailures failures = new FileFailures(name());
@@ -136,7 +137,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 for (Detection detection : analysis.detections) {
                     Occurrence occurrence = new Occurrence(file.path(), detection.line, detection.column,
                             detection.function, text.get().snippet(detection.line), file.language(),
-                            DetectionSource.RULES, detection.ruleId, detection.functions, detection.trace);
+                            DetectionSource.RULES, detection.ruleId, detection.functions,
+                            detection.provenance.mainPath(), detection.provenance.otherPaths());
                     CryptoAsset algorithm;
                     if (detection.unresolvedApi != null) {
                         unresolved++;
@@ -146,8 +148,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                                 DetectionSource.RULES, null);
                     }
                     assets.add(algorithm);
-                    if (detection.origin != null) {
-                        traceOrigins.putIfAbsent(detection.origin, algorithm.algorithm());
+                    for (String origin : detection.provenance.origins()) {
+                        traceOrigins.putIfAbsent(origin, new Origin(algorithm.algorithm(), pack.id(), detection.ruleId));
                     }
                     // La clé est inventoriée même si son algorithme est inconnu ou non résolu : elle sera "à vérifier".
                     if (detection.key != null) {
@@ -161,7 +163,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 }
             }
         }
-        attachTracedOrigins(assets, traceOrigins);
+        attachTracedOrigins(assets, traceOrigins, codes);
         List<CallEdge> callEdges = new ArrayList<>();
         packsWithCrypto.stream().filter(codes::containsKey).forEach(id -> callEdges.addAll(codes.get(id).get().callEdges()));
         if (unresolved > 0) {
@@ -172,12 +174,18 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         return new DetectionResult(assets, flows, warnings, List.of(), callEdges);
     }
 
+    /** Endroit où une valeur tracée est écrite : l'actif qui l'utilise, et la règle et le paquet de l'appel. */
+    private record Origin(AlgorithmSpec spec, String packId, String ruleId) {
+    }
+
     /**
-     * Un nom écrit seul (règle de repli) dont la trace a retrouvé l'utilisation n'est pas un second algorithme :
-     * il devient un emplacement de l'actif de l'appel qui l'utilise ("DES" écrit dans Main, utilisé comme
-     * "DES/ECB/PKCS5Padding" par Cipher) : un actif, l'endroit où la valeur est écrite et celui où elle sert.
+     * L'endroit où une valeur tracée est écrite devient un emplacement de l'actif de l'appel qui l'utilise : un
+     * actif, là où la valeur est écrite et là où elle sert. Un nom écrit seul (règle de repli) qui y était déjà
+     * inventorié n'est pas un second algorithme ("DES" écrit dans Main, utilisé comme "DES/ECB/PKCS5Padding" par
+     * Cipher) ; un nombre ou un nom non retenu seul ("IDEA", 'md5') reçoit un emplacement.
      */
-    private void attachTracedOrigins(List<CryptoAsset> assets, Map<String, AlgorithmSpec> traceOrigins) {
+    private void attachTracedOrigins(List<CryptoAsset> assets, Map<String, Origin> traceOrigins,
+                                     Map<String, Supplier<ProjectCode>> codes) {
         if (traceOrigins.isEmpty()) {
             return;
         }
@@ -188,9 +196,28 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 return asset;
             }
             Occurrence occurrence = asset.occurrences().get(0);
-            AlgorithmSpec used = traceOrigins.get(occurrence.locationKey());
-            return used == null ? asset
-                    : assetFactory.fromSpec(used, occurrence, asset.functions(), DetectionSource.RULES, null);
+            Origin origin = traceOrigins.get(occurrence.locationKey());
+            return origin == null ? asset
+                    : assetFactory.fromSpec(origin.spec(), occurrence, asset.functions(), DetectionSource.RULES, null);
+        });
+        Set<String> located = new HashSet<>();
+        assets.forEach(a -> a.occurrences().forEach(o -> located.add(o.locationKey() + "|"
+                + (a.algorithm() == null ? null : a.algorithm().catalogId()))));
+        traceOrigins.forEach((location, origin) -> {
+            if (located.contains(location + "|" + origin.spec().catalogId()) || !codes.containsKey(origin.packId())) {
+                return;
+            }
+            ProjectCode code = codes.get(origin.packId()).get();
+            int colon = location.lastIndexOf(':');
+            String path = location.substring(0, colon);
+            int line = Integer.parseInt(location.substring(colon + 1));
+            code.text(path).ifPresent(text -> {
+                ProjectCode.FunctionDef function = code.functionAt(path, line);
+                Occurrence occurrence = new Occurrence(path, line, null,
+                        function == null ? null : function.qualified(), text.snippet(line), code.language(path),
+                        DetectionSource.RULES, origin.ruleId(), Set.of());
+                assets.add(assetFactory.fromSpec(origin.spec(), occurrence, Set.of(), DetectionSource.RULES, null));
+            });
         });
     }
 
@@ -244,10 +271,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         private final String unresolvedApi;
         /** Type de la clé créée à cet endroit ("private-key", "secret-key"), null si aucune. */
         private final String key;
-        /** Trajet de la valeur retrouvée par {@link ValueTracer}, vide si elle est écrite sur place. */
-        private List<String> trace = List.of();
-        /** Emplacement ("fichier:ligne") où la valeur tracée est écrite, null sinon. */
-        private String origin;
+        /** Trajets des valeurs retrouvées par {@link ValueTracer} (algorithme, taille), vide si écrites sur place. */
+        private Provenance provenance = Provenance.NONE;
 
         Detection(AlgorithmSpec spec, int line, int column, String function, Set<CryptoFunction> functions,
                   String ruleId, String unresolvedApi, String key) {
@@ -262,13 +287,45 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         }
     }
 
-    /** @param trace trajet d'une taille venue d'ailleurs (paramètre, champ), vide sinon */
-    private record Modifier(Rule.Kind kind, int line, int column, String function, String value, String ruleId,
-                            List<String> trace) {
+    /**
+     * Provenance d'une valeur venue d'ailleurs.
+     *
+     * @param paths   trajets, chacun de l'endroit où la valeur est écrite jusqu'au dernier relais
+     * @param origins emplacements ("fichier:ligne") où elle est écrite telle quelle
+     */
+    private record Provenance(List<List<String>> paths, List<String> origins) {
+
+        static final Provenance NONE = new Provenance(List.of(), List.of());
+
+        static Provenance of(ValueTracer.Traced traced) {
+            return new Provenance(traced.paths(), traced.origins());
+        }
+
+        Provenance plus(Provenance other) {
+            List<List<String>> allPaths = new ArrayList<>(paths);
+            allPaths.addAll(other.paths);
+            List<String> allOrigins = new ArrayList<>(origins);
+            allOrigins.addAll(other.origins);
+            return new Provenance(List.copyOf(allPaths), List.copyOf(allOrigins));
+        }
+
+        List<String> mainPath() {
+            return paths.isEmpty() ? List.of() : paths.get(0);
+        }
+
+        /** Autres trajets, chacun en une ligne ("A (f:1) → B (g:2)"). */
+        List<String> otherPaths() {
+            return paths.stream().skip(1).map(path -> String.join(" → ", path)).toList();
+        }
     }
 
-    /** Taille de clé et trajet de sa valeur quand elle vient d'ailleurs. */
-    private record Sized(Integer value, List<String> trace) {
+    /** @param provenance trajet d'une taille venue d'ailleurs (paramètre, champ) */
+    private record Modifier(Rule.Kind kind, int line, int column, String function, String value, String ruleId,
+                            Provenance provenance) {
+    }
+
+    /** Taille de clé et provenance de sa valeur quand elle vient d'ailleurs. */
+    private record Sized(Integer value, Provenance provenance) {
     }
 
     /**
@@ -379,8 +436,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                     spec = spec.withPrimitive(primitiveHint);
                 }
                 Detection detection = new Detection(spec, line, column, function, functions, rule.id(), null, key);
-                detection.trace = candidate.trace;
-                detection.origin = candidate.origin;
+                detection.provenance = candidate.provenance;
                 detections.add(detection);
             }
         }
@@ -397,7 +453,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             };
             if (value != null) {
                 modifiers.add(new Modifier(rule.kind(), line, text.columnOf(matcher.start()), functionAt(line),
-                        mapped(rule, stripQuotes(value)), rule.id(), size == null ? List.of() : size.trace()));
+                        mapped(rule, stripQuotes(value)), rule.id(), size == null ? Provenance.NONE : size.provenance()));
             }
         }
 
@@ -446,10 +502,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
                 default -> old;
             };
             target.spec = updated;
-            if (!modifier.trace().isEmpty() && updated != old) {
-                List<String> trace = new ArrayList<>(target.trace);
-                trace.addAll(modifier.trace());
-                target.trace = List.copyOf(trace);
+            if (updated != old) {
+                target.provenance = target.provenance.plus(modifier.provenance());
             }
             if (keyBytes) {
                 detections.add(new Detection(updated, modifier.line(), modifier.column(), modifier.function(),
@@ -497,7 +551,8 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             String list = group(matcher, "list");
             if (list != null) {
                 List<Candidate> items = new ArrayList<>();
-                for (String item : LIST_SEPARATOR.split(list)) {
+                Pattern separator = rule.listSeparator() != null ? rule.listSeparator() : LIST_SEPARATOR;
+                for (String item : separator.split(list)) {
                     String cleaned = stripQuotes(item.trim()).replaceFirst("^\\+", "");
                     if (!cleaned.isEmpty() && !cleaned.startsWith("-") && !cleaned.startsWith("!")
                             && !"all".equalsIgnoreCase(cleaned)) {
@@ -508,15 +563,17 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             }
             String primary = group(matcher, "name");
             if (primary == null) {
-                primary = resolveArgument(group(matcher, "algo"));
+                primary = resolveArgument(matcher);
                 if (primary == null) {
                     String argument = ProjectCode.argumentAt(text.content(), matcher.start("algo"));
-                    List<ValueTracer.Traced> traced = trace(argument == null ? group(matcher, "algo") : argument, line);
-                    if (traced.isEmpty()) {
-                        return List.of(new Candidate(null));
-                    }
-                    return traced.stream().map(t -> new Candidate(withParameters(mapped(rule, t.value()), rule, matcher),
-                            t.steps(), t.origin())).toList();
+                    // Une valeur tracée absente du catalogue ("some-algorithm" passé par un test) n'est pas un
+                    // algorithme : sans valeur reconnue, l'appel reste non résolu.
+                    List<Candidate> traced = trace(argument == null ? group(matcher, "algo") : argument, line).stream()
+                            .map(t -> new Candidate(withParameters(mapped(rule, t.value()), rule, matcher),
+                                    Provenance.of(t)))
+                            .filter(c -> assetFactory.normalizer().normalize(c.raw()).isRecognized())
+                            .toList();
+                    return traced.isEmpty() ? List.of(new Candidate(null)) : traced;
                 }
             }
             return List.of(new Candidate(withParameters(mapped(rule, primary), rule, matcher)));
@@ -547,7 +604,7 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             StringBuilder result = new StringBuilder();
             while (placeholder.find()) {
                 String name = placeholder.group(1);
-                String value = "algo".equals(name) ? resolveArgument(group(matcher, name)) : group(matcher, name);
+                String value = "algo".equals(name) ? resolveArgument(matcher) : group(matcher, name);
                 if ("algo".equals(name) && value == null && group(matcher, name) != null) {
                     return null;
                 }
@@ -559,10 +616,12 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         }
 
         /**
-         * Résout un argument ; si c'est un identifiant non résolu dont le dernier segment est lui-même un nom
-         * d'algorithme (ex. {@code Algorithms.AES_GCM}, {@code KeyProperties.KEY_ALGORITHM_RSA}), on le retient.
+         * Résout l'argument {@code algo} ; si c'est un identifiant non résolu dont le dernier segment est lui-même
+         * un nom d'algorithme (ex. {@code Algorithms.AES_GCM}, {@code KeyProperties.KEY_ALGORITHM_RSA}), on le
+         * retient. Pas pour un appel : {@code getDescription()} n'est pas l'algorithme "DES".
          */
-        private String resolveArgument(String expression) {
+        private String resolveArgument(Matcher matcher) {
+            String expression = group(matcher, "algo");
             if (expression == null) {
                 return null;
             }
@@ -570,7 +629,12 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
             if (resolved.isPresent()) {
                 return resolved.get();
             }
-            if (!ConstantResolver.isLiteral(expression)) {
+            int after = matcher.end("algo");
+            while (after < text.content().length() && Character.isWhitespace(text.content().charAt(after))) {
+                after++;
+            }
+            boolean call = after < text.content().length() && text.content().charAt(after) == '(';
+            if (!ConstantResolver.isLiteral(expression) && !call) {
                 String segment = ConstantResolver.lastSegment(expression.trim());
                 if (assetFactory.normalizer().normalize(segment).isRecognized()) {
                     return segment;
@@ -596,17 +660,17 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
         private Sized sizeOf(String raw, int line) {
             Integer literal = parseSize(raw);
             if (literal != null || raw == null) {
-                return new Sized(literal, List.of());
+                return new Sized(literal, Provenance.NONE);
             }
             Optional<Integer> constant = resolver.resolveNumber(raw, text.content()).filter(size -> size > 0);
             if (constant.isPresent()) {
-                return new Sized(constant.get(), List.of());
+                return new Sized(constant.get(), Provenance.NONE);
             }
             return trace(raw, line).stream()
                     .filter(t -> parseSize(t.value()) != null)
                     .min(Comparator.comparing(t -> parseSize(t.value())))
-                    .map(t -> new Sized(parseSize(t.value()), t.steps()))
-                    .orElse(new Sized(null, List.of()));
+                    .map(t -> new Sized(parseSize(t.value()), Provenance.of(t)))
+                    .orElse(new Sized(null, Provenance.NONE));
         }
 
         private String functionAt(int line) {
@@ -634,13 +698,12 @@ public final class RuleBasedCryptoDetector implements CryptoDetector {
 
     /**
      * @param raw    nom brut, null si l'argument n'est pas résolu
-     * @param trace  trajet de la valeur quand elle vient d'ailleurs (vide sinon)
-     * @param origin emplacement ("fichier:ligne") où la valeur tracée est écrite, null sinon
+     * @param provenance trajets de la valeur quand elle vient d'ailleurs
      */
-    private record Candidate(String raw, List<String> trace, String origin) {
+    private record Candidate(String raw, Provenance provenance) {
 
         Candidate(String raw) {
-            this(raw, List.of(), null);
+            this(raw, Provenance.NONE);
         }
     }
 
