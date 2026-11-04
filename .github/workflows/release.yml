@@ -30,7 +30,7 @@ jobs:
           cache: maven
       # Version unique : le numéro du tag (v1.3.0 -> 1.3.0) s'applique au backend et à l'application de bureau.
       - run: mvn -B -f backend/pom.xml verify -Drevision="${GITHUB_REF_NAME#v}"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: backend-jar
           path: backend/target/chiffrium-backend.jar
@@ -92,7 +92,7 @@ jobs:
       - name: Installateur à signer
         id: non-signe
         if: runner.os == 'Windows' && vars.SIGNPATH_ORGANIZATION_ID != ''
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: installateur-non-signe
           path: desktop/dist/Chiffrium-Setup-*.exe

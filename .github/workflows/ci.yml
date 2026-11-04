@@ -41,7 +41,7 @@ jobs:
           java-version: "21"
           cache: maven
       - run: mvn -B verify
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: backend-test-reports
